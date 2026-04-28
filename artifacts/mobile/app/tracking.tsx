@@ -139,8 +139,18 @@ export default function TrackingScreen() {
            </View>
         </View>
 
+        {/* Mark as Done -> rating */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => router.push("/rating")}
+          style={[styles.completedBtn, { backgroundColor: colors.primary }]}
+        >
+          <Feather name="check-circle" size={18} color="#FFFFFF" />
+          <Text style={styles.completedBtnText}>تم إنجاز الخدمة - قيّم العامل</Text>
+        </TouchableOpacity>
+
         {/* Cancel Button */}
-        <TouchableOpacity style={styles.cancelRow}>
+        <TouchableOpacity style={styles.cancelRow} onPress={() => router.replace("/(tabs)")}>
           <Text style={[styles.cancelText, { color: colors.danger }]}>إلغاء الطلب</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -441,5 +451,26 @@ const styles = StyleSheet.create({
     fontFamily: "Cairo_700Bold",
     fontSize: 15,
     textDecorationLine: "underline",
+  },
+  completedBtn: {
+    marginHorizontal: 24,
+    height: 56,
+    borderRadius: 20,
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginTop: 6,
+    marginBottom: 6,
+    shadowColor: "#16C47F",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  completedBtnText: {
+    color: "#FFFFFF",
+    fontFamily: "Cairo_700Bold",
+    fontSize: 15,
   },
 });

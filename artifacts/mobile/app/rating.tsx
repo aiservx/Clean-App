@@ -11,12 +11,20 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 export default function RatingScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(4);
   const [comment, setComment] = useState("");
+  const [selectedTags, setSelectedTags] = useState<number[]>([0, 1]);
+
+  const ratingLabels = ["", "سيء جداً", "سيء", "متوسط", "ممتاز", "رائع"];
 
   const handleSubmit = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace("/(tabs)");
+  };
+
+  const toggleTag = (i: number) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
+    setSelectedTags((prev) => (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]));
   };
 
   return (
@@ -48,7 +56,7 @@ export default function RatingScreen() {
                 <TouchableOpacity 
                   key={star} 
                   onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setRating(star);
                   }}
                 >
@@ -60,6 +68,7 @@ export default function RatingScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+            <Text style={[styles.ratingLabel, { color: colors.warning }]}>{ratingLabels[rating]}</Text>
           </View>
 
           {/* Comment Section */}
@@ -81,11 +90,26 @@ export default function RatingScreen() {
           <View style={styles.tagsSection}>
              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>ما الذي أعجبك؟</Text>
              <View style={styles.tagsRow}>
-                {["الالتزام بالوقت", "الاحترافية", "نظافة ممتازة", "التعامل الراقي"].map((tag, index) => (
-                  <TouchableOpacity key={index} style={[styles.tag, { backgroundColor: colors.secondary }]}>
-                    <Text style={[styles.tagText, { color: colors.foreground }]}>{tag}</Text>
-                  </TouchableOpacity>
-                ))}
+                {["الالتزام بالوقت", "الاحترافية", "نظافة ممتازة", "التعامل الراقي"].map((tag, index) => {
+                  const sel = selectedTags.includes(index);
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => toggleTag(index)}
+                      activeOpacity={0.85}
+                      style={[
+                        styles.tag,
+                        {
+                          backgroundColor: sel ? colors.primaryLight : colors.secondary,
+                          borderColor: sel ? colors.primary : "transparent",
+                          borderWidth: sel ? 1 : 0,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.tagText, { color: sel ? colors.primary : colors.foreground }]}>{tag}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
              </View>
           </View>
         </ScrollView>
@@ -94,7 +118,7 @@ export default function RatingScreen() {
         <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
           <TouchableOpacity activeOpacity={0.9} onPress={handleSubmit}>
             <LinearGradient
-              colors={[colors.primary, colors.primaryDark]}
+              colors={[colors.accent, colors.accentDark]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.submitBtn}
@@ -173,6 +197,11 @@ const styles = StyleSheet.create({
   starsRow: {
     flexDirection: "row-reverse",
     gap: 8,
+  },
+  ratingLabel: {
+    marginTop: 12,
+    fontFamily: "Cairo_700Bold",
+    fontSize: 18,
   },
   commentSection: {
     paddingHorizontal: 24,

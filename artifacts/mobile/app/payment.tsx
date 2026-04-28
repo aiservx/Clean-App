@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import React, { useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
+import { useBooking, DEFAULT_SERVICE } from "@/store/booking";
 
 const PAYMENT_METHODS = [
-  { id: "1", title: "بطاقة ائتمانية / مدى", subtitle: "**** **** **** 4242", badge: "موصى بها", type: "visa", selected: true },
+  { id: "1", title: "بطاقة ائتمانية / مدى", subtitle: "**** **** **** 4242", badge: "موصى بها", type: "visa" },
   { id: "2", title: "Apple Pay", subtitle: "ادفع باستخدام Apple Pay", type: "apple" },
   { id: "3", title: "الدفع نقداً", subtitle: "ادفع نقداً عند استلام الخدمة", type: "cash" },
   { id: "4", title: "تمارا - دفع لاحقاً", subtitle: "قسم فاتورتك إلى 4 دفعات بدون فوائد", type: "tamara" },
@@ -16,7 +18,22 @@ const PAYMENT_METHODS = [
 export default function PaymentScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const [selectedMethod, setSelectedMethod] = useState("1");
+  const booking = useBooking();
+  const selectedMethod = booking.paymentMethodId;
+  const setSelectedMethod = (id: string) => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
+    booking.setPaymentMethodId(id);
+  };
+
+  const service = booking.service ?? DEFAULT_SERVICE;
+  const totals = useMemo(() => {
+    const base = service.price;
+    const fee = 10;
+    const subtotal = base + fee;
+    const vat = Math.round(subtotal * 0.15 * 100) / 100;
+    const total = Math.round((subtotal + vat) * 100) / 100;
+    return { base, fee, subtotal, vat, total };
+  }, [service.price]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -47,7 +64,7 @@ export default function PaymentScreen() {
               <Image source={require("@/assets/images/illustration-wallet.png")} style={styles.walletImage} />
               <View style={styles.totalContent}>
                  <Text style={[styles.totalLabel, { color: colors.mutedForeground }]}>المبلغ الإجمالي</Text>
-                 <Text style={[styles.totalAmount, { color: colors.accent }]}>190 ر.س</Text>
+                 <Text style={[styles.totalAmount, { color: colors.accent }]}>{totals.total} ر.س</Text>
                  <View style={styles.lockRow}>
                     <Feather name="lock" size={12} color={colors.mutedForeground} />
                     <Text style={[styles.lockText, { color: colors.mutedForeground }]}>جميع المعاملات مشفرة وآمنة</Text>
@@ -117,31 +134,27 @@ export default function PaymentScreen() {
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.summaryHeader, { color: colors.foreground }]}>ملخص الطلب</Text>
           <View style={styles.summaryRow}>
-             <Text style={[styles.summaryValue, { color: colors.foreground }]}>150 ر.س</Text>
-             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>تنظيف منزل (3 غرف)</Text>
+             <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.base} ر.س</Text>
+             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>{service.title}</Text>
           </View>
           <View style={styles.summaryRow}>
-             <Text style={[styles.summaryValue, { color: colors.foreground }]}>30 ر.س</Text>
-             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>تنظيف إضافي: المطبخ</Text>
-          </View>
-          <View style={styles.summaryRow}>
-             <Text style={[styles.summaryValue, { color: colors.foreground }]}>10 ر.س</Text>
+             <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.fee} ر.س</Text>
              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>رسوم الخدمة</Text>
           </View>
-          
+
           <View style={[styles.dotDivider, { borderTopColor: colors.border }]} />
-          
+
           <View style={styles.summaryRow}>
-             <Text style={[styles.summaryValue, { color: colors.foreground }]}>190 ر.س</Text>
+             <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.subtotal} ر.س</Text>
              <Text style={[styles.summaryLabel, { color: colors.foreground }]}>المجموع الفرعي</Text>
           </View>
           <View style={styles.summaryRow}>
-             <Text style={[styles.summaryValue, { color: colors.foreground }]}>28.50 ر.س</Text>
+             <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.vat} ر.س</Text>
              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>ضريبة القيمة المضافة (15%)</Text>
           </View>
-          
+
           <View style={[styles.totalRow, { backgroundColor: colors.primaryLight + "30" }]}>
-             <Text style={[styles.totalValue, { color: colors.primary }]}>218.50 ر.س</Text>
+             <Text style={[styles.totalValue, { color: colors.primary }]}>{totals.total} ر.س</Text>
              <Text style={[styles.totalLabel, { color: colors.foreground }]}>الإجمالي الكلي</Text>
           </View>
         </View>
@@ -171,7 +184,13 @@ export default function PaymentScreen() {
 
       {/* Sticky Bottom Bar */}
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity activeOpacity={0.9} onPress={() => router.replace("/(tabs)")}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => {
+            if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            router.replace("/tracking");
+          }}
+        >
           <LinearGradient
             colors={[colors.accent, colors.accentDark]}
             start={{ x: 0, y: 0 }}
@@ -181,7 +200,7 @@ export default function PaymentScreen() {
             <Feather name="chevron-left" size={20} color="#FFFFFF" />
             <View style={styles.confirmTextContainer}>
               <Text style={styles.confirmTitle}>تأكيد الدفع</Text>
-              <Text style={styles.confirmSubtitle}>218.50 ر.س | الإجمالي</Text>
+              <Text style={styles.confirmSubtitle}>{totals.total} ر.س | الإجمالي</Text>
             </View>
           </LinearGradient>
         </TouchableOpacity>

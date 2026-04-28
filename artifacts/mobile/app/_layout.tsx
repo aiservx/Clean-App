@@ -15,6 +15,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { I18nManager, Text } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { BookingProvider } from "@/store/booking";
 
 // Force RTL
 if (!I18nManager.isRTL) {
@@ -70,7 +71,9 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
-              <RootLayoutNav />
+              <BookingProvider>
+                <RootLayoutNav />
+              </BookingProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
