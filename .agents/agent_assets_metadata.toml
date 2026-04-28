@@ -1,0 +1,74 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "DGRQT1kILGoo9oxs9n8hI"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "cleaning app icon"
+
+[[generated]]
+id = "NbL_pfwGCncPQ_juTQPaC"
+uri = "file://artifacts/mobile/assets/images/illustration-bucket.png"
+type = "image"
+title = "cleaning bucket 3d"
+
+[[generated]]
+id = "bij4ofbinL_C73PzI6vAe"
+uri = "file://artifacts/mobile/assets/images/illustration-sofa.png"
+type = "image"
+title = "blue sofa room"
+
+[[generated]]
+id = "qCSVsHnZqeGE--6et0lUf"
+uri = "file://artifacts/mobile/assets/images/illustration-office.png"
+type = "image"
+title = "office desk 3d"
+
+[[generated]]
+id = "3EvFK-XQph4HuJxbjJVGf"
+uri = "file://artifacts/mobile/assets/images/illustration-vacuum.png"
+type = "image"
+title = "blue vacuum 3d"
+
+[[generated]]
+id = "UH7-o1MzSxDbQcGJR3LKi"
+uri = "file://artifacts/mobile/assets/images/illustration-armchair.png"
+type = "image"
+title = "beige armchair 3d"
+
+[[generated]]
+id = "LzHVqt_MoAcXwoInHIDxj"
+uri = "file://artifacts/mobile/assets/images/illustration-wallet.png"
+type = "image"
+title = "blue wallet payment"
+
+[[generated]]
+id = "J_dnnc3qjzoh8rMcKiiK4"
+uri = "file://artifacts/mobile/assets/images/illustration-referral.png"
+type = "image"
+title = "friends gift referral"
+
+[[generated]]
+id = "SaVgBAmnrXWyYPXwv0fRy"
+uri = "file://artifacts/mobile/assets/images/cleaner-fatima.png"
+type = "image"
+title = "cleaner avatar fatima"
+
+[[generated]]
+id = "3x8sloXGAJVOelyNCeXb9"
+uri = "file://artifacts/mobile/assets/images/cleaner-sara.png"
+type = "image"
+title = "cleaner avatar sara"
+
+[[generated]]
+id = "09I3SvPIXLpM0rgkyZDX_"
+uri = "file://artifacts/mobile/assets/images/cleaner-noura.png"
+type = "image"
+title = "cleaner noura avatar"
+
+[[generated]]
+id = "xGrvJAldyPLJjZsF6Yt4h"
+uri = "file://artifacts/mobile/assets/images/user-ahmed.png"
+type = "image"
+title = "user ahmed avatar"

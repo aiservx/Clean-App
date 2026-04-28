@@ -1,0 +1,231 @@
+Build a COMPLETE production-ready mobile application that matches the attached UI screens EXACTLY pixel-by-pixel with no redesign, no creative interpretation, no visual deviation, and no alternative styling.
+
+IMPORTANT:
+The attached images are the single source of truth.
+You must replicate:
+- Layout structure
+- Typography hierarchy
+- Colors
+- Gradients
+- Spacing
+- Shadows
+- Rounded corners
+- Icon positions
+- Button sizes
+- Card styles
+- Navigation bars
+- UI proportions
+- Arabic RTL alignment
+- Element padding/margins
+- Visual hierarchy
+- Animations/transitions
+- Overall premium clean aesthetic
+
+DO NOT:
+- Change the design language
+- Replace components with different styles
+- Simplify layouts
+- Add your own UI ideas
+- Modify colors
+- Change spacing
+- Use different typography styles
+- Create “similar” screens
+
+The goal is:
+A 1:1 exact clone of the provided screens.
+
+==================================================
+APP TYPE
+==================================================
+
+Cleaning services mobile app similar to Uber/Careem service flow.
+
+Language:
+Arabic RTL بالكامل
+
+Design Style:
+Modern minimal premium UI
+Soft gradients
+Clean white backgrounds
+Smooth shadows
+Large rounded corners
+Elegant modern typography
+Professional Saudi/Gulf market aesthetic
+
+==================================================
+TECH STACK
+==================================================
+
+Use:
+- React Native with Expo
+OR Flutter (preferred if better for pixel-perfect UI)
+
+Requirements:
+- Fully responsive
+- RTL support
+- Reusable components
+- Clean architecture
+- Smooth navigation
+- Production-ready structure
+
+Use:
+- React Navigation / GoRouter
+- State management
+- Modular folders
+- Scalable architecture
+
+==================================================
+SCREENS TO BUILD EXACTLY LIKE IMAGES
+==================================================
+
+1. Home Screen
+- Live map section
+- Current location pin
+- “Book Cleaning Now” CTA
+- Categories horizontal section
+- Bottom navigation
+- Greeting area
+- Soft blue gradients
+
+2. Services Selection Screen
+- Grid cards
+- Home cleaning
+- Office cleaning
+- Deep cleaning
+- Sofa cleaning
+- Premium rounded cards
+- Exact spacing from design
+
+3. Booking Screen
+- Date selector
+- Time selector
+- Cleaner selection cards
+- Ratings
+- Price estimation section
+- Confirm booking button
+
+4. Tracking Screen
+- Uber-like live tracking map
+- Moving cleaner location
+- ETA section
+- Cleaner profile card
+- Call button
+- Chat button
+- Booking status timeline
+
+5. Profile Screen
+- User information
+- Saved addresses
+- Payment methods
+- Order history
+- Settings list
+- Membership/premium section
+
+6. Rating Screen
+- 5-star rating system
+- Cleaner image/profile
+- Feedback text area
+- Service tags
+- Submit rating button
+
+7. Offers & Promotions Screen
+- Promotional banners
+- Seasonal offers
+- Referral rewards
+- Discount cards
+- Coupon sections
+- Bright marketing cards
+
+8. Payment Screen
+- Payment methods
+- Credit card
+- Apple Pay
+- Cash payment
+- Order summary
+- VAT calculation
+- Confirm payment button
+
+==================================================
+DESIGN REQUIREMENTS
+==================================================
+
+Typography:
+- Clean Arabic font
+- Use Cairo or IBM Plex Arabic
+- Exact typography hierarchy like screenshots
+
+Colors:
+- Maintain exact color palette from screenshots
+- White backgrounds
+- Blue gradient primary buttons
+- Soft pastel support colors
+
+Effects:
+- Soft shadows
+- Glassmorphism/light blur where applicable
+- Rounded cards
+- Smooth gradients
+
+Spacing:
+- Follow screenshots EXACTLY
+- Do not compress layouts
+- Do not over-space elements
+
+Icons:
+- Modern outlined icons
+- Match style from screenshots
+
+==================================================
+FUNCTIONALITY
+==================================================
+
+Implement realistic frontend interactions:
+- Navigation between screens
+- Select dates/times
+- Toggle payment methods
+- Select ratings
+- Expand/collapse cards
+- Interactive bottom navigation
+
+Maps:
+Use Google Maps integration or mocked maps similar to screenshots.
+
+==================================================
+RTL SUPPORT
+==================================================
+
+The ENTIRE application must be:
+- Right-to-left
+- Arabic-first
+- Correct Arabic spacing/alignment
+- Proper mirrored navigation
+
+==================================================
+CODE QUALITY
+==================================================
+
+Generate:
+- Clean scalable code
+- Reusable UI components
+- Organized folders
+- Assets management
+- Constants for colors/fonts
+- Theme support
+
+==================================================
+FINAL OUTPUT
+==================================================
+
+Provide:
+- Complete source code
+- All screens connected
+- Pixel-perfect implementation
+- Ready to run immediately
+- No placeholders
+- No missing screens
+
+Again:
+This is NOT inspiration.
+This is NOT a similar design.
+This is an EXACT UI recreation of the attached screenshots.
+Treat the screenshots as final approved UI designs that must be cloned precisely.
