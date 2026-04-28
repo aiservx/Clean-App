@@ -119,6 +119,7 @@ function ClassicTabLayout() {
         name="offers"
         options={{
           href: null,
+          tabBarStyle: { display: "none" },
         }}
       />
     </Tabs>

@@ -22,8 +22,8 @@ const SERVICES_GRID: (ServiceItem & { category: string })[] = [
     id: "1",
     title: "تنظيف منازل",
     price: 85,
-    desc: "تنظيف دوري شامل للمنزل",
-    image: require("@/assets/images/illustration-sofa.png"),
+    desc: "خدمة تنظيف شاملة لجميع أرجاء المنزل",
+    image: require("@/assets/images/service-home-1.jpg"),
     color: "#16C47F",
     category: "homes",
   },
@@ -31,8 +31,8 @@ const SERVICES_GRID: (ServiceItem & { category: string })[] = [
     id: "2",
     title: "تنظيف عميق",
     price: 150,
-    desc: "تنظيف تفصيلي دقيق لكل الزوايا",
-    image: require("@/assets/images/illustration-vacuum.png"),
+    desc: "تنظيف عميق وتعقيم شامل للمساحات",
+    image: require("@/assets/images/service-deep-2.jpg"),
     color: "#2F80ED",
     category: "homes",
   },
@@ -40,8 +40,8 @@ const SERVICES_GRID: (ServiceItem & { category: string })[] = [
     id: "3",
     title: "تنظيف مكاتب",
     price: 100,
-    desc: "بيئة عمل نظيفة ومنظمة",
-    image: require("@/assets/images/illustration-office.png"),
+    desc: "خدمة تنظيف احترافية للمكاتب والشركات",
+    image: require("@/assets/images/service-office-3.jpg"),
     color: "#F59E0B",
     category: "offices",
   },
@@ -49,8 +49,8 @@ const SERVICES_GRID: (ServiceItem & { category: string })[] = [
     id: "4",
     title: "تنظيف كنب",
     price: 120,
-    desc: "إزالة البقع والروائح الكريهة",
-    image: require("@/assets/images/illustration-armchair.png"),
+    desc: "تنظيف وتعقيم الكنب والسجاد بأحدث الأجهزة",
+    image: require("@/assets/images/service-sofa-4.jpg"),
     color: "#EC4899",
     category: "furniture",
   },
@@ -58,8 +58,8 @@ const SERVICES_GRID: (ServiceItem & { category: string })[] = [
     id: "5",
     title: "تنظيف مطابخ",
     price: 110,
-    desc: "تعقيم وتنظيف الأجهزة والأسطح",
-    image: require("@/assets/images/illustration-bucket.png"),
+    desc: "تنظيف وتطهير المطابخ وإزالة الدهون",
+    image: require("@/assets/images/service-kitchen-5.jpg"),
     color: "#8B5CF6",
     category: "homes",
   },
@@ -67,8 +67,8 @@ const SERVICES_GRID: (ServiceItem & { category: string })[] = [
     id: "6",
     title: "تنظيف فلل",
     price: 250,
-    desc: "خدمة متكاملة للمساحات الكبيرة",
-    image: require("@/assets/images/illustration-sofa.png"),
+    desc: "خدمة تنظيف متكاملة للفلل والمنازل الكبيرة",
+    image: require("@/assets/images/service-villa-6.jpg"),
     color: "#16C47F",
     category: "homes",
   },
@@ -156,11 +156,16 @@ export default function ServicesScreen() {
               onPress={() => onSelectService(service)}
               activeOpacity={0.85}
             >
-              <View style={[styles.categoryIndicator, { backgroundColor: service.color + "20" }]}>
-                <View style={[styles.categoryIndicatorDot, { backgroundColor: service.color }]} />
+              <View style={styles.imageWrap}>
+                <Image source={service.image} style={styles.serviceImage} resizeMode="cover" />
+                <View style={[styles.categoryIndicator, { backgroundColor: "#FFFFFF" }]}>
+                  <Feather
+                    name={service.category === "homes" ? "home" : service.category === "offices" ? "briefcase" : "package"}
+                    size={12}
+                    color={service.color}
+                  />
+                </View>
               </View>
-
-              <Image source={service.image} style={styles.serviceImage} resizeMode="contain" />
 
               <View style={styles.cardContent}>
                 <Text style={[styles.serviceTitle, { color: colors.foreground }]}>{service.title}</Text>
@@ -241,19 +246,31 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
+  imageWrap: {
+    width: "100%",
+    height: 110,
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 12,
+    position: "relative",
+    backgroundColor: "#F1F5F9",
+  },
   categoryIndicator: {
     position: "absolute",
-    top: 12,
-    left: 12,
-    width: 24,
-    height: 24,
-    borderRadius: 8,
+    top: 8,
+    left: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  categoryIndicatorDot: { width: 6, height: 6, borderRadius: 3 },
-  serviceImage: { width: "100%", height: 100, marginBottom: 12 },
+  serviceImage: { width: "100%", height: "100%" },
   cardContent: { alignItems: "flex-end" },
   serviceTitle: { fontFamily: "Cairo_700Bold", fontSize: 15, marginBottom: 4 },
   serviceDesc: { fontFamily: "Cairo_400Regular", fontSize: 11, marginBottom: 12 },

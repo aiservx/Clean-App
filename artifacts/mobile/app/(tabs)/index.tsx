@@ -29,8 +29,11 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-          <TouchableOpacity style={styles.iconCircle}>
-            <Feather name="bell" size={20} color={colors.foreground} />
+          <TouchableOpacity style={styles.iconCircle} onPress={() => router.push("/(tabs)/offers")}>
+            <View>
+              <Feather name="gift" size={20} color={colors.primary} />
+              <View style={[styles.notifDot, { backgroundColor: "#EF4444" }]} />
+            </View>
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={[styles.greeting, { color: colors.foreground }]}>👋 مرحباً، أحمد</Text>
@@ -40,6 +43,29 @@ export default function HomeScreen() {
             <Feather name="menu" size={20} color={colors.foreground} />
           </TouchableOpacity>
         </View>
+
+        {/* Offers Banner -> entry to offers screen */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => router.push("/(tabs)/offers")}
+          style={styles.offersBanner}
+        >
+          <LinearGradient
+            colors={[colors.primary, colors.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.offersBannerInner}
+          >
+            <Feather name="chevron-left" size={20} color="#FFFFFF" />
+            <View style={styles.offersBannerContent}>
+              <Text style={styles.offersBannerTitle}>عروض حصرية بانتظارك</Text>
+              <Text style={styles.offersBannerSub}>خصم حتى 30% + كوبونات مجانية</Text>
+            </View>
+            <View style={styles.offersBannerIcon}>
+              <Feather name="gift" size={22} color="#FFFFFF" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
 
         {/* Search Bar */}
         <View style={styles.searchRow}>
@@ -203,6 +229,57 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontFamily: "Cairo_400Regular",
     fontSize: 13,
+  },
+  notifDot: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#FFFFFF",
+  },
+  offersBanner: {
+    marginHorizontal: 24,
+    marginBottom: 20,
+    borderRadius: 20,
+    overflow: "hidden",
+    shadowColor: "#16C47F",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  offersBannerInner: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  offersBannerIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  offersBannerContent: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
+  offersBannerTitle: {
+    color: "#FFFFFF",
+    fontFamily: "Cairo_700Bold",
+    fontSize: 15,
+  },
+  offersBannerSub: {
+    color: "rgba(255,255,255,0.9)",
+    fontFamily: "Cairo_500Medium",
+    fontSize: 12,
+    marginTop: 2,
   },
   searchRow: {
     flexDirection: "row",
