@@ -134,7 +134,7 @@ export default function OffersScreen() {
         </View>
 
         {/* Seasonal Offers */}
-        <View style={s.secHeader}>
+        {(activeFilter === "all" || activeFilter === "seasonal") && <View style={s.secHeader}>
           <TouchableOpacity style={s.seeAllRow}>
             <Feather name="chevron-left" size={16} color="#3B82F6" />
             <Text style={s.seeAll}>عرض الكل</Text>
@@ -171,9 +171,10 @@ export default function OffersScreen() {
               </View>
             </View>
           ))}
-        </ScrollView>
+        </ScrollView>}
 
         {/* Referral / Invite Friends */}
+        {(activeFilter === "all" || activeFilter === "referral") && <>
         <View style={s.secHeader}>
           <View />
           <View style={s.secTitleRow}>
@@ -202,8 +203,10 @@ export default function OffersScreen() {
             </View>
           </View>
         </View>
+        </>}
 
         {/* Premium Discounts */}
+        {(activeFilter === "all" || activeFilter === "discounts") && <>
         <View style={s.secHeader}>
           <View />
           <View style={s.secTitleRow}>
@@ -226,6 +229,7 @@ export default function OffersScreen() {
             </View>
           ))}
         </View>
+        </>}
       </ScrollView>
     </View>
   );

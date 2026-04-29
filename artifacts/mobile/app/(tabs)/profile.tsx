@@ -10,12 +10,6 @@ import GuestEmpty from "@/components/GuestEmpty";
 import { supabase } from "@/lib/supabase";
 import { useI18n } from "@/lib/i18n";
 
-const FALLBACK_ADDRESSES = [
-  { id: "a1", title: "المنزل", address: "شارع الملك فهد، حي الروضة، الرياض 12311", is_default: true, icon: "map-pin", iconColor: "#16C47F", iconBg: "#DCFCE7" },
-  { id: "a2", title: "العمل", address: "طريق الأمير سلطان، حي العليا، الرياض 12221", is_default: false, icon: "briefcase", iconColor: "#3B82F6", iconBg: "#DBEAFE" },
-  { id: "a3", title: "منزل العائلة", address: "حي النرجس، شارع رقم 15، الرياض 13336", is_default: false, icon: "home", iconColor: "#8B5CF6", iconBg: "#EDE9FE" },
-];
-
 const MENU = [
   { id: "pay", title: "طرق الدفع", sub: "إدارة بطاقاتك وطرق الدفع", icon: "credit-card", color: "#16C47F", bg: "#DCFCE7", path: "/payment-methods" },
   { id: "orders", title: "سجل الطلبات", sub: "عرض طلباتك السابقة وحالتها", icon: "calendar", color: "#3B82F6", bg: "#DBEAFE", path: "/(tabs)/bookings" },
