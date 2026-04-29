@@ -40,6 +40,7 @@ export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [roleOpen, setRoleOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   const handleScroll = (event: any) => {
@@ -53,7 +54,7 @@ export default function OnboardingScreen() {
     if (activeIndex < ONBOARDING_DATA.length - 1) {
       scrollRef.current?.scrollTo({ x: (activeIndex + 1) * width, animated: true });
     } else {
-      router.replace("/(tabs)");
+      setRoleOpen(true);
     }
   };
 
@@ -66,7 +67,12 @@ export default function OnboardingScreen() {
 
   const handleSkip = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.replace("/(tabs)");
+    setRoleOpen(true);
+  };
+
+  const goRole = (role: "user" | "provider") => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    router.replace(role === "provider" ? "/(provider)" : "/(tabs)");
   };
 
   return (
@@ -161,6 +167,42 @@ export default function OnboardingScreen() {
           </View>
         ))}
       </ScrollView>
+
+      {roleOpen && (
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card, paddingBottom: insets.bottom + 20 }]}>
+            <View style={styles.modalHandle} />
+            <Text style={[styles.modalTitle, { color: colors.foreground }]}>كيف تريد استخدام التطبيق؟</Text>
+            <Text style={[styles.modalSub, { color: colors.mutedForeground }]}>اختر نوع الحساب المناسب لك</Text>
+
+            <TouchableOpacity onPress={() => goRole("user")} style={[styles.roleCard, { borderColor: colors.primary, backgroundColor: colors.primaryLight }]} activeOpacity={0.85}>
+              <Feather name="chevron-left" size={20} color={colors.primary} />
+              <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 12 }}>
+                <Text style={[styles.roleT, { color: colors.foreground }]}>أحتاج خدمة تنظيف</Text>
+                <Text style={[styles.roleS, { color: colors.mutedForeground }]}>احجز عمال نظافة محترفين بسهولة</Text>
+              </View>
+              <View style={[styles.roleI, { backgroundColor: colors.primary }]}>
+                <Feather name="user" size={22} color="#FFF" />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => goRole("provider")} style={[styles.roleCard, { borderColor: colors.accent, backgroundColor: colors.accentLight }]} activeOpacity={0.85}>
+              <Feather name="chevron-left" size={20} color={colors.accent} />
+              <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 12 }}>
+                <Text style={[styles.roleT, { color: colors.foreground }]}>أنا مزود خدمة</Text>
+                <Text style={[styles.roleS, { color: colors.mutedForeground }]}>استقبل طلبات التنظيف وحقق دخلاً</Text>
+              </View>
+              <View style={[styles.roleI, { backgroundColor: colors.accent }]}>
+                <MaterialCommunityIcons name="briefcase-check" size={22} color="#FFF" />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setRoleOpen(false)} style={{ marginTop: 8, alignItems: "center" }}>
+              <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground, fontSize: 12 }}>إلغاء</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -173,11 +215,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     zIndex: 10,
   },
   skipText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 16,
   },
   brandContainer: {
@@ -186,7 +228,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   brandText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 20,
   },
   homeIconContainer: {
@@ -238,12 +280,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   smallTitle: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 16,
     marginBottom: -4,
   },
   largeTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 32,
   },
   descriptionRow: {
@@ -261,7 +303,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     flex: 1,
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 15,
     textAlign: "right",
     lineHeight: 24,
@@ -272,7 +314,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-end",
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 14,
   },
   dot: {
     width: 8,
@@ -284,7 +326,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: "row",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingBottom: 24,
     alignItems: "center",
     gap: 12,
@@ -298,7 +340,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   prevBtnText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 16,
   },
   prevBtnPlaceholder: {
@@ -315,7 +357,16 @@ const styles = StyleSheet.create({
   },
   nextBtnText: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 16,
   },
+  modalOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end", zIndex: 100 },
+  modalCard: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, gap: 12 },
+  modalHandle: { width: 50, height: 4, borderRadius: 2, backgroundColor: "#CBD5E1", alignSelf: "center", marginBottom: 8 },
+  modalTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18, textAlign: "center" },
+  modalSub: { fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "center", marginBottom: 8 },
+  roleCard: { flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 16, borderWidth: 1.5 },
+  roleI: { width: 50, height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  roleT: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
+  roleS: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
 });

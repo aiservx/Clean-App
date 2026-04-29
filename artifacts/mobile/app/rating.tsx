@@ -138,8 +138,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
     gap: 12,
   },
   iconCircle: {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   mainCard: {
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     padding: 32,
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 18,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.05,
@@ -179,20 +179,20 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 20,
+    marginBottom: 12,
     borderWidth: 4,
     borderColor: "#FFFFFF",
   },
   name: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
     marginBottom: 8,
   },
   subtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 14,
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 14,
   },
   starsRow: {
     flexDirection: "row-reverse",
@@ -200,15 +200,15 @@ const styles = StyleSheet.create({
   },
   ratingLabel: {
     marginTop: 12,
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   commentSection: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
+    paddingHorizontal: 16,
+    marginBottom: 14,
   },
   sectionTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 16,
     marginBottom: 16,
     textAlign: "right",
@@ -217,12 +217,12 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 20,
     padding: 16,
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 14,
     borderWidth: 1,
   },
   tagsSection: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   tagsRow: {
     flexDirection: "row-reverse",
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   tagText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 12,
   },
   bottomBar: {
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingTop: 16,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 32,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 16,
   },
 });

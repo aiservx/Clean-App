@@ -45,12 +45,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 8,
   },
   text: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 16,
   },
 });

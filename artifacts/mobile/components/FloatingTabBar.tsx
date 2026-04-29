@@ -8,63 +8,69 @@ import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
 
-type ActiveKey = "home" | "profile" | "bookings" | "chat" | "services" | "offers" | null;
+type ActiveKey =
+  | "home"
+  | "profile"
+  | "bookings"
+  | "chat"
+  | "services"
+  | "offers"
+  | null;
 
 type Props = {
   active?: ActiveKey;
+  variant?: "user" | "provider";
 };
 
-export default function FloatingTabBar({ active = null }: Props) {
+export default function FloatingTabBar({ active = null, variant = "user" }: Props) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
   const goto = (path: string) => {
-    if (Platform.OS !== "web") {
-      Haptics.selectionAsync();
-    }
+    if (Platform.OS !== "web") Haptics.selectionAsync();
     router.push(path as any);
   };
 
-  const items: { key: Exclude<ActiveKey, null | "services" | "offers">; label: string; icon: any; path: string }[] = [
+  const userItems: { key: any; label: string; icon: any; path: string }[] = [
     { key: "profile", label: "الملف الشخصي", icon: "user", path: "/(tabs)/profile" },
     { key: "bookings", label: "حجوزاتي", icon: "calendar", path: "/(tabs)/bookings" },
     { key: "chat", label: "الرسائل", icon: "message-circle", path: "/(tabs)/chat" },
     { key: "home", label: "الرئيسية", icon: "home", path: "/(tabs)" },
   ];
 
+  const providerItems: { key: any; label: string; icon: any; path: string }[] = [
+    { key: "profile", label: "الملف الشخصي", icon: "user", path: "/(provider)/profile" },
+    { key: "wallet", label: "المحفظة", icon: "credit-card", path: "/(provider)/wallet" },
+    { key: "chat", label: "الرسائل", icon: "message-circle", path: "/(provider)/chat" },
+    { key: "home", label: "طلباتي", icon: "home", path: "/(provider)" },
+  ];
+
+  const items = variant === "provider" ? providerItems : userItems;
+  const ctaPath = variant === "provider" ? "/(provider)/bookings" : "/services";
+  const ctaLabel = variant === "provider" ? "الطلبات" : "احجز الآن";
+
   return (
     <View
       style={[
         styles.container,
-        { paddingBottom: insets.bottom + 10, backgroundColor: colors.card },
+        { paddingBottom: insets.bottom + 8, backgroundColor: colors.card },
       ]}
     >
-      {/* Profile + Bookings (RTL: rightmost two) */}
       {items.slice(0, 2).map((it) => (
         <TouchableOpacity key={it.key} style={styles.tabItem} onPress={() => goto(it.path)} activeOpacity={0.7}>
-          <Feather
-            name={it.icon}
-            size={22}
-            color={active === it.key ? colors.primary : colors.mutedForeground}
-          />
-          <Text
-            style={[
-              styles.tabLabel,
-              { color: active === it.key ? colors.primary : colors.mutedForeground },
-            ]}
-          >
+          <Feather name={it.icon} size={20} color={active === it.key ? colors.primary : colors.mutedForeground} />
+          <Text style={[styles.tabLabel, { color: active === it.key ? colors.primary : colors.mutedForeground }]}>
             {it.label}
           </Text>
         </TouchableOpacity>
       ))}
 
-      {/* Floating central CTA */}
       <TouchableOpacity
         style={styles.floatingBtnWrap}
         activeOpacity={0.9}
         onPress={() => {
           if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          router.push("/services");
+          router.push(ctaPath as any);
         }}
       >
         <LinearGradient
@@ -73,27 +79,26 @@ export default function FloatingTabBar({ active = null }: Props) {
           end={{ x: 1, y: 1 }}
           style={styles.floatingBtn}
         >
-          <MaterialCommunityIcons name="broom" size={28} color="#FFFFFF" />
+          <MaterialCommunityIcons
+            name={variant === "provider" ? "briefcase-check" : "broom"}
+            size={26}
+            color="#FFFFFF"
+          />
         </LinearGradient>
-        <Text style={[styles.floatingLabel, { color: active === "services" ? colors.primary : colors.mutedForeground }]}>
-          احجز الآن
+        <Text
+          style={[
+            styles.floatingLabel,
+            { color: active === "services" || active === "bookings" ? colors.primary : colors.mutedForeground },
+          ]}
+        >
+          {ctaLabel}
         </Text>
       </TouchableOpacity>
 
-      {/* Chat + Home (RTL: leftmost two) */}
       {items.slice(2, 4).map((it) => (
         <TouchableOpacity key={it.key} style={styles.tabItem} onPress={() => goto(it.path)} activeOpacity={0.7}>
-          <Feather
-            name={it.icon}
-            size={22}
-            color={active === it.key ? colors.primary : colors.mutedForeground}
-          />
-          <Text
-            style={[
-              styles.tabLabel,
-              { color: active === it.key ? colors.primary : colors.mutedForeground },
-            ]}
-          >
+          <Feather name={it.icon} size={20} color={active === it.key ? colors.primary : colors.mutedForeground} />
+          <Text style={[styles.tabLabel, { color: active === it.key ? colors.primary : colors.mutedForeground }]}>
             {it.label}
           </Text>
         </TouchableOpacity>
@@ -108,7 +113,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingTop: 12,
+    paddingTop: 10,
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-around",
@@ -119,26 +124,13 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 10,
   },
-  tabItem: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-  },
-  tabLabel: {
-    fontFamily: "Cairo_500Medium",
-    fontSize: 10,
-    marginTop: 4,
-  },
-  floatingBtnWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: 80,
-    top: -20,
-  },
+  tabItem: { alignItems: "center", justifyContent: "center", flex: 1 },
+  tabLabel: { fontFamily: "Tajawal_500Medium", fontSize: 9.5, marginTop: 3 },
+  floatingBtnWrap: { alignItems: "center", justifyContent: "center", width: 80, top: -22 },
   floatingBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#16C47F",
@@ -147,9 +139,5 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
-  floatingLabel: {
-    fontFamily: "Cairo_600SemiBold",
-    fontSize: 10,
-    marginTop: 6,
-  },
+  floatingLabel: { fontFamily: "Tajawal_700Bold", fontSize: 9.5, marginTop: 5 },
 });

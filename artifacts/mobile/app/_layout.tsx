@@ -1,10 +1,9 @@
 import {
-  Cairo_400Regular,
-  Cairo_500Medium,
-  Cairo_600SemiBold,
-  Cairo_700Bold,
-  useFonts,
-} from "@expo-google-fonts/cairo";
+  Tajawal_400Regular,
+  Tajawal_500Medium,
+  Tajawal_700Bold,
+} from "@expo-google-fonts/tajawal";
+import { useFonts } from "expo-font";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -17,13 +16,11 @@ import { I18nManager, Text } from "react-native";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BookingProvider } from "@/store/booking";
 
-// Force RTL
 if (!I18nManager.isRTL) {
   I18nManager.allowRTL(true);
   I18nManager.forceRTL(true);
 }
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
@@ -32,31 +29,49 @@ function RootLayoutNav() {
   return (
     <Stack initialRouteName="onboarding" screenOptions={{ headerBackTitle: "Back", headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(provider)" options={{ headerShown: false }} />
       <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       <Stack.Screen name="services" options={{ headerShown: false }} />
       <Stack.Screen name="booking" options={{ headerShown: false }} />
       <Stack.Screen name="tracking" options={{ headerShown: false }} />
       <Stack.Screen name="rating" options={{ headerShown: false }} />
       <Stack.Screen name="payment" options={{ headerShown: false }} />
+      <Stack.Screen name="search" options={{ headerShown: false }} />
+      <Stack.Screen name="notifications" options={{ headerShown: false }} />
+      <Stack.Screen name="favorites" options={{ headerShown: false }} />
+      <Stack.Screen name="provider/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="address-form" options={{ headerShown: false }} />
+      <Stack.Screen name="payment-methods" options={{ headerShown: false }} />
+      <Stack.Screen name="payment-form" options={{ headerShown: false }} />
+      <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+      <Stack.Screen name="settings" options={{ headerShown: false }} />
+      <Stack.Screen name="help" options={{ headerShown: false }} />
+      <Stack.Screen name="referrals" options={{ headerShown: false }} />
+      <Stack.Screen name="chat-detail" options={{ headerShown: false }} />
+      <Stack.Screen name="booking-details" options={{ headerShown: false }} />
+      <Stack.Screen name="provider-edit" options={{ headerShown: false }} />
+      <Stack.Screen name="provider-hours" options={{ headerShown: false }} />
+      <Stack.Screen name="withdraw" options={{ headerShown: false }} />
+      <Stack.Screen name="provider-notifications" options={{ headerShown: false }} />
+      <Stack.Screen name="provider-referrals" options={{ headerShown: false }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Cairo_400Regular,
-    Cairo_500Medium,
-    Cairo_600SemiBold,
-    Cairo_700Bold,
+    Tajawal_400Regular,
+    Tajawal_500Medium,
+    Tajawal_700Bold,
+    Tajawal_600SemiBold: Tajawal_500Medium,
   });
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
-      // Apply Cairo as default font via a Text default
       const TextAny = Text as any;
       TextAny.defaultProps = TextAny.defaultProps || {};
       TextAny.defaultProps.style = [
-        { fontFamily: "Cairo_400Regular", writingDirection: "rtl" },
+        { fontFamily: "Tajawal_400Regular", writingDirection: "rtl" },
         TextAny.defaultProps.style,
       ];
       SplashScreen.hideAsync();

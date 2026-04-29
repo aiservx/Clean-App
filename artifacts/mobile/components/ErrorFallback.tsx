@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 16,
     borderRadius: 8,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     minWidth: 200,
     shadowColor: "#000",
     shadowOffset: {

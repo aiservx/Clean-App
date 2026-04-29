@@ -115,7 +115,7 @@ export default function OffersScreen() {
               </View>
               <Text style={[styles.heroSubtitle, { color: "#475569" }]}>على أول طلب لك</Text>
               <Text style={[styles.heroCodeLine, { color: "#475569" }]}>
-                استخدم الكود: <Text style={{ fontFamily: "Cairo_700Bold", color: colors.primary }}>WELCOME20</Text>
+                استخدم الكود: <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary }}>WELCOME20</Text>
               </Text>
             </View>
           </View>
@@ -244,7 +244,7 @@ export default function OffersScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>كوبونات مميزة</Text>
         </View>
 
-        <View style={{ paddingHorizontal: 24, gap: 12 }}>
+        <View style={{ paddingHorizontal: 16, gap: 12 }}>
           {COUPONS.map((c) => (
             <View key={c.id} style={[styles.couponCard, { backgroundColor: colors.card }]}>
               {/* Right: title and meta */}
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   iconCircle: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  headerTitle: { fontFamily: "Cairo_700Bold", fontSize: 17 },
+  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
 
   // Hero
   heroWrap: { paddingHorizontal: 16, marginBottom: 18 },
@@ -353,11 +353,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     gap: 4,
   },
-  heroKhasm: { fontFamily: "Cairo_700Bold", fontSize: 28, lineHeight: 32 },
-  heroDiscount: { fontFamily: "Cairo_700Bold", fontSize: 36, lineHeight: 40 },
-  heroPercent: { fontFamily: "Cairo_700Bold", fontSize: 22, color: "#0F172A", marginBottom: 6 },
-  heroSubtitle: { fontFamily: "Cairo_500Medium", fontSize: 13, marginTop: 4 },
-  heroCodeLine: { fontFamily: "Cairo_500Medium", fontSize: 12, marginTop: 8 },
+  heroKhasm: { fontFamily: "Tajawal_700Bold", fontSize: 28, lineHeight: 32 },
+  heroDiscount: { fontFamily: "Tajawal_700Bold", fontSize: 36, lineHeight: 40 },
+  heroPercent: { fontFamily: "Tajawal_700Bold", fontSize: 22, color: "#0F172A", marginBottom: 6 },
+  heroSubtitle: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginTop: 4 },
+  heroCodeLine: { fontFamily: "Tajawal_500Medium", fontSize: 12, marginTop: 8 },
   dotsRow: { flexDirection: "row", justifyContent: "center", gap: 5, marginTop: 12 },
   pageDot: { height: 6, borderRadius: 3 },
 
@@ -388,19 +388,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
-  statValue: { fontFamily: "Cairo_700Bold", marginBottom: 2 },
-  statLabel: { fontFamily: "Cairo_500Medium", fontSize: 11, textAlign: "center" },
+  statValue: { fontFamily: "Tajawal_700Bold", marginBottom: 2 },
+  statLabel: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "center" },
 
   // Section header
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     marginBottom: 12,
   },
-  sectionTitle: { fontFamily: "Cairo_700Bold", fontSize: 16 },
-  seeAll: { fontFamily: "Cairo_600SemiBold", fontSize: 13 },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
+  seeAll: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
 
   // Seasonal cards
   seasonalRow: {
@@ -419,8 +419,8 @@ const styles = StyleSheet.create({
   },
   seasonalDecorationMoon: { position: "absolute", left: 12, top: 12 },
   seasonalDecorationSummer: { position: "absolute", left: 12, top: 12 },
-  seasonalTitle: { fontFamily: "Cairo_700Bold", fontSize: 14, textAlign: "right", marginBottom: 4 },
-  seasonalSubtitle: { fontFamily: "Cairo_400Regular", fontSize: 11, textAlign: "right", marginBottom: 10, lineHeight: 16 },
+  seasonalTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 4 },
+  seasonalSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 11, textAlign: "right", marginBottom: 10, lineHeight: 16 },
   seasonalDiscountPill: {
     alignSelf: "flex-end",
     paddingHorizontal: 10,
@@ -428,13 +428,13 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     marginBottom: 12,
   },
-  seasonalDiscountText: { color: "#FFFFFF", fontFamily: "Cairo_700Bold", fontSize: 11 },
-  countdownLabel: { fontFamily: "Cairo_500Medium", fontSize: 10, textAlign: "right", marginBottom: 4 },
+  seasonalDiscountText: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  countdownLabel: { fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right", marginBottom: 4 },
   countdownRow: { flexDirection: "row-reverse", alignItems: "center", gap: 4 },
   countdownBox: { alignItems: "center", minWidth: 22 },
-  countdownNum: { fontFamily: "Cairo_700Bold", fontSize: 14 },
-  countdownUnit: { fontFamily: "Cairo_400Regular", fontSize: 9 },
-  countdownSep: { fontFamily: "Cairo_700Bold", fontSize: 14 },
+  countdownNum: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
+  countdownUnit: { fontFamily: "Tajawal_400Regular", fontSize: 9 },
+  countdownSep: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
 
   // Coupons
   couponCard: {
@@ -453,9 +453,9 @@ const styles = StyleSheet.create({
     minHeight: 96,
   },
   couponContent: { flex: 1, alignItems: "flex-end", justifyContent: "center", gap: 6 },
-  couponTitle: { fontFamily: "Cairo_700Bold", fontSize: 13, textAlign: "right" },
+  couponTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
   couponMetaRow: { flexDirection: "row-reverse", alignItems: "center", gap: 5 },
-  couponMeta: { fontFamily: "Cairo_400Regular", fontSize: 11 },
+  couponMeta: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   couponCodeColumn: {
     alignItems: "center",
     justifyContent: "center",
@@ -470,8 +470,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderStyle: "dashed",
   },
-  couponCodeText: { fontFamily: "Cairo_700Bold", fontSize: 13, letterSpacing: 0.5 },
-  copyCodeText: { fontFamily: "Cairo_600SemiBold", fontSize: 11 },
+  couponCodeText: { fontFamily: "Tajawal_700Bold", fontSize: 13, letterSpacing: 0.5 },
+  copyCodeText: { fontFamily: "Tajawal_600SemiBold", fontSize: 11 },
   couponTag: {
     position: "absolute",
     left: 0,
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   },
   couponTagText: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 13,
     textAlign: "center",
   },
@@ -519,9 +519,9 @@ const styles = StyleSheet.create({
     minHeight: 130,
   },
   inviteContent: { flex: 1, alignItems: "flex-end" },
-  inviteTitle: { fontFamily: "Cairo_700Bold", fontSize: 15, textAlign: "right", marginBottom: 6 },
+  inviteTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, textAlign: "right", marginBottom: 6 },
   inviteBody: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 11,
     textAlign: "right",
     lineHeight: 16,
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 100,
   },
-  inviteBtnText: { color: "#FFFFFF", fontFamily: "Cairo_700Bold", fontSize: 12 },
+  inviteBtnText: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   inviteShareBtn: {
     width: 38,
     height: 38,

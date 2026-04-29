@@ -117,25 +117,25 @@ export default function BookingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
     alignItems: "flex-end",
   },
   headerTitleContainer: {
     alignItems: "flex-end",
   },
   headerTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 22,
   },
   headerSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 14,
   },
   filtersScroll: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 14,
     paddingVertical: 4,
   },
   filterPill: {
@@ -150,11 +150,11 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   filterText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 14,
   },
   listContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 20,
   },
   bookingCard: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   serviceName: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 16,
   },
   statusBadge: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   statusText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 12,
   },
   divider: {
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
   cleanerInfo: {
     flexDirection: "row-reverse",
@@ -209,23 +209,23 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   cleanerName: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 14,
     marginBottom: 2,
   },
   bookingDate: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 12,
   },
   priceWrap: {
     alignItems: "center",
   },
   priceValue: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   priceLabel: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 11,
   },
   cardFooter: {
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   actionBtnText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 13,
   },
   reorderBtn: {
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   reorderBtnText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 13,
   },
 });

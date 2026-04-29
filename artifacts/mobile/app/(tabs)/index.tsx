@@ -203,8 +203,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   iconCircle: {
     width: 44,
@@ -223,11 +223,11 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   greeting: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   headerSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 13,
   },
   notifDot: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   offersBanner: {
     marginHorizontal: 24,
-    marginBottom: 20,
+    marginBottom: 12,
     borderRadius: 20,
     overflow: "hidden",
     shadowColor: "#16C47F",
@@ -272,20 +272,20 @@ const styles = StyleSheet.create({
   },
   offersBannerTitle: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 15,
   },
   offersBannerSub: {
     color: "rgba(255,255,255,0.9)",
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 12,
     marginTop: 2,
   },
   searchRow: {
     flexDirection: "row",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 14,
   },
   searchContainer: {
     flex: 1,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 14,
     marginRight: 12,
   },
@@ -314,8 +314,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   mapSection: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
+    paddingHorizontal: 16,
+    marginBottom: 14,
   },
   mapContainer: {
     height: 260,
@@ -373,11 +373,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   locationPillLabel: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 11,
   },
   locationPillText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 12,
   },
   userLocationDot: {
@@ -422,21 +422,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   sectionTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   seeAll: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 14,
   },
   servicesScroll: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 16,
-    marginBottom: 24,
+    marginBottom: 14,
   },
   serviceCard: {
     width: 100,
@@ -457,12 +457,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   serviceTitle: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 12,
     textAlign: "center",
   },
   cleanersScroll: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 16,
   },
   cleanerCard: {
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cleanerName: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 14,
     marginBottom: 4,
   },
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cleanerExp: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 10,
   },
   statDivider: {
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   ratingText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 11,
   },
   statusPill: {
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   statusText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 10,
   },
 });

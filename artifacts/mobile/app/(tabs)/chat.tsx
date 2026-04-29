@@ -63,23 +63,23 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
     alignItems: "flex-end",
   },
   headerTitleContainer: {
     alignItems: "flex-end",
   },
   headerTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 22,
   },
   headerSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 14,
   },
   listContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   chatRow: {
     flexDirection: "row",
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     width: 60,
   },
   timeText: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 11,
     marginBottom: 4,
   },
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   unreadText: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 10,
   },
   centerCol: {
@@ -115,12 +115,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   userName: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 16,
     marginBottom: 4,
   },
   lastMsg: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 13,
   },
   avatarWrap: {

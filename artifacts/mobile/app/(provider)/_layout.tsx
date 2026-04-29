@@ -3,7 +3,7 @@ import React from "react";
 
 import FloatingTabBar from "@/components/FloatingTabBar";
 
-export default function TabLayout() {
+export default function ProviderTabLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false }}
@@ -12,18 +12,17 @@ export default function TabLayout() {
         const map: Record<string, any> = {
           index: "home",
           profile: "profile",
-          bookings: "bookings",
+          wallet: "wallet",
           chat: "chat",
         };
-        return <FloatingTabBar active={map[routeName] ?? null} />;
+        return <FloatingTabBar variant="provider" active={map[routeName] ?? null} />;
       }}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="profile" />
-      <Tabs.Screen name="bookings" />
+      <Tabs.Screen name="wallet" />
       <Tabs.Screen name="chat" />
-      <Tabs.Screen name="placeholder" options={{ href: null }} />
-      <Tabs.Screen name="offers" options={{ href: null }} />
+      <Tabs.Screen name="bookings" options={{ href: null }} />
     </Tabs>
   );
 }

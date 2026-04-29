@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   iconCircle: {
     width: 44,
@@ -184,18 +184,18 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   headerTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   headerSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 13,
   },
   etaRow: {
     flexDirection: "row",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 12,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   etaHalf: {
     flex: 1,
@@ -204,17 +204,17 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   etaSmall: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 11,
     marginBottom: 4,
   },
   etaLarge: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 20,
   },
   mapSection: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
+    paddingHorizontal: 16,
+    marginBottom: 14,
   },
   mapContainer: {
     height: 400,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   chatBubbleText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 11,
   },
   pinAvatar: {
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   cleanerMain: {
     flexDirection: "row-reverse",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
   cleanerInfo: {
     flex: 1,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   cleanerName: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   znBadge: {
@@ -335,11 +335,11 @@ const styles = StyleSheet.create({
   },
   znText: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 10,
   },
   cleanerTitle: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 14,
     marginBottom: 8,
   },
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   expText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 11,
   },
   cleanerAvatarMain: {
@@ -364,10 +364,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 12,
     borderRadius: 16,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   carPlate: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 13,
   },
   carStatDivider: {
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E5E7EB",
   },
   carModel: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 13,
   },
   actionRow: {
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionBtnText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 12,
   },
   callBtn: {
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderRadius: 20,
-    marginBottom: 20,
+    marginBottom: 12,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -428,12 +428,12 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   serviceType: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 15,
     marginBottom: 4,
   },
   serviceTime: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 12,
   },
   serviceIcon: {
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   cancelText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 15,
     textDecorationLine: "underline",
   },
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   },
   completedBtnText: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 15,
   },
 });

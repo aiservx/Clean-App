@@ -215,8 +215,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   safeBadge: {
     flexDirection: "row-reverse",
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   safeBadgeText: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 11,
   },
   iconCircle: {
@@ -247,16 +247,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   headerTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   headerSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 13,
   },
   totalWrap: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
+    paddingHorizontal: 16,
+    marginBottom: 18,
   },
   totalCard: {
     borderRadius: 32,
@@ -274,12 +274,12 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   totalLabel: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 14,
     marginBottom: 4,
   },
   totalAmount: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 32,
     marginBottom: 8,
   },
@@ -289,17 +289,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   lockText: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 11,
   },
   sectionTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
   methodsContainer: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     gap: 12,
     marginBottom: 16,
   },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   methodTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 15,
   },
   recBadge: {
@@ -351,11 +351,11 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   recBadgeText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 10,
   },
   methodSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 12,
   },
   methodLogoWrap: {
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   },
   tamaraText: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 9,
   },
   securityRow: {
@@ -381,17 +381,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 6,
-    marginBottom: 32,
+    marginBottom: 18,
   },
   securityText: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 12,
   },
   summaryCard: {
     marginHorizontal: 24,
     borderRadius: 24,
     overflow: "hidden",
-    marginBottom: 32,
+    marginBottom: 18,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   summaryHeader: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 16,
     padding: 20,
     paddingBottom: 12,
@@ -412,11 +412,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   summaryLabel: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 14,
   },
   summaryValue: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 14,
   },
   dotDivider: {
@@ -433,14 +433,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   totalValue: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   featuresRow: {
     flexDirection: "row-reverse",
     justifyContent: "space-around",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   featureItem: {
     alignItems: "center",
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   featureText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 10,
     textAlign: "center",
     width: 80,
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     paddingTop: 16,
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 32,
@@ -488,12 +488,12 @@ const styles = StyleSheet.create({
   },
   confirmTitle: {
     color: "#FFFFFF",
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 16,
   },
   confirmSubtitle: {
     color: "rgba(255,255,255,0.8)",
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 12,
   },
 });

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -11,11 +12,12 @@ const ADDRESSES = [
 ];
 
 const MENU_ITEMS = [
-  { id: "1", title: "طلباتي", subtitle: "إدارة جميع حجوزاتك", icon: "shopping-bag", color: "#16C47F" },
-  { id: "2", title: "المفضلة", subtitle: "العمال المفضلين لديك", icon: "heart", color: "#EC4899" },
-  { id: "3", title: "العروض والخصومات", subtitle: "أحدث العروض الحصرية", icon: "tag", color: "#F59E0B" },
-  { id: "4", title: "الإعدادات", subtitle: "إدارة الحساب والتنبيهات", icon: "settings", color: "#6B7280" },
-  { id: "5", title: "المساعدة والدعم", subtitle: "تواصل معنا في أي وقت", icon: "headphones", color: "#16C47F" },
+  { id: "1", title: "طلباتي", subtitle: "إدارة جميع حجوزاتك", icon: "shopping-bag", color: "#16C47F", path: "/(tabs)/bookings" },
+  { id: "2", title: "المفضلة", subtitle: "العمال المفضلين لديك", icon: "heart", color: "#EC4899", path: "/favorites" },
+  { id: "3", title: "العروض والخصومات", subtitle: "أحدث العروض الحصرية", icon: "tag", color: "#F59E0B", path: "/(tabs)/offers" },
+  { id: "4", title: "دعوة الأصدقاء", subtitle: "اربح 50 ر.س لكل صديق", icon: "users", color: "#8B5CF6", path: "/referrals" },
+  { id: "5", title: "الإعدادات", subtitle: "إدارة الحساب والتنبيهات", icon: "settings", color: "#6B7280", path: "/settings" },
+  { id: "6", title: "المساعدة والدعم", subtitle: "تواصل معنا في أي وقت", icon: "headphones", color: "#FB923C", path: "/help" },
 ];
 
 export default function ProfileScreen() {
@@ -27,10 +29,10 @@ export default function ProfileScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerActions}>
-           <TouchableOpacity style={styles.iconCircle}>
+           <TouchableOpacity style={styles.iconCircle} onPress={() => router.push("/settings")}>
              <Feather name="settings" size={20} color={colors.foreground} />
            </TouchableOpacity>
-           <TouchableOpacity style={styles.iconCircle}>
+           <TouchableOpacity style={styles.iconCircle} onPress={() => router.push("/notifications")}>
              <Feather name="bell" size={20} color={colors.foreground} />
              <View style={[styles.notifDot, { backgroundColor: colors.primary }]} />
            </TouchableOpacity>
@@ -66,7 +68,7 @@ export default function ProfileScreen() {
 
             <View style={styles.avatarWrap}>
               <Image source={require("@/assets/images/user-ahmed.png")} style={styles.avatar} />
-              <TouchableOpacity style={[styles.cameraBadge, { backgroundColor: colors.primary }]}>
+              <TouchableOpacity style={[styles.cameraBadge, { backgroundColor: colors.primary }]} onPress={() => router.push("/edit-profile")}>
                 <Feather name="camera" size={12} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
@@ -105,14 +107,14 @@ export default function ProfileScreen() {
               </View>
             </View>
           ))}
-          <TouchableOpacity style={[styles.addBtn, { borderColor: colors.primary }]}>
+          <TouchableOpacity style={[styles.addBtn, { borderColor: colors.primary }]} onPress={() => router.push("/address-form")}>
              <Text style={[styles.addBtnText, { color: colors.primary }]}>+ إضافة عنوان جديد</Text>
           </TouchableOpacity>
         </View>
 
         {/* Payment Methods */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/payment-methods")}>
             <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
           </TouchableOpacity>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>وسائل الدفع</Text>
@@ -135,7 +137,7 @@ export default function ProfileScreen() {
                <MaterialCommunityIcons name="credit-card" size={24} color={colors.accent} />
             </View>
           </View>
-          <TouchableOpacity style={[styles.addBtn, { borderColor: colors.primary }]}>
+          <TouchableOpacity style={[styles.addBtn, { borderColor: colors.primary }]} onPress={() => router.push("/payment-form")}>
              <Text style={[styles.addBtnText, { color: colors.primary }]}>+ إضافة وسيلة دفع جديدة</Text>
           </TouchableOpacity>
         </View>
@@ -145,6 +147,7 @@ export default function ProfileScreen() {
           {MENU_ITEMS.map((item, index) => (
             <TouchableOpacity 
               key={item.id} 
+              onPress={() => router.push(item.path as any)}
               style={[
                 styles.menuItem, 
                 index !== MENU_ITEMS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }
@@ -161,6 +164,14 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        <TouchableOpacity
+          style={[styles.switchBtn, { backgroundColor: colors.accentLight, borderWidth: 1, borderColor: colors.accent }]}
+          onPress={() => router.replace("/(provider)")}
+        >
+          <Feather name="briefcase" size={16} color={colors.accent} />
+          <Text style={[styles.switchT, { color: colors.accent }]}>التبديل لحساب مزود خدمة</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -172,8 +183,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   headerActions: {
     flexDirection: "row",
@@ -206,18 +217,18 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   headerTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   headerSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 13,
   },
   profileCard: {
     marginHorizontal: 24,
     borderRadius: 32,
     padding: 24,
-    marginBottom: 32,
+    marginBottom: 18,
     overflow: "hidden",
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 10 },
@@ -238,12 +249,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   userName: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 20,
     marginBottom: 4,
   },
   userContact: {
-    fontFamily: "Cairo_500Medium",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 13,
     marginBottom: 2,
   },
@@ -257,7 +268,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   premiumText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 11,
   },
   avatarWrap: {
@@ -284,20 +295,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   sectionTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
   },
   seeAll: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 14,
   },
   sectionContent: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
+    paddingHorizontal: 16,
+    marginBottom: 18,
     gap: 12,
   },
   addressItem: {
@@ -323,7 +334,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   itemTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 15,
   },
   defaultBadge: {
@@ -332,11 +343,11 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   defaultBadgeText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 10,
   },
   itemSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 13,
   },
   itemIconBox: {
@@ -362,14 +373,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   addBtnText: {
-    fontFamily: "Cairo_600SemiBold",
+    fontFamily: "Tajawal_600SemiBold",
     fontSize: 14,
   },
   menuContainer: {
     marginHorizontal: 24,
     borderRadius: 24,
     paddingHorizontal: 20,
-    marginBottom: 40,
+    marginBottom: 12,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -379,7 +390,7 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 14,
   },
   menuTextWrap: {
     flex: 1,
@@ -387,12 +398,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   menuTitle: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 15,
     marginBottom: 4,
   },
   menuSubtitle: {
-    fontFamily: "Cairo_400Regular",
+    fontFamily: "Tajawal_400Regular",
     fontSize: 12,
   },
   menuIconBox: {
@@ -402,4 +413,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  switchBtn: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    paddingVertical: 14,
+    borderRadius: 16,
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  switchT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
 });

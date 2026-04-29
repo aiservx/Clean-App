@@ -24,10 +24,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 16,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   title: {
-    fontFamily: "Cairo_700Bold",
+    fontFamily: "Tajawal_700Bold",
     fontSize: 18,
     textAlign: "right",
     flex: 1,

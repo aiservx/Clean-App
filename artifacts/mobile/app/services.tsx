@@ -179,7 +179,7 @@ export default function ServicesScreen() {
                   </View>
                   <Text style={[styles.priceText, { color: colors.foreground }]}>
                     ابتداءً من{" "}
-                    <Text style={{ color: colors.primary, fontFamily: "Cairo_700Bold" }}>{service.price}</Text> رس
+                    <Text style={{ color: colors.primary, fontFamily: "Tajawal_700Bold" }}>{service.price}</Text> رس
                   </Text>
                 </View>
               </View>
@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   iconCircle: {
     width: 44,
@@ -216,9 +216,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   headerTitleContainer: { alignItems: "flex-end" },
-  headerTitle: { fontFamily: "Cairo_700Bold", fontSize: 18 },
-  headerSubtitle: { fontFamily: "Cairo_400Regular", fontSize: 13 },
-  categoriesScroll: { paddingHorizontal: 24, gap: 12, marginBottom: 24, paddingVertical: 4 },
+  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
+  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 13 },
+  categoriesScroll: { paddingHorizontal: 16, gap: 12, marginBottom: 14, paddingVertical: 4 },
   categoryPill: {
     flexDirection: "row-reverse",
     alignItems: "center",
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  categoryText: { fontFamily: "Cairo_600SemiBold", fontSize: 14 },
+  categoryText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14 },
   grid: { flexDirection: "row-reverse", flexWrap: "wrap", paddingHorizontal: 16, gap: 12 },
   serviceCard: {
     width: "48%",
@@ -272,9 +272,9 @@ const styles = StyleSheet.create({
   },
   serviceImage: { width: "100%", height: "100%" },
   cardContent: { alignItems: "flex-end" },
-  serviceTitle: { fontFamily: "Cairo_700Bold", fontSize: 15, marginBottom: 4 },
-  serviceDesc: { fontFamily: "Cairo_400Regular", fontSize: 11, marginBottom: 12 },
+  serviceTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 4 },
+  serviceDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginBottom: 12 },
   cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" },
   arrowBtn: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  priceText: { fontFamily: "Cairo_500Medium", fontSize: 11 },
+  priceText: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
 });
