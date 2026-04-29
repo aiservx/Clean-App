@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image, ImageSourcePropType } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,6 +13,17 @@ import { getCurrentResolved, distanceKm, type ResolvedAddress } from "@/lib/loca
 import { registerForPush } from "@/lib/notifications";
 import { FALLBACK_CATEGORIES } from "@/lib/serviceImages";
 import { useI18n } from "@/lib/i18n";
+
+const SERVICE_CARD_DATA: Record<string, { image: ImageSourcePropType; bgColor: string }> = {
+  homes:     { image: require("@/assets/images/illustration-vacuum.png"), bgColor: "#E8F5EE" },
+  deep:      { image: require("@/assets/images/illustration-bucket.png"), bgColor: "#FCE4EC" },
+  offices:   { image: require("@/assets/images/illustration-office.png"), bgColor: "#FCE4EC" },
+  furniture: { image: require("@/assets/images/illustration-armchair.png"), bgColor: "#E8F5EE" },
+  kitchens:  { image: require("@/assets/images/illustration-bucket.png"), bgColor: "#FFF3E0" },
+  villas:    { image: require("@/assets/images/illustration-vacuum.png"), bgColor: "#E8EAF6" },
+  bathrooms: { image: require("@/assets/images/illustration-bucket.png"), bgColor: "#E0F7FA" },
+  tanks:     { image: require("@/assets/images/illustration-bucket.png"), bgColor: "#E3F2FD" },
+};
 
 const { height: SCREEN_H } = Dimensions.get("window");
 
@@ -227,30 +238,33 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>{t("services")}</Text>
           </View>
 
-          <View style={styles.servicesGrid}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 12, gap: 10 }}
+            style={{ marginBottom: 22 }}
+          >
             {cats.slice(0, 8).map((cat) => {
-              const baseColor = cat.color || "#16C47F";
+              const cardData = SERVICE_CARD_DATA[cat.id];
               return (
                 <TouchableOpacity
                   key={cat.id}
                   activeOpacity={0.88}
-                  style={styles.svcTile}
+                  style={styles.svcCard}
                   onPress={() => router.push({ pathname: "/services", params: { cat: cat.id } } as any)}
                 >
-                  <LinearGradient
-                    colors={[shade(baseColor, 28), shade(baseColor, 8)]}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                    style={styles.svcTileInner}
-                  >
-                    <View style={styles.svcIconBg}>
-                      <MaterialCommunityIcons name={(cat.icon as any) || "broom"} size={28} color="#fff" />
-                    </View>
-                    <Text style={styles.svcTileTitle} numberOfLines={2}>{cat.title_ar}</Text>
-                  </LinearGradient>
+                  <View style={[styles.svcCardImageWrap, { backgroundColor: cardData?.bgColor || "#F1F5F9" }]}>
+                    {cardData ? (
+                      <Image source={cardData.image} style={styles.svcCardImage} resizeMode="contain" />
+                    ) : (
+                      <MaterialCommunityIcons name={(cat.icon as any) || "broom"} size={36} color={cat.color || "#16C47F"} />
+                    )}
+                  </View>
+                  <Text style={styles.svcCardTitle} numberOfLines={1}>{cat.title_ar}</Text>
                 </TouchableOpacity>
               );
             })}
-          </View>
+          </ScrollView>
 
           {/* PROVIDERS */}
           <View style={styles.sectionHeader}>
@@ -385,11 +399,31 @@ const styles = StyleSheet.create({
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A" },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
-  servicesGrid: { flexDirection: "row-reverse", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 22 },
-  svcTile: { width: "31.3%", aspectRatio: 1, borderRadius: 20, overflow: "hidden", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
-  svcTileInner: { flex: 1, padding: 12, justifyContent: "space-between" },
-  svcIconBg: { width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center" },
-  svcTileTitle: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 12.5, textAlign: "right", lineHeight: 16 },
+  svcCard: {
+    width: 110,
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  svcCardImageWrap: {
+    width: 100,
+    height: 90,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  svcCardImage: { width: 60, height: 60 },
+  svcCardTitle: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 12.5,
+    color: "#1E293B",
+    textAlign: "center",
+  },
 
   emptyBox: { marginHorizontal: 16, padding: 26, borderRadius: 18, alignItems: "center", gap: 8, backgroundColor: "#fff" },
   emptyText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#64748B", textAlign: "center" },
