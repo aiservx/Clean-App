@@ -1,191 +1,167 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
 import { useBooking, type ServiceItem } from "@/store/booking";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
 
-const CATEGORIES = [
-  { id: "all", title: "الكل", icon: "grid" },
-  { id: "homes", title: "المنازل", icon: "home" },
-  { id: "offices", title: "المكاتب", icon: "briefcase" },
-  { id: "furniture", title: "الأثاث", icon: "package" },
-  { id: "others", title: "أخرى", icon: "more-horizontal" },
-] as const;
+type Cat = { id: string; title_ar: string; icon: string; color: string };
+type Svc = { id: string; category_id: string | null; title_ar: string; desc_ar: string | null; base_price: number; image_url: string | null; duration_min: number };
 
-const SERVICES_GRID: (ServiceItem & { category: string })[] = [
-  {
-    id: "1",
-    title: "تنظيف منازل",
-    price: 85,
-    desc: "خدمة تنظيف شاملة لجميع أرجاء المنزل",
-    image: require("@/assets/images/service-home-1.jpg"),
-    color: "#16C47F",
-    category: "homes",
-  },
-  {
-    id: "2",
-    title: "تنظيف عميق",
-    price: 150,
-    desc: "تنظيف عميق وتعقيم شامل للمساحات",
-    image: require("@/assets/images/service-deep-2.jpg"),
-    color: "#2F80ED",
-    category: "homes",
-  },
-  {
-    id: "3",
-    title: "تنظيف مكاتب",
-    price: 100,
-    desc: "خدمة تنظيف احترافية للمكاتب والشركات",
-    image: require("@/assets/images/service-office-3.jpg"),
-    color: "#F59E0B",
-    category: "offices",
-  },
-  {
-    id: "4",
-    title: "تنظيف كنب",
-    price: 120,
-    desc: "تنظيف وتعقيم الكنب والسجاد بأحدث الأجهزة",
-    image: require("@/assets/images/service-sofa-4.jpg"),
-    color: "#EC4899",
-    category: "furniture",
-  },
-  {
-    id: "5",
-    title: "تنظيف مطابخ",
-    price: 110,
-    desc: "تنظيف وتطهير المطابخ وإزالة الدهون",
-    image: require("@/assets/images/service-kitchen-5.jpg"),
-    color: "#8B5CF6",
-    category: "homes",
-  },
-  {
-    id: "6",
-    title: "تنظيف فلل",
-    price: 250,
-    desc: "خدمة تنظيف متكاملة للفلل والمنازل الكبيرة",
-    image: require("@/assets/images/service-villa-6.jpg"),
-    color: "#16C47F",
-    category: "homes",
-  },
-];
+// Soft pastel gradient for image area per category
+const PALETTE: Record<string, [string, string]> = {
+  homes: ["#D7F5E8", "#B3E8CC"],
+  deep: ["#DCEBFF", "#B6D2FF"],
+  offices: ["#FEF3C7", "#FCD68A"],
+  villas: ["#EDE9FE", "#D5C9FB"],
+  apartments: ["#CFFAFE", "#A4EAF1"],
+  furniture: ["#FCE7F3", "#F8BFD9"],
+  mattresses: ["#FCE7F3", "#FCC2DC"],
+  kitchens: ["#FEE2E2", "#FCA5A5"],
+  bathrooms: ["#E0F2FE", "#BAE0FB"],
+  facades: ["#D1FAE5", "#A7F3D0"],
+  tanks: ["#DBEAFE", "#BFDBFE"],
+  ac: ["#CFFAFE", "#A5F3FC"],
+  postbuild: ["#F3E8FF", "#E9D5FF"],
+  cars: ["#FEF9C3", "#FDE68A"],
+  pools: ["#CCFBF1", "#99F6E4"],
+  gardens: ["#ECFCCB", "#D9F99D"],
+  mosques: ["#DCFCE7", "#BBF7D0"],
+  schools: ["#EDE9FE", "#DDD6FE"],
+};
+
+const CAT_ICON_MAP: Record<string, string> = {
+  homes: "home", deep: "shield-check", offices: "briefcase", villas: "home-city",
+  apartments: "home-modern", furniture: "sofa", mattresses: "bed", kitchens: "silverware-fork-knife",
+  bathrooms: "shower", facades: "window-closed", tanks: "water", ac: "air-conditioner",
+  postbuild: "hammer-wrench", cars: "car-wash", pools: "pool", gardens: "flower",
+  mosques: "mosque", schools: "school",
+};
 
 export default function ServicesScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const booking = useBooking();
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const { session } = useAuth();
+  const params = useLocalSearchParams<{ cat?: string }>();
+  const [activeCategory, setActiveCategory] = useState<string>(params.cat || "all");
+  const [cats, setCats] = useState<Cat[]>([{ id: "all", title_ar: "الكل", icon: "grid", color: "#16C47F" } as any]);
+  const [services, setServices] = useState<Svc[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: c }, { data: s }] = await Promise.all([
+        supabase.from("service_categories").select("*").order("sort"),
+        supabase.from("services").select("*").eq("is_active", true).order("sort"),
+      ]);
+      if (c) setCats(c as any);
+      if (s) setServices(s as any);
+      setLoading(false);
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
-    if (activeCategory === "all") return SERVICES_GRID;
-    return SERVICES_GRID.filter((s) => s.category === activeCategory);
-  }, [activeCategory]);
+    if (activeCategory === "all") return services;
+    return services.filter((s) => s.category_id === activeCategory);
+  }, [services, activeCategory]);
 
-  const onSelectService = (svc: ServiceItem) => {
+  const onSelectService = (svc: Svc) => {
     if (Platform.OS !== "web") Haptics.selectionAsync();
-    booking.setService(svc);
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+    const cat = cats.find((c) => c.id === svc.category_id);
+    booking.setService({
+      id: svc.id,
+      title: svc.title_ar,
+      price: Number(svc.base_price),
+      desc: svc.desc_ar || "",
+      image: require("@/assets/images/illustration-sofa.png"),
+      color: cat?.color || colors.primary,
+    });
     router.push("/booking");
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity style={styles.iconCircle}>
+        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.card }]} onPress={() => router.push("/help")}>
           <Feather name="headphones" size={18} color={colors.foreground} />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>خدماتنا</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
-            اختر الخدمة التي تناسب احتياجك
-          </Text>
+          <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>اختر الخدمة التي تناسب احتياجك</Text>
         </View>
-        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Feather name="chevron-right" size={24} color={colors.foreground} />
+        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.card }]} onPress={() => router.back()}>
+          <Feather name="chevron-right" size={22} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
-        {/* Categories */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesScroll}
-        >
-          {CATEGORIES.map((cat) => {
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+          {cats.map((cat) => {
             const isActive = activeCategory === cat.id;
             return (
               <TouchableOpacity
                 key={cat.id}
-                onPress={() => {
-                  if (Platform.OS !== "web") Haptics.selectionAsync();
-                  setActiveCategory(cat.id);
-                }}
+                onPress={() => { if (Platform.OS !== "web") Haptics.selectionAsync(); setActiveCategory(cat.id); }}
                 activeOpacity={0.85}
-                style={[
-                  styles.categoryPill,
-                  {
-                    backgroundColor: isActive ? colors.primary : colors.card,
-                    borderColor: isActive ? colors.primary : colors.border,
-                  },
-                ]}
+                style={[styles.categoryPill, { backgroundColor: isActive ? colors.primary : colors.card, borderColor: isActive ? colors.primary : colors.border }]}
               >
-                <Text style={[styles.categoryText, { color: isActive ? "#FFFFFF" : colors.foreground }]}>
-                  {cat.title}
-                </Text>
-                <Feather
-                  name={cat.icon as any}
-                  size={16}
-                  color={isActive ? "#FFFFFF" : colors.mutedForeground}
-                />
+                <Text style={[styles.categoryText, { color: isActive ? "#FFFFFF" : colors.foreground }]}>{cat.title_ar}</Text>
+                <MaterialCommunityIcons name={(cat.icon as any) || "grid"} size={14} color={isActive ? "#FFFFFF" : colors.mutedForeground} />
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
-        {/* Services Grid */}
-        <View style={styles.grid}>
-          {filtered.map((service) => (
-            <TouchableOpacity
-              key={service.id}
-              style={[styles.serviceCard, { backgroundColor: colors.card }]}
-              onPress={() => onSelectService(service)}
-              activeOpacity={0.85}
-            >
-              <View style={styles.imageWrap}>
-                <Image source={service.image} style={styles.serviceImage} resizeMode="cover" />
-                <View style={[styles.categoryIndicator, { backgroundColor: "#FFFFFF" }]}>
-                  <Feather
-                    name={service.category === "homes" ? "home" : service.category === "offices" ? "briefcase" : "package"}
-                    size={12}
-                    color={service.color}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.cardContent}>
-                <Text style={[styles.serviceTitle, { color: colors.foreground }]}>{service.title}</Text>
-                <Text style={[styles.serviceDesc, { color: colors.mutedForeground }]} numberOfLines={1}>
-                  {service.desc}
-                </Text>
-
-                <View style={styles.cardFooter}>
-                  <View style={[styles.arrowBtn, { backgroundColor: colors.primaryLight }]}>
-                    <Feather name="arrow-left" size={14} color={colors.primary} />
+        {loading ? (
+          <ActivityIndicator style={{ marginTop: 40 }} color={colors.primary} />
+        ) : (
+          <View style={styles.grid}>
+            {filtered.map((service) => {
+              const cat = cats.find((c) => c.id === service.category_id);
+              const palette = PALETTE[service.category_id || ""] || ["#F1F5F9", "#E2E8F0"];
+              const icon = CAT_ICON_MAP[service.category_id || ""] || "broom";
+              return (
+                <TouchableOpacity key={service.id} style={[styles.serviceCard, { backgroundColor: colors.card }]} onPress={() => onSelectService(service)} activeOpacity={0.9}>
+                  <LinearGradient colors={palette} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.imageWrap}>
+                    <MaterialCommunityIcons name={icon as any} size={56} color={cat?.color || colors.primary} style={{ opacity: 0.85 }} />
+                    <View style={[styles.categoryIndicator, { backgroundColor: "#FFFFFF" }]}>
+                      <MaterialCommunityIcons name={(cat?.icon as any) || "tag"} size={12} color={cat?.color || colors.primary} />
+                    </View>
+                  </LinearGradient>
+                  <View style={styles.cardContent}>
+                    <Text style={[styles.serviceTitle, { color: colors.foreground }]} numberOfLines={1}>{service.title_ar}</Text>
+                    <Text style={[styles.serviceDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{service.desc_ar}</Text>
+                    <View style={styles.cardFooter}>
+                      <View style={[styles.arrowBtn, { backgroundColor: colors.primary }]}>
+                        <Feather name="arrow-left" size={14} color="#FFF" />
+                      </View>
+                      <Text style={[styles.priceText, { color: colors.foreground }]}>
+                        ابتداءً من <Text style={{ color: colors.primary, fontFamily: "Tajawal_700Bold" }}>{Number(service.base_price)}</Text> ر.س
+                      </Text>
+                    </View>
                   </View>
-                  <Text style={[styles.priceText, { color: colors.foreground }]}>
-                    ابتداءً من{" "}
-                    <Text style={{ color: colors.primary, fontFamily: "Tajawal_700Bold" }}>{service.price}</Text> رس
-                  </Text>
-                </View>
+                </TouchableOpacity>
+              );
+            })}
+            {filtered.length === 0 && (
+              <View style={{ width: "100%", alignItems: "center", padding: 40 }}>
+                <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground }}>لا توجد خدمات في هذا التصنيف</Text>
               </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+            )}
+          </View>
+        )}
       </ScrollView>
 
       <FloatingTabBar active="services" />
@@ -195,85 +171,21 @@ export default function ServicesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
+  iconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   headerTitleContainer: { alignItems: "flex-end" },
-  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
-  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 13 },
-  categoriesScroll: { paddingHorizontal: 16, gap: 12, marginBottom: 14, paddingVertical: 4 },
-  categoryPill: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 100,
-    borderWidth: 1,
-    gap: 8,
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  categoryText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14 },
-  grid: { flexDirection: "row-reverse", flexWrap: "wrap", paddingHorizontal: 16, gap: 12 },
-  serviceCard: {
-    width: "48%",
-    borderRadius: 24,
-    overflow: "hidden",
-    padding: 12,
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  imageWrap: {
-    width: "100%",
-    height: 110,
-    borderRadius: 16,
-    overflow: "hidden",
-    marginBottom: 12,
-    position: "relative",
-    backgroundColor: "#F1F5F9",
-  },
-  categoryIndicator: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  serviceImage: { width: "100%", height: "100%" },
-  cardContent: { alignItems: "flex-end" },
-  serviceTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 4 },
-  serviceDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginBottom: 12 },
+  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
+  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 12 },
+  categoriesScroll: { paddingHorizontal: 16, gap: 10, marginBottom: 14, paddingVertical: 4 },
+  categoryPill: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1, gap: 6, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
+  categoryText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
+  grid: { flexDirection: "row-reverse", flexWrap: "wrap", paddingHorizontal: 12, gap: 12 },
+  serviceCard: { width: "47%", borderRadius: 22, overflow: "hidden", padding: 0, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 3 },
+  imageWrap: { width: "100%", height: 130, alignItems: "center", justifyContent: "center", position: "relative" },
+  categoryIndicator: { position: "absolute", top: 10, left: 10, width: 28, height: 28, borderRadius: 10, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
+  cardContent: { padding: 12, alignItems: "flex-end" },
+  serviceTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 4 },
+  serviceDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginBottom: 10, textAlign: "right", minHeight: 28 },
   cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" },
   arrowBtn: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   priceText: { fontFamily: "Tajawal_500Medium", fontSize: 11 },

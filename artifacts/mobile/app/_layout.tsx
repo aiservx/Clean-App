@@ -15,6 +15,7 @@ import { I18nManager, Text } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BookingProvider } from "@/store/booking";
+import { AuthProvider } from "@/lib/auth";
 
 if (!I18nManager.isRTL) {
   I18nManager.allowRTL(true);
@@ -22,7 +23,6 @@ if (!I18nManager.isRTL) {
 }
 
 SplashScreen.preventAutoHideAsync();
-
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
@@ -31,6 +31,8 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="(provider)" options={{ headerShown: false }} />
       <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="signup" options={{ headerShown: false }} />
       <Stack.Screen name="services" options={{ headerShown: false }} />
       <Stack.Screen name="booking" options={{ headerShown: false }} />
       <Stack.Screen name="tracking" options={{ headerShown: false }} />
@@ -86,9 +88,11 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
-              <BookingProvider>
-                <RootLayoutNav />
-              </BookingProvider>
+              <AuthProvider>
+                <BookingProvider>
+                  <RootLayoutNav />
+                </BookingProvider>
+              </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

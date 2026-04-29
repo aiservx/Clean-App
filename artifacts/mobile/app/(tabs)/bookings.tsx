@@ -4,6 +4,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
+import { useAuth } from "@/lib/auth";
+import GuestEmpty from "@/components/GuestEmpty";
+import FloatingTabBar from "@/components/FloatingTabBar";
 
 const FILTERS = ["الكل", "قيد التنفيذ", "مكتملة", "ملغاة"];
 
@@ -31,6 +34,16 @@ const BOOKINGS = [
 ];
 
 export default function BookingsScreen() {
+  const { session } = useAuth();
+  const _colors = useColors();
+  if (!session) {
+    return (
+      <View style={{ flex: 1, backgroundColor: _colors.background }}>
+        <GuestEmpty title="حجوزاتك" subtitle="سجّل دخولك لمتابعة حجوزاتك ومواعيدك" icon="calendar-clock" />
+        <FloatingTabBar active="bookings" />
+      </View>
+    );
+  }
   const insets = useSafeAreaInsets();
   const colors = useColors();
 

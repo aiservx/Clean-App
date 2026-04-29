@@ -5,6 +5,9 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "@/lib/auth";
+import GuestEmpty from "@/components/GuestEmpty";
+import FloatingTabBar from "@/components/FloatingTabBar";
 
 const ADDRESSES = [
   { id: "1", title: "المنزل", address: "حي النخيل، شارع الأمير نايف، الرياض", icon: "home", color: "#16C47F", default: true },
@@ -23,6 +26,15 @@ const MENU_ITEMS = [
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const { session, profile, signOut } = useAuth();
+  if (!session) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <GuestEmpty title="حسابك الشخصي" subtitle="سجّل دخولك لإدارة عناوينك وحجوزاتك" icon="account-circle-outline" />
+        <FloatingTabBar active="profile" />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

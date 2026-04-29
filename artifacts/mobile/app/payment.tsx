@@ -186,9 +186,28 @@ export default function PaymentScreen() {
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => {
+          onPress={async () => {
             if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            router.replace("/tracking");
+            try {
+              const { supabase } = await import("@/lib/supabase");
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) { router.push("/login"); return; }
+              const svcId = (booking as any).service?.id;
+              const isUuid = typeof svcId === "string" && /^[0-9a-f-]{36}$/i.test(svcId);
+              const insertData: any = {
+                user_id: user.id,
+                service_id: isUuid ? svcId : null,
+                total: totals.total,
+                payment_method: "card",
+                status: "pending",
+                scheduled_at: new Date().toISOString(),
+              };
+              const { data: row } = await supabase.from("bookings").insert(insertData).select("id").maybeSingle();
+              if (row?.id) router.replace({ pathname: "/tracking", params: { id: row.id } } as any);
+              else router.replace("/tracking");
+            } catch {
+              router.replace("/tracking");
+            }
           }}
         >
           <LinearGradient

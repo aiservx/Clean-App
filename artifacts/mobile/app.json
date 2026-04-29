@@ -14,21 +14,30 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "نحتاج الإذن بموقعك لإيجاد مزودي الخدمة القريبين منك",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "نحتاج الإذن بموقعك لتتبع مقدم الخدمة في الوقت الفعلي"
+      }
     },
-    "android": {},
+    "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://replit.com/"
-        }
-      ],
+      ["expo-router", { "origin": "https://replit.com/" }],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      ["expo-location", { "locationAlwaysAndWhenInUsePermission": "السماح للتطبيق باستخدام موقعك لإيجاد أقرب مزودي الخدمة." }],
+      ["expo-notifications", { "icon": "./assets/images/icon.png", "color": "#16C47F" }]
     ],
     "experiments": {
       "typedRoutes": true,

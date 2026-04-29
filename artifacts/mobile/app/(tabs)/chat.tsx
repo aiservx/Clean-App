@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "rea
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
+import { useAuth } from "@/lib/auth";
+import GuestEmpty from "@/components/GuestEmpty";
+import FloatingTabBar from "@/components/FloatingTabBar";
 
 const CHATS = [
   { id: "1", name: "أحمد علي", lastMsg: "عامل النظافة في طريقه إليك الآن", time: "10:15 ص", unread: 2, online: true, image: require("@/assets/images/user-ahmed.png") },
@@ -12,6 +15,16 @@ const CHATS = [
 ];
 
 export default function ChatScreen() {
+  const { session } = useAuth();
+  const _colors = useColors();
+  if (!session) {
+    return (
+      <View style={{ flex: 1, backgroundColor: _colors.background }}>
+        <GuestEmpty title="الرسائل" subtitle="سجّل دخولك للتواصل مع مزودي الخدمة" icon="message-text-outline" />
+        <FloatingTabBar active="chat" />
+      </View>
+    );
+  }
   const insets = useSafeAreaInsets();
   const colors = useColors();
 
