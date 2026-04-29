@@ -128,7 +128,7 @@ export default function TrackingScreen() {
         <MaterialCommunityIcons name="map-marker-off" size={56} color={colors.mutedForeground} />
         <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.foreground, fontSize: 18, marginTop: 12 }}>لا يوجد طلب نشط</Text>
         <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground, fontSize: 13, marginTop: 4 }}>اطلب خدمة لتظهر هنا</Text>
-        <TouchableOpacity onPress={() => router.replace("/(tabs)")} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
+        <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
           <Text style={{ color: "#FFF", fontFamily: "Tajawal_700Bold" }}>الذهاب للرئيسية</Text>
         </TouchableOpacity>
       </View>

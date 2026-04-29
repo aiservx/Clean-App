@@ -35,14 +35,14 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
     { key: "profile", label: "الملف الشخصي", icon: "user", path: "/(tabs)/profile" },
     { key: "bookings", label: "حجوزاتي", icon: "calendar", path: "/(tabs)/bookings" },
     { key: "chat", label: "الرسائل", icon: "message-circle", path: "/(tabs)/chat" },
-    { key: "home", label: "الرئيسية", icon: "home", path: "/(tabs)" },
+    { key: "home", label: "الرئيسية", icon: "home", path: "/(tabs)/home" },
   ];
 
   const providerItems: { key: any; label: string; icon: any; path: string }[] = [
     { key: "profile", label: "الملف الشخصي", icon: "user", path: "/(provider)/profile" },
     { key: "wallet", label: "المحفظة", icon: "credit-card", path: "/(provider)/wallet" },
     { key: "chat", label: "الرسائل", icon: "message-circle", path: "/(provider)/chat" },
-    { key: "home", label: "لوحة التحكم", icon: "grid", path: "/(provider)" },
+    { key: "home", label: "لوحة التحكم", icon: "grid", path: "/(provider)/home" },
   ];
 
   const items = variant === "provider" ? providerItems : userItems;

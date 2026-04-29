@@ -6,12 +6,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { signIn } = useAuth();
+  const { signIn, signOut } = useAuth();
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [busy, setBusy] = useState(false);
@@ -20,27 +19,25 @@ export default function LoginScreen() {
     if (!email || !pwd) return Alert.alert("تنبيه", "أدخل البريد وكلمة المرور");
     setBusy(true);
 
-    const { error } = await signIn(email.trim(), pwd);
-    if (error) {
-      setBusy(false);
-      return Alert.alert("خطأ في تسجيل الدخول", error);
-    }
-
-    // Fetch role directly from DB — don't rely on context which may not be updated yet
-    const { data: { user } } = await supabase.auth.getUser();
-    let role = "user";
-    if (user) {
-      const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-      if (prof?.role) role = prof.role;
-    }
-
+    const res = await signIn(email.trim(), pwd);
     setBusy(false);
 
-    if (role === "provider" || role === "admin") {
-      router.replace("/(provider)" as any);
-    } else {
-      router.replace("/(tabs)" as any);
+    if (res.error) {
+      return Alert.alert("خطأ في تسجيل الدخول", res.error);
     }
+
+    const role = res.role || "user";
+    if (role === "provider" || role === "admin") {
+      router.replace("/(provider)/home" as any);
+    } else {
+      router.replace("/(tabs)/home" as any);
+    }
+  };
+
+  const browseAsGuest = async () => {
+    // Clear any stale session before guest browsing
+    await signOut();
+    router.replace("/(tabs)/home" as any);
   };
 
   return (
@@ -94,7 +91,7 @@ export default function LoginScreen() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.replace("/(tabs)" as any)} style={{ marginTop: 24, alignItems: "center" }}>
+        <TouchableOpacity onPress={browseAsGuest} style={{ marginTop: 24, alignItems: "center" }}>
           <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground, fontSize: 13 }}>
             تصفح كزائر
           </Text>

@@ -5,15 +5,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/lib/auth";
 
 export default function Index() {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, loading, profileLoaded } = useAuth();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem("onboarded").then((v) => setOnboarded(!!v));
   }, []);
 
-  // Wait for: fonts/auth loading, onboarded check, AND profile when session exists
-  if (loading || onboarded === null || (session && !profile)) {
+  // Wait for: auth loading, onboarded check, AND (when there is a session) for profileLoaded
+  if (loading || onboarded === null || (session && !profileLoaded)) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fff" }}>
         <ActivityIndicator color="#16C47F" size="large" />
@@ -22,7 +22,15 @@ export default function Index() {
   }
 
   if (!onboarded) return <Redirect href="/onboarding" />;
-  if (session && profile?.role === "provider") return <Redirect href={"/(provider)" as any} />;
-  if (session && profile?.role === "admin") return <Redirect href={"/(provider)" as any} />;
-  return <Redirect href={"/(tabs)" as any} />;
+
+  // Logged-in: route by role (default to user/customer if profile is missing)
+  if (session) {
+    const role = profile?.role ?? "user";
+    if (role === "provider") return <Redirect href={"/(provider)/home" as any} />;
+    if (role === "admin") return <Redirect href={"/(provider)/home" as any} />;
+    return <Redirect href={"/(tabs)/home" as any} />;
+  }
+
+  // Guest: show home as customer (browsing without auth allowed)
+  return <Redirect href={"/(tabs)/home" as any} />;
 }

@@ -2,7 +2,24 @@
 
 ## Overview
 
-Arabic RTL cleaning services mobile app (نظافة) built with Expo + Supabase backend. Full RTL support, Cairo/Tajawal Arabic typography, premium green aesthetic. Includes admin dashboard at `artifacts/admin/`.
+Arabic RTL cleaning services mobile app (نظافة) built with Expo + Supabase backend. Full RTL support, Cairo/Tajawal Arabic typography, premium green aesthetic. Includes admin dashboard at `artifacts/admin/` and Express API at `artifacts/api-server/`.
+
+## How to run (one-click)
+
+The "Start application" workflow runs `bash scripts/start-all.sh`, which kills any stale processes on ports 8080/18115/23744 and then launches all three services in parallel:
+
+- API server → port 8080
+- Admin dashboard → port 23744 (`/admin/`)
+- Mobile app (Expo) → port 18115
+
+The artifact-specific workflows (artifacts/mobile: expo, artifacts/admin: web, artifacts/api-server) will show "failed" while Start application is running because they would bind to the same ports — that is expected. Use them only if you stop Start application and want to run a single service.
+
+## Routing notes
+
+- `app/index.tsx` is a router-only screen: it routes to `/(tabs)/home` for users/guests and `/(provider)/home` for providers/admins.
+- The tab home pages live at `app/(tabs)/home.tsx` and `app/(provider)/home.tsx` (NOT `index.tsx` — keeping them as `home.tsx` avoids a URL collision with `app/index.tsx` which previously caused "page not found" on web).
+- `lib/auth.tsx` auto-creates a profile row from `user_metadata` if the DB row is missing, so the app never deadlocks on login/signup.
+- `lib/serviceImages.ts` provides curated Unsplash image URLs per service category and a static fallback for categories/services so the UI is never empty when Supabase is unreachable.
 
 ## Stack
 

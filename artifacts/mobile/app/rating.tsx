@@ -19,7 +19,7 @@ export default function RatingScreen() {
 
   const handleSubmit = () => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.replace("/(tabs)");
+    router.replace("/(tabs)/home" as any);
   };
 
   const toggleTag = (i: number) => {

@@ -10,7 +10,7 @@ export default function ProviderTabLayout() {
       tabBar={({ state }) => {
         const routeName = state.routes[state.index]?.name;
         const map: Record<string, any> = {
-          index: "home",
+          home: "home",
           profile: "profile",
           wallet: "wallet",
           chat: "chat",
@@ -18,7 +18,7 @@ export default function ProviderTabLayout() {
         return <FloatingTabBar variant="provider" active={map[routeName] ?? null} />;
       }}
     >
-      <Tabs.Screen name="index" />
+      <Tabs.Screen name="home" />
       <Tabs.Screen name="profile" />
       <Tabs.Screen name="wallet" />
       <Tabs.Screen name="chat" />

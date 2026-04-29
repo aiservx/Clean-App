@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, ScrollView, Image, TouchableOpacity, Platform } from "react-native";
+import { View, Text, StyleSheet, Dimensions, ScrollView, ImageBackground, TouchableOpacity, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
@@ -10,10 +10,33 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
+// Modern, calm, realistic backgrounds reflecting the brand:
+// 1) Professional cleaning, 2) Easy & fast booking, 3) Trust & comfort
 const ONBOARDING_DATA = [
-  { id: "1", smallTitle: "تنظيف احترافي", largeTitle: "لمنزلك", subtitle: "خدمات تنظيف منزلية احترافية لراحة بالك ولمعان منزلك", image: require("@/assets/images/illustration-sofa.png"), icon: "auto-fix" },
-  { id: "2", smallTitle: "تنظيف المكاتب", largeTitle: "والمنشآت", subtitle: "بيئة عمل نظيفة ومنظمة تزيد من إنتاجية فريقك", image: require("@/assets/images/illustration-office.png"), icon: "office-building" },
-  { id: "3", smallTitle: "احجز بسهولة", largeTitle: "في أي وقت", subtitle: "احجز خدمتك في ثوانٍ معدودة واختر الموعد المناسب", image: require("@/assets/images/illustration-bucket.png"), icon: "calendar-check" },
+  {
+    id: "1",
+    smallTitle: "تنظيف احترافي",
+    largeTitle: "لمنزلك",
+    subtitle: "خدمات تنظيف احترافية على يد مختصين مدربين بأعلى معايير الجودة",
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80",
+    icon: "auto-fix",
+  },
+  {
+    id: "2",
+    smallTitle: "احجز بسهولة",
+    largeTitle: "في أي وقت",
+    subtitle: "احجز خدمتك خلال دقائق بسيطة واختر الوقت المناسب ليصلك عامل النظافة",
+    image: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80",
+    icon: "calendar-check",
+  },
+  {
+    id: "3",
+    smallTitle: "راحة بالك",
+    largeTitle: "هي أولويتنا",
+    subtitle: "استمتع بمساحة نظيفة ومنظمة ونحن نهتم بالتفاصيل لتعكس هويتك",
+    image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1200&q=80",
+    icon: "shield-check",
+  },
 ];
 
 export default function OnboardingScreen() {
@@ -55,9 +78,16 @@ export default function OnboardingScreen() {
         {ONBOARDING_DATA.map((item) => (
           <View key={item.id} style={styles.slide}>
             <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <View style={[styles.imageArea, { backgroundColor: colors.primaryLight + "40" }]}>
-                <Image source={item.image} style={styles.image} resizeMode="contain" />
-              </View>
+              <ImageBackground source={{ uri: item.image }} style={styles.imageArea} imageStyle={styles.imageStyle} resizeMode="cover">
+                <LinearGradient
+                  colors={["rgba(255,255,255,0)", "rgba(255,255,255,0.15)", "rgba(255,255,255,0.55)"]}
+                  style={StyleSheet.absoluteFill}
+                  pointerEvents="none"
+                />
+                <View style={[styles.iconBadge, { backgroundColor: colors.primary }]}>
+                  <MaterialCommunityIcons name={item.icon as any} size={22} color="#FFFFFF" />
+                </View>
+              </ImageBackground>
               <View style={styles.contentContainer}>
                 <View style={styles.titleRow}>
                   <Text style={[styles.smallTitle, { color: colors.mutedForeground }]}>{item.smallTitle}</Text>
@@ -100,8 +130,9 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   slide: { width, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20, flex: 1 },
   card: { flex: 1, borderRadius: 32, overflow: "hidden", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.08, shadowRadius: 20, elevation: 5 },
-  imageArea: { height: 320, width: "100%", borderBottomLeftRadius: 120, borderBottomRightRadius: 120, alignItems: "center", justifyContent: "center", padding: 20 },
-  image: { width: "80%", height: "80%" },
+  imageArea: { height: 360, width: "100%", justifyContent: "flex-end", alignItems: "flex-start", padding: 16, backgroundColor: "#F1F5F9" },
+  imageStyle: { borderBottomLeftRadius: 80, borderBottomRightRadius: 80 },
+  iconBadge: { width: 48, height: 48, borderRadius: 16, alignItems: "center", justifyContent: "center", shadowColor: "#16C47F", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 6 },
   contentContainer: { padding: 24, alignItems: "flex-end" },
   titleRow: { alignItems: "flex-end", marginBottom: 16 },
   smallTitle: { fontFamily: "Tajawal_600SemiBold", fontSize: 16, marginBottom: -4 },

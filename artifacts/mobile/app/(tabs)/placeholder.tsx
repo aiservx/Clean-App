@@ -5,5 +5,5 @@ import { Redirect } from "expo-router";
 // _layout.tsx and routes to /services, so this file should never render.
 // If it does (e.g. via deep link), redirect to home.
 export default function PlaceholderRoute() {
-  return <Redirect href="/(tabs)" />;
+  return <Redirect href={"/(tabs)/home" as any} />;
 }

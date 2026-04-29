@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { getCurrentResolved, distanceKm, type ResolvedAddress } from "@/lib/location";
 import { registerForPush } from "@/lib/notifications";
+import { FALLBACK_CATEGORIES } from "@/lib/serviceImages";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 
@@ -39,18 +40,24 @@ export default function HomeScreen() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: c }, { data: p }, { data: o }] = await Promise.all([
-        supabase.from("service_categories").select("*").order("sort").limit(8),
-        supabase
-          .from("providers")
-          .select("id, rating, experience_years, current_lat, current_lng, available, hourly_rate, profiles(full_name, avatar_url)")
-          .eq("status", "approved")
-          .limit(10),
-        supabase.from("offers").select("*").eq("active", true).limit(5),
-      ]);
-      if (c) setCats(c as any);
-      if (p) setProviders(p as any);
-      if (o) setOffers(o as any);
+      try {
+        const [catsRes, provRes, offersRes] = await Promise.all([
+          supabase.from("service_categories").select("*").order("sort").limit(8),
+          supabase
+            .from("providers")
+            .select("id, rating, experience_years, current_lat, current_lng, available, hourly_rate, profiles(full_name, avatar_url)")
+            .eq("status", "approved")
+            .limit(10),
+          supabase.from("offers").select("*").eq("active", true).limit(5),
+        ]);
+        const dbCats = (catsRes.data || []) as Cat[];
+        // Fall back to static categories so the home page is never empty
+        setCats(dbCats.length > 0 ? dbCats : (FALLBACK_CATEGORIES as any));
+        if (provRes.data) setProviders(provRes.data as any);
+        if (offersRes.data) setOffers(offersRes.data as any);
+      } catch {
+        setCats(FALLBACK_CATEGORIES as any);
+      }
       requestLocation();
       if (session?.user) registerForPush(session.user.id);
     })();

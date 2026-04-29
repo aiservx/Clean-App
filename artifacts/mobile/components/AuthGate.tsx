@@ -12,7 +12,7 @@ export default function AuthGate({ children, require = "user" as Role | "any" }:
       return;
     }
     if (require !== "any" && profile && profile.role !== require && profile.role !== "admin") {
-      router.replace(profile.role === "provider" ? "/(provider)" : "/(tabs)");
+      router.replace((profile.role === "provider" ? "/(provider)/home" : "/(tabs)/home") as any);
     }
   }, [loading, session, profile, require]);
   if (loading || !session) {
