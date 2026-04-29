@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; padding: 0; }
+body {
+  font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
+  background: #F6F8FB;
+  color: #0F1B2D;
+  direction: rtl;
+}
+button { font-family: inherit; }
+input, textarea, select { font-family: inherit; }
+
+.scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }

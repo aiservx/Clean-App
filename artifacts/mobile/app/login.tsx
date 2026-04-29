@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -19,8 +20,19 @@ export default function LoginScreen() {
     if (!email || !pwd) return Alert.alert("تنبيه", "أدخل البريد وكلمة المرور");
     setBusy(true);
     const { error } = await signIn(email.trim(), pwd);
+    if (error) {
+      setBusy(false);
+      return Alert.alert("خطأ", error);
+    }
+    // Auto-route based on role
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+      setBusy(false);
+      if (prof?.role === "provider") return router.replace("/(provider)" as any);
+      return router.replace("/(tabs)");
+    }
     setBusy(false);
-    if (error) return Alert.alert("خطأ", error);
     router.replace("/(tabs)");
   };
 

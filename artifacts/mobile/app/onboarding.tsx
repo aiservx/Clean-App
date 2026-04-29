@@ -6,6 +6,7 @@ import { useColors } from "@/hooks/useColors";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
@@ -30,11 +31,13 @@ export default function OnboardingScreen() {
     if (activeIndex < ONBOARDING_DATA.length - 1) {
       scrollRef.current?.scrollTo({ x: (activeIndex + 1) * width, animated: true });
     } else {
-      router.replace("/(tabs)");
+      AsyncStorage.setItem("onboarded", "1").then(() => router.replace("/login"));
     }
   };
 
-  const handleSkip = () => router.replace("/(tabs)");
+  const handleSkip = () => {
+    AsyncStorage.setItem("onboarded", "1").then(() => router.replace("/login"));
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

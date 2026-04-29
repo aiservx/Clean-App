@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import AppMap from "@/components/AppMap";
 import { useColors } from "@/hooks/useColors";
@@ -10,6 +11,8 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { getCurrentResolved, distanceKm, type ResolvedAddress } from "@/lib/location";
 import { registerForPush } from "@/lib/notifications";
+
+const { height: SCREEN_H } = Dimensions.get("window");
 
 type Cat = { id: string; title_ar: string; icon: string; color: string; sort: number };
 type Provider = {
@@ -19,6 +22,7 @@ type Provider = {
   current_lat: number | null;
   current_lng: number | null;
   available: boolean | null;
+  hourly_rate: number | null;
   profiles: { full_name: string | null; avatar_url: string | null } | null;
 };
 type Offer = { id: string; title_ar: string | null; desc_ar: string | null; discount: number | null };
@@ -31,22 +35,22 @@ export default function HomeScreen() {
   const [locating, setLocating] = useState(false);
   const [cats, setCats] = useState<Cat[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
-  const [offer, setOffer] = useState<Offer | null>(null);
+  const [offers, setOffers] = useState<Offer[]>([]);
 
   useEffect(() => {
     (async () => {
       const [{ data: c }, { data: p }, { data: o }] = await Promise.all([
-        supabase.from("service_categories").select("*").neq("id", "all").order("sort").limit(8),
+        supabase.from("service_categories").select("*").order("sort").limit(8),
         supabase
           .from("providers")
-          .select("id, rating, experience_years, current_lat, current_lng, available, profiles(full_name, avatar_url)")
+          .select("id, rating, experience_years, current_lat, current_lng, available, hourly_rate, profiles(full_name, avatar_url)")
           .eq("status", "approved")
           .limit(10),
-        supabase.from("offers").select("*").eq("active", true).limit(1).maybeSingle(),
+        supabase.from("offers").select("*").eq("active", true).limit(5),
       ]);
       if (c) setCats(c as any);
       if (p) setProviders(p as any);
-      if (o) setOffer(o as any);
+      if (o) setOffers(o as any);
       requestLocation();
       if (session?.user) registerForPush(session.user.id);
     })();
@@ -85,201 +89,318 @@ export default function HomeScreen() {
     else router.push(path as any);
   };
 
+  const mapHeight = Math.max(380, SCREEN_H * 0.55);
+  const firstName = profile?.full_name?.split(" ")[0];
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 110 }} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.card }]} onPress={() => router.push("/(tabs)/offers")}>
-              <Feather name="gift" size={18} color={colors.primary} />
-              <View style={[styles.notifDot, { backgroundColor: "#EF4444" }]} />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.card }]} onPress={() => router.push("/search")}>
-              <Feather name="search" size={18} color={colors.foreground} />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.card }]} onPress={() => requireAuth("/notifications")}>
-              <Feather name="bell" size={18} color={colors.foreground} />
-            </TouchableOpacity>
+    <View style={[styles.container, { backgroundColor: "#0F172A" }]}>
+      {/* FULLSCREEN MAP BACKGROUND */}
+      <View style={[styles.mapBg, { height: mapHeight }]}>
+        <AppMap
+          style={StyleSheet.absoluteFill}
+          region={region}
+          markers={nearbyProviders
+            .filter((p) => p.current_lat && p.current_lng)
+            .map((p) => ({ id: p.id, coordinate: { latitude: p.current_lat!, longitude: p.current_lng! }, color: colors.primary }))}
+        />
+        {/* User location dot */}
+        {loc && (
+          <View style={styles.userLocationDot} pointerEvents="none">
+            <View style={styles.userLocationPulse} />
+            <View style={[styles.userLocationInner, { backgroundColor: colors.primary }]} />
           </View>
-          <View style={styles.headerTitleContainer}>
-            <Text style={[styles.greeting, { color: colors.foreground }]}>
-              {profile?.full_name ? `مرحباً، ${profile.full_name.split(" ")[0]} 👋` : "مرحباً بك 👋"}
-            </Text>
-            <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>كيف يمكننا مساعدتك اليوم؟</Text>
-          </View>
-        </View>
-
-        {/* Offers Banner */}
-        {offer && (
-          <TouchableOpacity activeOpacity={0.9} onPress={() => router.push("/(tabs)/offers")} style={styles.offersBanner}>
-            <LinearGradient colors={[colors.primary, colors.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.offersBannerInner}>
-              <Feather name="chevron-left" size={20} color="#FFFFFF" />
-              <View style={styles.offersBannerContent}>
-                <Text style={styles.offersBannerTitle}>{offer.title_ar || "عروض حصرية بانتظارك"}</Text>
-                <Text style={styles.offersBannerSub}>{offer.desc_ar || `خصم حتى ${offer.discount || 30}%`}</Text>
-              </View>
-              <View style={styles.offersBannerIcon}><Feather name="gift" size={22} color="#FFFFFF" /></View>
-            </LinearGradient>
-          </TouchableOpacity>
         )}
+        {/* Soft top fade for header readability */}
+        <LinearGradient
+          colors={["rgba(15,23,42,0.55)", "rgba(15,23,42,0)"]}
+          style={[styles.topFade, { height: insets.top + 130 }]}
+          pointerEvents="none"
+        />
+      </View>
 
-        {/* MAP */}
-        <View style={styles.mapSection}>
-          <View style={styles.mapContainer}>
-            <AppMap
-              style={StyleSheet.absoluteFill}
-              region={region}
-              markers={nearbyProviders
-                .filter((p) => p.current_lat && p.current_lng)
-                .map((p) => ({ id: p.id, coordinate: { latitude: p.current_lat!, longitude: p.current_lng! }, color: colors.primary }))}
-            />
-            <View style={[styles.locationPill, { backgroundColor: colors.card }]}>
-              <Feather name="map-pin" size={14} color={colors.primary} />
-              <Text style={[styles.locationPillText, { color: colors.foreground }]} numberOfLines={1}>
-                {loc?.formatted || (locating ? "جاري تحديد الموقع..." : "حدد موقعك")}
-              </Text>
+      {/* FLOATING HEADER */}
+      <View style={[styles.floatHeader, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/offers")} style={styles.headerIconBtn}>
+            <BlurView intensity={Platform.OS === "ios" ? 60 : 100} tint="light" style={styles.iconBlur}>
+              <Feather name="gift" size={18} color={colors.primary} />
+              <View style={styles.notifDot} />
+            </BlurView>
+          </TouchableOpacity>
+
+          <BlurView intensity={Platform.OS === "ios" ? 60 : 100} tint="light" style={styles.greetingBlur}>
+            <Text style={styles.greetingText} numberOfLines={1}>
+              {firstName ? `مرحباً ${firstName} 👋` : "مرحباً بك 👋"}
+            </Text>
+            <Text style={styles.greetingSub} numberOfLines={1}>
+              {loc?.formatted ? loc.formatted : locating ? "جاري تحديد الموقع..." : "حدد موقعك الحالي"}
+            </Text>
+          </BlurView>
+
+          <TouchableOpacity onPress={() => requireAuth("/notifications")} style={styles.headerIconBtn}>
+            <BlurView intensity={Platform.OS === "ios" ? 60 : 100} tint="light" style={styles.iconBlur}>
+              <Feather name="bell" size={18} color="#0F172A" />
+            </BlurView>
+          </TouchableOpacity>
+        </View>
+
+        {/* Search bar floating */}
+        <TouchableOpacity activeOpacity={0.95} onPress={() => router.push("/search")} style={styles.searchWrap}>
+          <BlurView intensity={Platform.OS === "ios" ? 60 : 100} tint="light" style={styles.searchBlur}>
+            <Feather name="search" size={18} color="#64748B" />
+            <Text style={styles.searchPlaceholder}>ابحث عن خدمة أو فني...</Text>
+            <View style={[styles.searchAction, { backgroundColor: colors.primary }]}>
+              <Ionicons name="options-outline" size={16} color="#fff" />
             </View>
-            {loc && (
-              <View style={styles.userLocationDot}>
-                <View style={styles.userLocationPulse} />
-                <View style={[styles.userLocationInner, { backgroundColor: colors.accent }]} />
-              </View>
-            )}
-            <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { backgroundColor: colors.card }]}>
-              {locating ? <ActivityIndicator size="small" color={colors.primary} /> : <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />}
-            </TouchableOpacity>
-          </View>
-        </View>
+          </BlurView>
+        </TouchableOpacity>
+      </View>
 
-        {/* Services Section */}
-        <View style={styles.sectionHeader}>
-          <TouchableOpacity onPress={() => router.push("/services")}><Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text></TouchableOpacity>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>الخدمات</Text>
-        </View>
+      {/* GPS button on map */}
+      <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { top: insets.top + 175 }]}>
+        <BlurView intensity={Platform.OS === "ios" ? 70 : 100} tint="light" style={styles.gpsBlur}>
+          {locating ? <ActivityIndicator size="small" color={colors.primary} /> : <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />}
+        </BlurView>
+      </TouchableOpacity>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.servicesScroll}>
-          {cats.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              activeOpacity={0.85}
-              style={[styles.serviceCard, { backgroundColor: colors.card }]}
-              onPress={() => router.push({ pathname: "/services", params: { cat: cat.id } } as any)}
+      {/* SCROLLABLE SHEET on top */}
+      <ScrollView
+        style={StyleSheet.absoluteFill}
+        contentContainerStyle={{ paddingTop: mapHeight - 28, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* SHEET */}
+        <View style={styles.sheet}>
+          <View style={styles.sheetGrabber} />
+
+          {/* OFFERS */}
+          {offers.length > 0 && (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+              style={{ marginBottom: 18, marginTop: 4 }}
             >
-              <View style={[styles.svcIconWrap, { backgroundColor: cat.color + "1A" }]}>
-                <MaterialCommunityIcons name={cat.icon as any} size={28} color={cat.color} />
-              </View>
-              <Text style={[styles.serviceTitle, { color: colors.foreground }]} numberOfLines={2}>{cat.title_ar}</Text>
+              {offers.map((o, idx) => (
+                <TouchableOpacity key={o.id} activeOpacity={0.9} onPress={() => router.push("/(tabs)/offers")} style={styles.offerCard}>
+                  <LinearGradient
+                    colors={idx % 2 === 0 ? ["#16C47F", "#0EA968"] : ["#3B82F6", "#1E40AF"]}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={styles.offerInner}
+                  >
+                    <View style={{ flex: 1, alignItems: "flex-end" }}>
+                      <View style={styles.offerBadge}>
+                        <Text style={styles.offerBadgeText}>عرض</Text>
+                      </View>
+                      <Text style={styles.offerTitle} numberOfLines={1}>{o.title_ar}</Text>
+                      <Text style={styles.offerSub} numberOfLines={2}>{o.desc_ar}</Text>
+                      {!!o.discount && (
+                        <View style={styles.discountChip}>
+                          <Text style={styles.discountText}>خصم {o.discount}%</Text>
+                        </View>
+                      )}
+                    </View>
+                    <View style={styles.offerIcon}>
+                      <Feather name="gift" size={28} color="#fff" />
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+
+          {/* SERVICES */}
+          <View style={styles.sectionHeader}>
+            <TouchableOpacity onPress={() => router.push("/services")}>
+              <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Cleaners */}
-        <View style={styles.sectionHeader}>
-          <TouchableOpacity onPress={() => router.push("/services")}><Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text></TouchableOpacity>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>أقرب مزودين منك</Text>
-        </View>
-
-        {nearbyProviders.length === 0 ? (
-          <View style={styles.emptyBox}>
-            <MaterialCommunityIcons name="account-search-outline" size={48} color={colors.mutedForeground} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>لا يوجد مزودين متاحين قريبين منك حالياً</Text>
-            <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>جرّب لاحقاً أو وسّع نطاق البحث</Text>
+            <Text style={styles.sectionTitle}>الخدمات</Text>
           </View>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cleanersScroll}>
-            {nearbyProviders.slice(0, 8).map((p) => {
-              const initials = (p.profiles?.full_name || "؟").trim().split(" ").map((s) => s[0]).slice(0, 2).join("");
+
+          <View style={styles.servicesGrid}>
+            {cats.slice(0, 8).map((cat) => {
+              const baseColor = cat.color || "#16C47F";
               return (
                 <TouchableOpacity
-                  key={p.id}
-                  style={[styles.cleanerCard, { backgroundColor: colors.card }]}
-                  onPress={() => router.push({ pathname: "/provider/[id]", params: { id: p.id } } as any)}
+                  key={cat.id}
+                  activeOpacity={0.88}
+                  style={styles.svcTile}
+                  onPress={() => router.push({ pathname: "/services", params: { cat: cat.id } } as any)}
                 >
-                  <View style={[styles.cleanerAvatarMain, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-                    <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 18, color: colors.primary }}>{initials}</Text>
-                  </View>
-                  <Text style={[styles.cleanerName, { color: colors.foreground }]} numberOfLines={1}>{p.profiles?.full_name || "مزود خدمة"}</Text>
-                  <View style={styles.cleanerStats}>
-                    <Text style={[styles.cleanerExp, { color: colors.mutedForeground }]}>خبرة {p.experience_years || 0} سنوات</Text>
-                    <View style={styles.statDivider} />
-                    <View style={styles.ratingRow}>
-                      <Text style={[styles.ratingText, { color: colors.foreground }]}>{(p.rating || 0).toFixed(1)}</Text>
-                      <MaterialCommunityIcons name="star" size={14} color={colors.warning} />
+                  <LinearGradient
+                    colors={[baseColor, shade(baseColor, -18)]}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={styles.svcTileInner}
+                  >
+                    <View style={styles.svcIconBg}>
+                      <MaterialCommunityIcons name={(cat.icon as any) || "broom"} size={28} color="#fff" />
                     </View>
-                  </View>
-                  <View style={[styles.statusPill, { backgroundColor: p.available ? colors.successLight : colors.muted }]}>
-                    <Text style={[styles.statusText, { color: p.available ? colors.success : colors.mutedForeground }]}>{p.available ? "متاح الآن" : "غير متاح"}</Text>
-                  </View>
+                    <Text style={styles.svcTileTitle} numberOfLines={2}>{cat.title_ar}</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
-        )}
+          </View>
 
-        {/* AI Bot Card */}
-        <TouchableOpacity activeOpacity={0.9} style={styles.botCardWrap} onPress={() => router.push("/help")}>
-          <LinearGradient colors={[colors.accent, colors.accentDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.botCard}>
-            <View style={styles.botContent}>
-              <Text style={styles.botTitle}>المساعد الذكي</Text>
-              <Text style={styles.botSub}>اسأل عن أي خدمة وسنساعدك في اختيار الأنسب</Text>
+          {/* PROVIDERS */}
+          <View style={styles.sectionHeader}>
+            <TouchableOpacity onPress={() => router.push("/services")}>
+              <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
+            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>أقرب الفنيين</Text>
+          </View>
+
+          {nearbyProviders.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <MaterialCommunityIcons name="account-search-outline" size={42} color="#94A3B8" />
+              <Text style={styles.emptyText}>لا يوجد فنيين متاحين قريبين منك حالياً</Text>
             </View>
-            <View style={styles.botIcon}><MaterialCommunityIcons name="robot-happy" size={28} color="#FFF" /></View>
-          </LinearGradient>
-        </TouchableOpacity>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
+              {nearbyProviders.slice(0, 8).map((p) => {
+                const initials = (p.profiles?.full_name || "؟").trim().split(" ").map((s) => s[0]).slice(0, 2).join("");
+                return (
+                  <TouchableOpacity
+                    key={p.id}
+                    activeOpacity={0.9}
+                    style={styles.provCard}
+                    onPress={() => router.push({ pathname: "/provider/[id]", params: { id: p.id } } as any)}
+                  >
+                    <View style={styles.provAvatar}>
+                      <Text style={styles.provInitials}>{initials}</Text>
+                      {p.available && <View style={styles.provDot} />}
+                    </View>
+                    <Text style={styles.provName} numberOfLines={1}>{p.profiles?.full_name || "فني"}</Text>
+                    <View style={styles.provMeta}>
+                      <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
+                      <Text style={styles.provRating}>{(p.rating || 0).toFixed(1)}</Text>
+                      <Text style={styles.provDivider}>•</Text>
+                      <Text style={styles.provExp}>{p.experience_years || 0} سنة</Text>
+                    </View>
+                    {!!p.hourly_rate && (
+                      <View style={styles.provPrice}>
+                        <Text style={styles.provPriceText}>{Number(p.hourly_rate)} ر.س/ساعة</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          )}
+
+          {/* AI BOT */}
+          <TouchableOpacity activeOpacity={0.92} style={styles.botWrap} onPress={() => router.push("/help")}>
+            <LinearGradient colors={["#7C3AED", "#4F46E5"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.botCard}>
+              <View style={styles.botContent}>
+                <Text style={styles.botTitle}>المساعد الذكي ✨</Text>
+                <Text style={styles.botSub}>اسأل عن أي خدمة وسنساعدك في اختيار الأنسب</Text>
+              </View>
+              <View style={styles.botIcon}>
+                <MaterialCommunityIcons name="robot-happy" size={30} color="#FFF" />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
 }
 
+function shade(hex: string, percent: number) {
+  const m = hex.replace("#", "").match(/.{2}/g);
+  if (!m) return hex;
+  const [r, g, b] = m.map((c) => parseInt(c, 16));
+  const f = (n: number) => Math.max(0, Math.min(255, Math.round(n + (n * percent) / 100)));
+  return `#${[f(r), f(g), f(b)].map((n) => n.toString(16).padStart(2, "0")).join("")}`;
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 14 },
-  headerActions: { flexDirection: "row", gap: 8 },
-  iconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
-  notifDot: { position: "absolute", top: 8, right: 8, width: 8, height: 8, borderRadius: 4, borderWidth: 1, borderColor: "#FFFFFF" },
-  headerTitleContainer: { alignItems: "flex-end", flex: 1 },
-  greeting: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
-  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 12 },
-  offersBanner: { marginHorizontal: 16, marginBottom: 12, borderRadius: 18, overflow: "hidden", shadowColor: "#16C47F", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 10, elevation: 4 },
-  offersBannerInner: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 14, paddingVertical: 12, gap: 10 },
-  offersBannerIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
-  offersBannerContent: { flex: 1, alignItems: "flex-end" },
-  offersBannerTitle: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
-  offersBannerSub: { color: "rgba(255,255,255,0.9)", fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
-  mapSection: { paddingHorizontal: 16, marginBottom: 14 },
-  mapContainer: { height: 220, borderRadius: 22, overflow: "hidden", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 },
-  locationPill: { position: "absolute", top: 12, alignSelf: "center", flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, gap: 6, maxWidth: "85%", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  locationPillText: { fontFamily: "Tajawal_700Bold", fontSize: 12, flex: 1 },
-  userLocationDot: { position: "absolute", top: "50%", left: "50%", marginTop: -10, marginLeft: -10, width: 20, height: 20, alignItems: "center", justifyContent: "center" },
-  userLocationInner: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#FFFFFF" },
-  userLocationPulse: { position: "absolute", width: 30, height: 30, borderRadius: 15, backgroundColor: "rgba(47, 128, 237, 0.2)" },
-  gpsBtn: { position: "absolute", bottom: 12, left: 12, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 4 },
-  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
-  seeAll: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
-  servicesScroll: { paddingHorizontal: 12, gap: 12, marginBottom: 14, paddingVertical: 4 },
-  serviceCard: { width: 92, height: 108, borderRadius: 18, alignItems: "center", justifyContent: "center", padding: 10, gap: 8, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  svcIconWrap: { width: 50, height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center" },
-  serviceTitle: { fontFamily: "Tajawal_600SemiBold", fontSize: 11, textAlign: "center" },
-  cleanersScroll: { paddingHorizontal: 16, gap: 12 },
-  cleanerCard: { width: 150, borderRadius: 22, padding: 14, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  cleanerAvatarMain: { width: 64, height: 64, borderRadius: 32, marginBottom: 10 },
-  cleanerName: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 4 },
-  cleanerStats: { flexDirection: "row-reverse", alignItems: "center", gap: 6, marginBottom: 10 },
-  cleanerExp: { fontFamily: "Tajawal_400Regular", fontSize: 10 },
-  statDivider: { width: 1, height: 10, backgroundColor: "#E5E7EB" },
-  ratingRow: { flexDirection: "row-reverse", alignItems: "center", gap: 2 },
-  ratingText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
-  statusPill: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100 },
-  statusText: { fontFamily: "Tajawal_600SemiBold", fontSize: 10 },
-  emptyBox: { marginHorizontal: 16, padding: 24, borderRadius: 20, alignItems: "center", gap: 8 },
-  emptyText: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "center" },
-  emptyHint: { fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "center" },
-  botCardWrap: { marginHorizontal: 16, marginTop: 8, borderRadius: 22, overflow: "hidden", shadowColor: "#2F80ED", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 14, elevation: 5 },
-  botCard: { flexDirection: "row-reverse", alignItems: "center", padding: 16, gap: 12 },
+  mapBg: { position: "absolute", left: 0, right: 0, top: 0 },
+  topFade: { position: "absolute", top: 0, left: 0, right: 0 },
+
+  floatHeader: { position: "absolute", left: 0, right: 0, paddingHorizontal: 14, gap: 12, zIndex: 5 },
+  headerRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+
+  headerIconBtn: { borderRadius: 14, overflow: "hidden" },
+  iconBlur: {
+    width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(255,255,255,0.5)",
+  },
+  notifDot: { position: "absolute", top: 9, right: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: "#EF4444", borderWidth: 1, borderColor: "#fff" },
+
+  greetingBlur: {
+    flex: 1, height: 44, borderRadius: 14, paddingHorizontal: 14, justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(255,255,255,0.5)",
+    alignItems: "flex-end", overflow: "hidden",
+  },
+  greetingText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A" },
+  greetingSub: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#475569", marginTop: 1 },
+
+  searchWrap: { borderRadius: 18, overflow: "hidden" },
+  searchBlur: {
+    flexDirection: "row-reverse", alignItems: "center", gap: 10, paddingHorizontal: 14, height: 50, borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)",
+  },
+  searchPlaceholder: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#94A3B8", textAlign: "right" },
+  searchAction: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+
+  userLocationDot: { position: "absolute", top: "45%", left: "50%", marginLeft: -12, marginTop: -12, alignItems: "center", justifyContent: "center", width: 24, height: 24 },
+  userLocationInner: { width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: "#fff" },
+  userLocationPulse: { position: "absolute", width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(22,196,127,0.25)" },
+
+  gpsBtn: { position: "absolute", left: 16, borderRadius: 14, overflow: "hidden", zIndex: 6 },
+  gpsBlur: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.85)" },
+
+  sheet: {
+    backgroundColor: "#F8FAFC",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 12,
+    minHeight: 600,
+  },
+  sheetGrabber: { width: 38, height: 4, borderRadius: 2, backgroundColor: "#CBD5E1", alignSelf: "center", marginBottom: 14 },
+
+  offerCard: { width: 290, height: 110, borderRadius: 20, overflow: "hidden" },
+  offerInner: { flex: 1, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12 },
+  offerBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, marginBottom: 6 },
+  offerBadgeText: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 10 },
+  offerTitle: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 3 },
+  offerSub: { color: "rgba(255,255,255,0.95)", fontFamily: "Tajawal_500Medium", fontSize: 11, lineHeight: 16 },
+  discountChip: { backgroundColor: "rgba(255,255,255,0.95)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100, marginTop: 8 },
+  discountText: { color: "#0F172A", fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  offerIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
+
+  sectionHeader: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A" },
+  seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
+
+  servicesGrid: { flexDirection: "row-reverse", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 22 },
+  svcTile: { width: "31.3%", aspectRatio: 1, borderRadius: 20, overflow: "hidden", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 },
+  svcTileInner: { flex: 1, padding: 12, justifyContent: "space-between" },
+  svcIconBg: { width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center" },
+  svcTileTitle: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 12.5, textAlign: "right", lineHeight: 16 },
+
+  emptyBox: { marginHorizontal: 16, padding: 26, borderRadius: 18, alignItems: "center", gap: 8, backgroundColor: "#fff" },
+  emptyText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#64748B", textAlign: "center" },
+
+  provCard: { width: 158, backgroundColor: "#fff", borderRadius: 22, padding: 14, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2, marginBottom: 4 },
+  provAvatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: "#E0F7EE", alignItems: "center", justifyContent: "center", marginBottom: 10, position: "relative" },
+  provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
+  provDot: { position: "absolute", bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: "#10B981", borderWidth: 2.5, borderColor: "#fff" },
+  provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
+  provMeta: { flexDirection: "row-reverse", alignItems: "center", gap: 4, marginBottom: 8 },
+  provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
+  provDivider: { color: "#CBD5E1", fontSize: 10 },
+  provExp: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#64748B" },
+  provPrice: { backgroundColor: "#F0FDF4", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100 },
+  provPriceText: { color: "#16C47F", fontFamily: "Tajawal_700Bold", fontSize: 10 },
+
+  botWrap: { marginHorizontal: 16, marginTop: 22, borderRadius: 22, overflow: "hidden", shadowColor: "#7C3AED", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 14, elevation: 5 },
+  botCard: { flexDirection: "row-reverse", alignItems: "center", padding: 16, gap: 14 },
   botIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
   botContent: { flex: 1, alignItems: "flex-end" },
   botTitle: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
-  botSub: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12, marginTop: 2 },
+  botSub: { color: "rgba(255,255,255,0.9)", fontFamily: "Tajawal_500Medium", fontSize: 11.5, marginTop: 3 },
 });

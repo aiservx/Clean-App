@@ -177,13 +177,6 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        <TouchableOpacity
-          style={[styles.switchBtn, { backgroundColor: colors.accentLight, borderWidth: 1, borderColor: colors.accent }]}
-          onPress={() => router.replace("/(provider)")}
-        >
-          <Feather name="briefcase" size={16} color={colors.accent} />
-          <Text style={[styles.switchT, { color: colors.accent }]}>التبديل لحساب مزود خدمة</Text>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
