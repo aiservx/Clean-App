@@ -147,7 +147,6 @@ export default function OffersScreen() {
           <ScrollView
             ref={heroScrollRef}
             horizontal
-            pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={onHeroScroll}
             decelerationRate="fast"

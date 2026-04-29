@@ -4,7 +4,7 @@ import {
   Image, Animated, Platform, KeyboardAvoidingView, ImageSourcePropType,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
@@ -54,6 +54,7 @@ type ChatMessage = {
   provider?: ProviderItem;
   address?: string;
   phone?: string;
+  orderNumber?: string;
 };
 
 type BookingState = {
@@ -69,18 +70,8 @@ const nextId = () => `msg-${++msgId}`;
 
 export default function ChatScreen() {
   const { session, profile } = useAuth();
-  const _colors = useColors();
-  if (!session) {
-    return (
-      <View style={{ flex: 1, backgroundColor: _colors.background }}>
-        <GuestEmpty title="المساعد الذكي" subtitle="سجّل دخولك للتحدث مع المساعد الذكي" icon="robot-happy-outline" />
-        <FloatingTabBar active="chat" />
-      </View>
-    );
-  }
-
-  const insets = useSafeAreaInsets();
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -120,16 +111,27 @@ export default function ChatScreen() {
   // Typing animation
   useEffect(() => {
     if (typing) {
-      Animated.loop(
+      const anim = Animated.loop(
         Animated.sequence([
           Animated.timing(typingAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
           Animated.timing(typingAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
         ])
-      ).start();
+      );
+      anim.start();
+      return () => anim.stop();
     } else {
       typingAnim.setValue(0);
     }
   }, [typing]);
+
+  if (!session) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <GuestEmpty title="المساعد الذكي" subtitle="سجّل دخولك للتحدث مع المساعد الذكي" icon="robot-happy-outline" />
+        <FloatingTabBar active="chat" />
+      </View>
+    );
+  }
 
   const handleSelectService = (svc: ServiceItem) => {
     addUserMessage(svc.title);
@@ -189,10 +191,12 @@ export default function ChatScreen() {
     addUserMessage("تأكيد الحجز ✅");
     setBooking((prev) => ({ ...prev, step: "confirmed" }));
     setTimeout(() => {
+      const orderNum = `CLN${Date.now().toString().slice(-6)}`;
       setMessages((prev) => [...prev, {
         id: nextId(), role: "bot",
         text: "تم إرسال طلب الحجز بنجاح! 🎊\n\nسيتم التواصل معك خلال دقائق لتأكيد الموعد.\n\nشكراً لاختيارك نظافة! 💚",
         cardType: "confirmation",
+        orderNumber: orderNum,
       }]);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     }, 800);
@@ -309,14 +313,14 @@ export default function ChatScreen() {
     );
   };
 
-  const renderConfirmation = () => (
+  const renderConfirmation = (msg: ChatMessage) => (
     <View style={s.confirmationCard}>
       <LinearGradient colors={["#16C47F", "#0EA968"]} style={s.confirmGrad}>
         <View style={s.confirmIconWrap}>
           <Feather name="check" size={36} color="#FFF" />
         </View>
         <Text style={s.confirmTitle}>تم تأكيد الحجز!</Text>
-        <Text style={s.confirmSub}>رقم الطلب: #CLN{Date.now().toString().slice(-6)}</Text>
+        <Text style={s.confirmSub}>رقم الطلب: #{msg.orderNumber || "CLN000000"}</Text>
       </LinearGradient>
       <TouchableOpacity style={s.newBookingBtn} activeOpacity={0.85} onPress={handleNewBooking}>
         <Text style={s.newBookingBtnText}>حجز خدمة جديدة</Text>
@@ -365,7 +369,7 @@ export default function ChatScreen() {
                 {msg.cardType === "services" && renderServiceCards()}
                 {msg.cardType === "providers" && renderProviderCards()}
                 {msg.cardType === "invoice" && renderInvoice(msg)}
-                {msg.cardType === "confirmation" && renderConfirmation()}
+                {msg.cardType === "confirmation" && renderConfirmation(msg)}
               </View>
             </View>
           ))}
