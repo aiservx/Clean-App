@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,6 +8,9 @@ import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
+
+const { width: SCREEN_W } = Dimensions.get("window");
+const HERO_CARD_W = SCREEN_W - 32;
 
 type Stat = { id: string; icon: string; label: string; value: string; color: string; isReferral?: boolean };
 
@@ -18,17 +21,42 @@ const STATS: Stat[] = [
   { id: "referral", icon: "users", label: "دعوة الأصدقاء", value: "اربح 50 ر.س", color: "#16C47F", isReferral: true },
 ];
 
+const HERO_SLIDES = [
+  {
+    id: "weekly",
+    badge: "عرض الأسبوع ⭐",
+    discount: "20",
+    title: "على جميع خدمات التنظيف",
+    subtitle: "عرض لفترة محدودة على جميع الخدمات",
+    cta: "احجز الآن",
+    image: require("@/assets/images/offers-hero-basket.jpg"),
+    bg: ["#E8F5EE", "#D1FAE5"] as const,
+    textColor: "#0F172A",
+  },
+  {
+    id: "homes",
+    badge: "عرض خاص",
+    discount: "30",
+    title: "تنظيف المنازل",
+    subtitle: "للفترة محدودة! احجز الآن واستفد من خصم يصل إلى 30%",
+    cta: "احجز الآن",
+    image: require("@/assets/images/illustration-bucket.png"),
+    bg: ["#FEF3C7", "#FDE68A"] as const,
+    textColor: "#0F172A",
+  },
+];
+
 const SEASONAL = [
   {
-    id: "ramadan",
-    title: "عرض رمضان المبارك",
+    id: "eid",
+    title: "عرض عيد الأضحى المبارك",
     subtitle: "خصم على جميع خدمات التنظيف",
-    discount: "15% خصم",
-    countdown: { days: "05", hours: "14", minutes: "32" },
+    discount: "25% خصم",
+    countdown: { days: "12", hours: "06", minutes: "15" },
     bg: "#1E3A5F",
     accentBg: "#16C47F",
     isLight: false,
-    decoration: "moon",
+    decoration: "eid",
   },
   {
     id: "summer",
@@ -74,7 +102,24 @@ export default function OffersScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [activeDot, setActiveDot] = useState(1);
+  const [activeDot, setActiveDot] = useState(0);
+  const heroScrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveDot((prev) => {
+        const next = (prev + 1) % HERO_SLIDES.length;
+        heroScrollRef.current?.scrollTo({ x: next * (HERO_CARD_W + 12), animated: true });
+        return next;
+      });
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const onHeroScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / (HERO_CARD_W + 12));
+    if (idx !== activeDot) setActiveDot(idx);
+  };
 
   const copyCode = (code: string, id: string) => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -97,34 +142,54 @@ export default function OffersScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
-        {/* Hero Card: WELCOME20 */}
+        {/* Hero Slider */}
         <View style={styles.heroWrap}>
-          <View style={[styles.heroCard, { backgroundColor: "#E8F5EE" }]}>
-            <View style={styles.heroLeft}>
-              <Image
-                source={require("@/assets/images/offers-hero-basket.jpg")}
-                style={styles.heroImage}
-                resizeMode="contain"
-              />
-            </View>
-            <View style={styles.heroRight}>
-              <View style={styles.heroDiscountRow}>
-                <Text style={styles.heroPercent}>%</Text>
-                <Text style={[styles.heroDiscount, { color: "#0F172A" }]}>20</Text>
-                <Text style={[styles.heroKhasm, { color: "#0F172A" }]}>خصم</Text>
-              </View>
-              <Text style={[styles.heroSubtitle, { color: "#475569" }]}>على أول طلب لك</Text>
-              <Text style={[styles.heroCodeLine, { color: "#475569" }]}>
-                استخدم الكود: <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary }}>WELCOME20</Text>
-              </Text>
-            </View>
-          </View>
+          <ScrollView
+            ref={heroScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={onHeroScroll}
+            decelerationRate="fast"
+            snapToInterval={HERO_CARD_W + 12}
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+          >
+            {HERO_SLIDES.map((slide) => (
+              <LinearGradient
+                key={slide.id}
+                colors={[...slide.bg]}
+                style={[styles.heroCard, { width: HERO_CARD_W }]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.heroRight}>
+                  <View style={styles.heroBadge}>
+                    <Text style={styles.heroBadgeText}>{slide.badge}</Text>
+                  </View>
+                  <View style={styles.heroDiscountRow}>
+                    <Text style={[styles.heroKhasm, { color: slide.textColor }]}>خصم</Text>
+                    <Text style={[styles.heroDiscount, { color: slide.textColor }]}>{slide.discount}%</Text>
+                  </View>
+                  <Text style={[styles.heroTitle, { color: slide.textColor }]}>{slide.title}</Text>
+                  <Text style={[styles.heroSubtitle, { color: "#475569" }]}>{slide.subtitle}</Text>
+                  <TouchableOpacity style={[styles.heroCta, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.heroCtaText}>{slide.cta}</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.heroLeft}>
+                  <Image source={slide.image} style={styles.heroImage} resizeMode="contain" />
+                </View>
+              </LinearGradient>
+            ))}
+          </ScrollView>
 
           <View style={styles.dotsRow}>
-            {[0, 1, 2, 3, 4].map((i) => (
+            {HERO_SLIDES.map((_, i) => (
               <TouchableOpacity
                 key={i}
-                onPress={() => setActiveDot(i)}
+                onPress={() => {
+                  setActiveDot(i);
+                  heroScrollRef.current?.scrollTo({ x: i * (HERO_CARD_W + 12), animated: true });
+                }}
                 style={[
                   styles.pageDot,
                   {
@@ -167,10 +232,10 @@ export default function OffersScreen() {
               style={[styles.seasonalCard, { backgroundColor: s.bg }]}
               activeOpacity={0.85}
             >
-              {s.decoration === "moon" && (
+              {s.decoration === "eid" && (
                 <View style={styles.seasonalDecorationMoon}>
-                  <MaterialCommunityIcons name="moon-waning-crescent" size={36} color="#FCD34D" />
-                  <MaterialCommunityIcons name="lamp" size={28} color="#F59E0B" style={{ marginTop: 4 }} />
+                  <MaterialCommunityIcons name="mosque" size={36} color="#FCD34D" />
+                  <MaterialCommunityIcons name="star-crescent" size={28} color="#F59E0B" style={{ marginTop: 4 }} />
                 </View>
               )}
               {s.decoration === "palm" && (
@@ -337,27 +402,42 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
 
   // Hero
-  heroWrap: { paddingHorizontal: 16, marginBottom: 18 },
+  heroWrap: { marginBottom: 18 },
   heroCard: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     borderRadius: 24,
-    padding: 16,
-    minHeight: 130,
+    padding: 18,
+    minHeight: 170,
+    overflow: "hidden",
   },
-  heroLeft: { width: 130, height: 110, alignItems: "center", justifyContent: "center" },
+  heroLeft: { width: 130, height: 130, alignItems: "center", justifyContent: "center" },
   heroImage: { width: "100%", height: "100%" },
-  heroRight: { flex: 1, alignItems: "flex-end", paddingRight: 6 },
+  heroRight: { flex: 1, alignItems: "flex-end", paddingRight: 8 },
+  heroBadge: {
+    backgroundColor: "rgba(255,255,255,0.75)",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 100,
+    marginBottom: 8,
+  },
+  heroBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#16C47F" },
   heroDiscountRow: {
     flexDirection: "row-reverse",
-    alignItems: "flex-end",
-    gap: 4,
+    alignItems: "baseline",
+    gap: 6,
+    marginBottom: 4,
   },
-  heroKhasm: { fontFamily: "Tajawal_700Bold", fontSize: 28, lineHeight: 32 },
-  heroDiscount: { fontFamily: "Tajawal_700Bold", fontSize: 36, lineHeight: 40 },
-  heroPercent: { fontFamily: "Tajawal_700Bold", fontSize: 22, color: "#0F172A", marginBottom: 6 },
-  heroSubtitle: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginTop: 4 },
-  heroCodeLine: { fontFamily: "Tajawal_500Medium", fontSize: 12, marginTop: 8 },
+  heroKhasm: { fontFamily: "Tajawal_700Bold", fontSize: 22 },
+  heroDiscount: { fontFamily: "Tajawal_700Bold", fontSize: 34, lineHeight: 38 },
+  heroTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 4 },
+  heroSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 10 },
+  heroCta: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 100,
+  },
+  heroCtaText: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   dotsRow: { flexDirection: "row", justifyContent: "center", gap: 5, marginTop: 12 },
   pageDot: { height: 6, borderRadius: 3 },
 
