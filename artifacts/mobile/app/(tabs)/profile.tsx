@@ -54,10 +54,10 @@ export default function ProfileScreen() {
     );
   }
 
-  const displayAddresses = addresses.length > 0 ? addresses : FALLBACK_ADDRESSES;
-  const userName = profile?.full_name || "أحمد محمد";
-  const userPhone = profile?.phone || "+966 50 123 4567";
-  const userEmail = profile?.email || "ahmed.m@example.com";
+  const displayAddresses = addresses;
+  const userName = profile?.full_name || t("the_user");
+  const userPhone = profile?.phone || "";
+  const userEmail = profile?.email || "";
 
   return (
     <View style={[s.root, { backgroundColor: "#F8FAFC" }]}>
@@ -130,28 +130,36 @@ export default function ProfileScreen() {
         </View>
 
         <View style={s.addressList}>
-          {displayAddresses.map((addr: any) => (
-            <View key={addr.id} style={s.addressItem}>
-              <TouchableOpacity>
-                <Text style={s.addrMore}>...</Text>
-              </TouchableOpacity>
-              {addr.is_default && (
-                <View style={s.defaultBadge}>
-                  <Text style={s.defaultBadgeText}>الرئيسي</Text>
+          {displayAddresses.length === 0 ? (
+            <TouchableOpacity style={s.addAddrEmpty} onPress={() => router.push("/address-form")}>
+              <Text style={s.addAddrText}>+ إضافة عنوان جديد</Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              {displayAddresses.map((addr: any) => (
+                <View key={addr.id} style={s.addressItem}>
+                  <TouchableOpacity>
+                    <Text style={s.addrMore}>...</Text>
+                  </TouchableOpacity>
+                  {addr.is_default && (
+                    <View style={s.defaultBadge}>
+                      <Text style={s.defaultBadgeText}>الرئيسي</Text>
+                    </View>
+                  )}
+                  <View style={s.addrTextWrap}>
+                    <Text style={s.addrTitle}>{addr.title}</Text>
+                    <Text style={s.addrSub} numberOfLines={1}>{addr.address || addr.street || ""}</Text>
+                  </View>
+                  <View style={[s.addrIcon, { backgroundColor: addr.iconBg || "#DCFCE7" }]}>
+                    <Feather name={(addr.icon || "map-pin") as any} size={20} color={addr.iconColor || "#16C47F"} />
+                  </View>
                 </View>
-              )}
-              <View style={s.addrTextWrap}>
-                <Text style={s.addrTitle}>{addr.title}</Text>
-                <Text style={s.addrSub} numberOfLines={1}>{addr.address || addr.street || ""}</Text>
-              </View>
-              <View style={[s.addrIcon, { backgroundColor: addr.iconBg || "#DCFCE7" }]}>
-                <Feather name={(addr.icon || "map-pin") as any} size={20} color={addr.iconColor || "#16C47F"} />
-              </View>
-            </View>
-          ))}
-          <TouchableOpacity style={s.addAddr} onPress={() => router.push("/address-form")}>
-            <Text style={s.addAddrText}>+ إضافة عنوان جديد</Text>
-          </TouchableOpacity>
+              ))}
+              <TouchableOpacity style={s.addAddr} onPress={() => router.push("/address-form")}>
+                <Text style={s.addAddrText}>+ إضافة عنوان جديد</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         {/* Menu */}
@@ -173,6 +181,12 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Sign Out */}
+        <TouchableOpacity style={s.signOutBtn} onPress={onSignOut}>
+          <Feather name="log-out" size={18} color="#EF4444" />
+          <Text style={s.signOutText}>{t("signout")}</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -221,6 +235,7 @@ const s = StyleSheet.create({
   addrMore: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#94A3B8", paddingHorizontal: 6 },
   defaultBadge: { backgroundColor: "#DCFCE7", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, marginRight: 4 },
   defaultBadgeText: { fontFamily: "Tajawal_600SemiBold", fontSize: 10, color: "#16C47F" },
+  addAddrEmpty: { height: 56, borderRadius: 18, borderWidth: 1, borderStyle: "dashed", borderColor: "#3B82F6", alignItems: "center", justifyContent: "center", marginBottom: 10 },
   addAddr: { alignItems: "center", paddingVertical: 10 },
   addAddrText: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#3B82F6" },
 
@@ -231,4 +246,6 @@ const s = StyleSheet.create({
   menuTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#1E293B", marginBottom: 2 },
   menuSub: { fontFamily: "Tajawal_400Regular", fontSize: 11, color: "#94A3B8" },
   menuIconWrap: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  signOutBtn: { marginHorizontal: 16, marginTop: 4, marginBottom: 16, height: 52, borderRadius: 18, backgroundColor: "#FEF2F2", flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 10 },
+  signOutText: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#EF4444" },
 });
