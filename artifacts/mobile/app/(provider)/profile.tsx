@@ -139,11 +139,11 @@ export default function ProviderProfile() {
             </TouchableOpacity>
           ))}
 
-          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.card }]} onPress={onSignOut}>
-            <Feather name="chevron-left" size={18} color={colors.mutedForeground} />
-            <Text style={[styles.menuT, { color: colors.danger }]}>تسجيل الخروج</Text>
-            <View style={[styles.menuI, { backgroundColor: colors.dangerLight }]}>
-              <Feather name="log-out" size={16} color={colors.danger} />
+          <TouchableOpacity style={styles.signOutBtn} onPress={onSignOut} activeOpacity={0.85}>
+            <Feather name="chevron-left" size={16} color="#FCA5A5" />
+            <Text style={styles.signOutText}>تسجيل الخروج</Text>
+            <View style={styles.signOutIcon}>
+              <Feather name="log-out" size={16} color="#EF4444" />
             </View>
           </TouchableOpacity>
         </View>
@@ -177,4 +177,7 @@ const styles = StyleSheet.create({
   menuItem: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
   menuT: { flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginHorizontal: 10 },
   menuI: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  signOutBtn: { flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 16, marginTop: 12, backgroundColor: "#FFF5F5", borderWidth: 1, borderColor: "#FECACA", shadowColor: "#EF4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 },
+  signOutText: { flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#DC2626", textAlign: "right", marginHorizontal: 10 },
+  signOutIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#FEE2E2", alignItems: "center", justifyContent: "center" },
 });

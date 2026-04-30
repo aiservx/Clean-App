@@ -206,7 +206,7 @@ export default function HomeScreen() {
       </View>
 
       {/* GPS button on map */}
-      <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { top: insets.top + 175 }]}>
+      <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { top: mapHeight - 60 }]}>
         <BlurView intensity={Platform.OS === "ios" ? 70 : 100} tint="light" style={styles.gpsBlur}>
           {locating ? <ActivityIndicator size="small" color={colors.primary} /> : <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />}
         </BlurView>
@@ -411,15 +411,20 @@ const styles = StyleSheet.create({
   userLocationInner: { width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: "#fff" },
   userLocationPulse: { position: "absolute", width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(22,196,127,0.25)" },
 
-  gpsBtn: { position: "absolute", left: 16, borderRadius: 14, overflow: "hidden", zIndex: 6 },
-  gpsBlur: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.85)" },
+  gpsBtn: { position: "absolute", right: 16, borderRadius: 16, overflow: "hidden", zIndex: 6, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 3 },
+  gpsBlur: { width: 46, height: 46, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.92)", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)" },
 
   sheet: {
     backgroundColor: "#F8FAFC",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingTop: 12,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 14,
     minHeight: 600,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 8,
   },
   sheetGrabber: { width: 38, height: 4, borderRadius: 2, backgroundColor: "#CBD5E1", alignSelf: "center", marginBottom: 14 },
 
@@ -442,39 +447,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 6,
   },
-  // Clean white card with the 3D illustration centered (matches reference design exactly)
   svcCardSurface: {
     width: 96,
     height: 96,
-    borderRadius: 22,
+    borderRadius: 24,
     marginBottom: 10,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: "#F1F5F9",
+    shadowColor: "#64748B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 16,
+    elevation: 5,
+    borderWidth: 0.5,
+    borderColor: "#E2E8F0",
   },
   svcCardImage: {
-    width: 80,
-    height: 80,
+    width: 72,
+    height: 72,
   },
   svcCardTitle: {
-    fontFamily: "Tajawal_500Medium",
-    fontSize: 13,
-    color: "#1E293B",
+    fontFamily: "Tajawal_600SemiBold",
+    fontSize: 12,
+    color: "#334155",
     textAlign: "center",
-    letterSpacing: 0.1,
+    letterSpacing: 0.2,
   },
 
   emptyBox: { marginHorizontal: 16, padding: 26, borderRadius: 18, alignItems: "center", gap: 8, backgroundColor: "#fff" },
   emptyText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#64748B", textAlign: "center" },
 
-  provCard: { width: 158, backgroundColor: "#fff", borderRadius: 22, padding: 14, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2, marginBottom: 4 },
+  provCard: { width: 158, backgroundColor: "#fff", borderRadius: 22, padding: 14, alignItems: "center", shadowColor: "#64748B", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 14, elevation: 3, marginBottom: 4, borderWidth: 0.5, borderColor: "#F1F5F9" },
   provAvatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: "#E0F7EE", alignItems: "center", justifyContent: "center", marginBottom: 10, position: "relative" },
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
   provDot: { position: "absolute", bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: "#10B981", borderWidth: 2.5, borderColor: "#fff" },
