@@ -94,6 +94,7 @@ const DICT: Dict = {
   my_orders_sub: { ar: "إدارة جميع حجوزاتك", en: "Manage all your bookings" },
   favorites: { ar: "المفضلة", en: "Favorites" },
   favorites_sub: { ar: "العمال المفضلين لديك", en: "Your favorite pros" },
+  offers: { ar: "العروض", en: "Offers" },
   offers_disc: { ar: "العروض والخصومات", en: "Offers & discounts" },
   offers_disc_sub: { ar: "أحدث العروض الحصرية", en: "Latest exclusive deals" },
   invite_friends: { ar: "دعوة الأصدقاء", en: "Invite friends" },

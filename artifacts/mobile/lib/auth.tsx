@@ -36,7 +36,6 @@ async function ensureProfile(uid: string, fallback?: Partial<Profile>): Promise<
 
   if (existing && !selErr) return existing as Profile;
 
-  // No profile row — derive from auth user metadata and upsert
   const { data: { user } } = await supabase.auth.getUser();
   const meta: any = user?.user_metadata || {};
   const draft: Profile = {
@@ -71,16 +70,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const p = await ensureProfile(uid);
       setProfile(p);
     } catch (e) {
-      // Even if DB fails, set a minimal profile so the app can route forward
-      const { data: { user } } = await supabase.auth.getUser();
-      setProfile({
-        id: uid,
-        full_name: (user?.user_metadata as any)?.full_name ?? null,
-        phone: (user?.user_metadata as any)?.phone ?? null,
-        email: user?.email ?? null,
-        avatar_url: null,
-        role: ((user?.user_metadata as any)?.role as Role) ?? "user",
-      });
+      console.warn("[v0] loadProfile failed:", (e as Error)?.message);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setProfile({
+          id: uid,
+          full_name: (user?.user_metadata as any)?.full_name ?? null,
+          phone: (user?.user_metadata as any)?.phone ?? null,
+          email: user?.email ?? null,
+          avatar_url: null,
+          role: ((user?.user_metadata as any)?.role as Role) ?? "user",
+        });
+      } catch {
+        setProfile({
+          id: uid,
+          full_name: null,
+          phone: null,
+          email: null,
+          avatar_url: null,
+          role: "user",
+        });
+      }
     } finally {
       setProfileLoaded(true);
       inFlight.current = false;
@@ -92,27 +102,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let unsub: any;
 
     (async () => {
-      const { data: { session: s0 } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      setSession(s0);
-      if (s0?.user) {
-        await loadProfile(s0.user.id);
-      } else {
-        setProfileLoaded(true);
-      }
-      setLoading(false);
-
-      const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
-        setSession(s);
-        if (s?.user) {
-          setProfileLoaded(false);
-          await loadProfile(s.user.id);
+      try {
+        const { data: { session: s0 } } = await supabase.auth.getSession();
+        if (!mounted) return;
+        setSession(s0);
+        if (s0?.user) {
+          try {
+            await loadProfile(s0.user.id);
+          } catch {
+            if (mounted) setProfileLoaded(true);
+          }
         } else {
+          if (mounted) setProfileLoaded(true);
+        }
+      } catch (e) {
+        console.warn("[v0] getSession() failed:", (e as Error)?.message);
+        try { await supabase.auth.signOut(); } catch {}
+        if (mounted) {
+          setSession(null);
           setProfile(null);
           setProfileLoaded(true);
         }
-      });
-      unsub = sub.subscription;
+      } finally {
+        if (mounted) setLoading(false);
+      }
+
+      try {
+        const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
+          if (!mounted) return;
+          setSession(s);
+          if (s?.user) {
+            setProfileLoaded(false);
+            try {
+              await loadProfile(s.user.id);
+            } catch {
+              if (mounted) setProfileLoaded(true);
+            }
+          } else {
+            setProfile(null);
+            setProfileLoaded(true);
+          }
+        });
+        unsub = sub.subscription;
+      } catch (e) {
+        console.warn("[v0] onAuthStateChange failed:", (e as Error)?.message);
+      }
     })();
 
     return () => {
@@ -122,37 +156,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadProfile]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
-    if (data.user) {
-      const p = await ensureProfile(data.user.id);
-      setProfile(p);
-      setProfileLoaded(true);
-      return { role: p.role };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: error.message };
+      if (data.user) {
+        try {
+          const p = await ensureProfile(data.user.id);
+          setProfile(p);
+          setProfileLoaded(true);
+          return { role: p.role };
+        } catch (e) {
+          console.warn("[v0] ensureProfile after signIn failed:", (e as Error)?.message);
+          setProfileLoaded(true);
+          return { role: "user" as Role };
+        }
+      }
+      return {};
+    } catch (e) {
+      return { error: (e as Error)?.message || "Network error" };
     }
-    return {};
   }, []);
 
   const signUp = useCallback(async (p: { email: string; password: string; full_name: string; phone: string; role: Role }) => {
-    const { data, error } = await supabase.auth.signUp({
-      email: p.email,
-      password: p.password,
-      options: { data: { full_name: p.full_name, phone: p.phone, role: p.role } },
-    });
-    if (error) return { error: error.message };
-    // Create profile immediately if we got a user back (depends on email-confirm setting)
-    if (data.user) {
-      try {
-        await ensureProfile(data.user.id, { full_name: p.full_name, phone: p.phone, role: p.role });
-      } catch {}
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: p.email,
+        password: p.password,
+        options: { data: { full_name: p.full_name, phone: p.phone, role: p.role } },
+      });
+      if (error) return { error: error.message };
+      if (data.user) {
+        try {
+          await ensureProfile(data.user.id, { full_name: p.full_name, phone: p.phone, role: p.role });
+        } catch {}
+      }
+      return {};
+    } catch (e) {
+      return { error: (e as Error)?.message || "Network error" };
     }
-    return {};
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setProfileLoaded(true);
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn("[v0] signOut network call failed:", (e as Error)?.message);
+    } finally {
+      setSession(null);
+      setProfile(null);
+      setProfileLoaded(true);
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {

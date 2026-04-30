@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,7 +13,7 @@ import { getCurrentResolved, distanceKm, type ResolvedAddress } from "@/lib/loca
 import { registerForPush } from "@/lib/notifications";
 import { FALLBACK_CATEGORIES } from "@/lib/serviceImages";
 import { useI18n } from "@/lib/i18n";
-import { iconForService, colorForService } from "../../lib/serviceIcons";
+import { iconForService, colorForService, imageForService } from "../../lib/serviceIcons";
 
 // Soft, coupon-style background colors for offer cards (T043).
 const OFFER_PALETTES: { bg: string; border: string; accent: string; text: string }[] = [
@@ -42,7 +42,7 @@ type Offer = { id: string; title_ar: string | null; desc_ar: string | null; disc
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { t } = useI18n();
+  const { t, isRTL } = useI18n();
   const { profile, session } = useAuth();
   const [loc, setLoc] = useState<ResolvedAddress | null>(null);
   const [locating, setLocating] = useState(false);
@@ -88,14 +88,21 @@ export default function HomeScreen() {
   }, [session]);
 
   // T021 — Realtime subscription: refetch nearby providers whenever any provider row updates.
+  // Use a unique topic per mount so a lingering channel from a previous mount (e.g. when the tab
+  // is offscreened and reconnected by React) cannot collide and cause `.on()` to be called on an
+  // already-subscribed channel ("cannot add postgres_changes callbacks after subscribe()").
   useEffect(() => {
-    const ch = supabase
-      .channel("home-providers-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "providers" }, () => {
-        loadProviders();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    let cancelled = false;
+    const topic = `home-providers-live-${Math.random().toString(36).slice(2, 10)}`;
+    const ch = supabase.channel(topic);
+    ch.on("postgres_changes", { event: "*", schema: "public", table: "providers" }, () => {
+      if (!cancelled) loadProviders();
+    });
+    ch.subscribe();
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(ch);
+    };
   }, []);
 
   const requestLocation = async () => {
@@ -135,9 +142,9 @@ export default function HomeScreen() {
   const firstName = profile?.full_name?.split(" ")[0];
 
   return (
-    <View style={[styles.container, { backgroundColor: "#0F172A" }]}>
-      {/* FULLSCREEN MAP BACKGROUND */}
-      <View style={[styles.mapBg, { height: mapHeight }]}>
+    <View style={[styles.container, { backgroundColor: "#F8FAFC" }]}>
+      {/* FULLSCREEN MAP BACKGROUND (dark color sits behind the map only) */}
+      <View style={[styles.mapBg, { height: mapHeight, backgroundColor: "#0F172A" }]}>
         <AppMap
           style={StyleSheet.absoluteFill}
           region={region}
@@ -216,34 +223,31 @@ export default function HomeScreen() {
           <View style={styles.sheetGrabber} />
 
           {/* SERVICES (T042: moved above offers) */}
-          <View style={styles.sectionHeader}>
+          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={styles.sectionTitle}>{t("services")}</Text>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("services")}</Text>
           </View>
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 12, gap: 10 }}
+            contentContainerStyle={{ paddingHorizontal: 14, gap: 14 }}
             style={{ marginBottom: 22 }}
           >
             {cats.slice(0, 8).map((cat) => {
-              // T041 — modern semantic icons matching each service.
-              const ico = iconForService(cat.title_ar) || (cat.icon as any) || "broom";
-              const col = colorForService(cat.title_ar) || cat.color || "#16C47F";
+              // T044 — real 3D illustration assets, clean white card matching reference design.
+              const img = imageForService(cat.title_ar);
               return (
                 <TouchableOpacity
                   key={cat.id}
-                  activeOpacity={0.88}
+                  activeOpacity={0.85}
                   style={styles.svcCard}
                   onPress={() => router.push({ pathname: "/services", params: { cat: cat.id } } as any)}
                 >
-                  <View style={[styles.svcCardImageWrap, { backgroundColor: col + "1A" }]}>
-                    <View style={[styles.svcIconCircle, { backgroundColor: col + "26" }]}>
-                      <MaterialCommunityIcons name={ico as any} size={42} color={col} />
-                    </View>
+                  <View style={styles.svcCardSurface}>
+                    <Image source={img} style={styles.svcCardImage} resizeMode="contain" />
                   </View>
                   <Text style={styles.svcCardTitle} numberOfLines={1}>{cat.title_ar}</Text>
                 </TouchableOpacity>
@@ -254,11 +258,11 @@ export default function HomeScreen() {
           {/* OFFERS (T042: moved below services, T043: soft coupon-style colors) */}
           {offers.length > 0 && (
             <>
-              <View style={styles.sectionHeader}>
+              <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
                 <TouchableOpacity onPress={() => router.push("/(tabs)/offers")}>
                   <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
                 </TouchableOpacity>
-                <Text style={styles.sectionTitle}>{t("offers") || "العروض"}</Text>
+                <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("offers")}</Text>
               </View>
               <ScrollView
                 horizontal
@@ -303,11 +307,11 @@ export default function HomeScreen() {
           )}
 
           {/* PROVIDERS */}
-          <View style={styles.sectionHeader}>
+          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={styles.sectionTitle}>{t("nearby_pros")}</Text>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("nearby_pros")}</Text>
           </View>
 
           {nearbyProviders.length === 0 ? (
@@ -434,29 +438,37 @@ const styles = StyleSheet.create({
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
   svcCard: {
-    width: 140,
+    width: 104,
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  svcCardImageWrap: {
-    width: 128,
-    height: 115,
-    borderRadius: 24,
+  // Clean white card with the 3D illustration centered (matches reference design exactly)
+  svcCardSurface: {
+    width: 96,
+    height: 96,
+    borderRadius: 22,
+    marginBottom: 10,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
     shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
   },
-  svcIconCircle: { width: 80, height: 80, borderRadius: 40, alignItems: "center", justifyContent: "center" },
+  svcCardImage: {
+    width: 80,
+    height: 80,
+  },
   svcCardTitle: {
-    fontFamily: "Tajawal_700Bold",
-    fontSize: 13.5,
+    fontFamily: "Tajawal_500Medium",
+    fontSize: 13,
     color: "#1E293B",
     textAlign: "center",
+    letterSpacing: 0.1,
   },
 
   emptyBox: { marginHorizontal: 16, padding: 26, borderRadius: 18, alignItems: "center", gap: 8, backgroundColor: "#fff" },

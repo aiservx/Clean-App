@@ -32,20 +32,19 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
   ];
 
   const providerItems: { key: ActiveKey; label: string; icon: string; iconLib: "feather" | "mci"; path: string }[] = [
-    { key: "home", label: "لوحة التحكم", icon: "grid", iconLib: "feather", path: "/(provider)/home" },
+    { key: "home", label: "لوحة التحكم", icon: "grid", iconLib: "feather", path: "/(provider)/dashboard" },
     { key: "wallet", label: "المحفظة", icon: "credit-card", iconLib: "feather", path: "/(provider)/wallet" },
     { key: "chat", label: "الرسائل", icon: "message-circle", iconLib: "feather", path: "/(provider)/chat" },
     { key: "profile", label: "الملف الشخصي", icon: "user", iconLib: "feather", path: "/(provider)/profile" },
   ];
 
   const items = variant === "provider" ? providerItems : userItems;
-  const accent = "#3B82F6";
 
   return (
-    <View style={[s.bar, { paddingBottom: insets.bottom + 6, backgroundColor: "#FFF" }]}>
+    <View style={[s.bar, { paddingBottom: insets.bottom + 6, backgroundColor: colors.card }]}>
       {items.map((it) => {
         const isActive = active === it.key;
-        const color = isActive ? accent : "#94A3B8";
+        const color = isActive ? colors.primary : colors.mutedForeground;
         return (
           <TouchableOpacity key={it.key} style={s.tab} onPress={() => goto(it.path)} activeOpacity={0.7}>
             {it.iconLib === "mci" ? (
