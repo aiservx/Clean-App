@@ -72,3 +72,63 @@ id = "xGrvJAldyPLJjZsF6Yt4h"
 uri = "file://artifacts/mobile/assets/images/user-ahmed.png"
 type = "image"
 title = "user ahmed avatar"
+
+[[generated]]
+id = "8Z7C1zITvlCcOUsbokLh8"
+uri = "file://artifacts/mobile/assets/services/svc-home.png"
+type = "image"
+title = "svc home"
+
+[[generated]]
+id = "CZnxn5wHm6TdSLF9qXt0H"
+uri = "file://artifacts/mobile/assets/services/svc-deep.png"
+type = "image"
+title = "svc deep"
+
+[[generated]]
+id = "mYnY_39sx17QmHHOdquam"
+uri = "file://artifacts/mobile/assets/services/svc-office.png"
+type = "image"
+title = "svc office"
+
+[[generated]]
+id = "mwCI3wc3RlCJDzBhNE7AK"
+uri = "file://artifacts/mobile/assets/services/svc-sofa.png"
+type = "image"
+title = "svc sofa"
+
+[[generated]]
+id = "TU925uF-GRlUiz_UsJFha"
+uri = "file://artifacts/mobile/assets/services/svc-villa.png"
+type = "image"
+title = "svc villa"
+
+[[generated]]
+id = "ZwfccCz4Xx5nzhTauMYks"
+uri = "file://artifacts/mobile/assets/services/svc-apartment.png"
+type = "image"
+title = "svc apartment"
+
+[[generated]]
+id = "ZaVkYXucdKu1QJ1qvofq3"
+uri = "file://artifacts/mobile/assets/services/svc-carpet.png"
+type = "image"
+title = "svc carpet"
+
+[[generated]]
+id = "33INtJchLQA8I74XIhRW2"
+uri = "file://artifacts/mobile/assets/services/svc-kitchen.png"
+type = "image"
+title = "svc kitchen"
+
+[[generated]]
+id = "fooXQQh3IJLdgZsxFze9Z"
+uri = "file://artifacts/mobile/assets/services/svc-bathroom.png"
+type = "image"
+title = "svc bathroom"
+
+[[generated]]
+id = "J_7Vvm8mZUMmrssQbFKjQ"
+uri = "file://artifacts/mobile/assets/services/svc-window.png"
+type = "image"
+title = "svc window"

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,7 +13,7 @@ import { getCurrentResolved, distanceKm, type ResolvedAddress } from "@/lib/loca
 import { registerForPush } from "@/lib/notifications";
 import { FALLBACK_CATEGORIES } from "@/lib/serviceImages";
 import { useI18n } from "@/lib/i18n";
-import { iconForService, colorForService } from "../../lib/serviceIcons";
+import { iconForService, colorForService, imageForService } from "../../lib/serviceIcons";
 
 // Soft, coupon-style background colors for offer cards (T043).
 const OFFER_PALETTES: { bg: string; border: string; accent: string; text: string }[] = [
@@ -237,46 +237,17 @@ export default function HomeScreen() {
             style={{ marginBottom: 22 }}
           >
             {cats.slice(0, 8).map((cat) => {
-              // T041 — modern semantic icons matching each service.
-              const ico = iconForService(cat.title_ar) || (cat.icon as any) || "broom";
-              const col = colorForService(cat.title_ar) || cat.color || "#16C47F";
+              // T044 — real 3D illustration assets, clean white card matching reference design.
+              const img = imageForService(cat.title_ar);
               return (
                 <TouchableOpacity
                   key={cat.id}
-                  activeOpacity={0.88}
+                  activeOpacity={0.85}
                   style={styles.svcCard}
                   onPress={() => router.push({ pathname: "/services", params: { cat: cat.id } } as any)}
                 >
-                  {/* 3D-style card: soft gradient surface + colored shadow + glossy icon puck */}
-                  <View style={[styles.svcCardSurface, { shadowColor: col }]}>
-                    <LinearGradient
-                      colors={["#FFFFFF", col + "10", col + "1F"]}
-                      start={{ x: 0.2, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.svcCardSurfaceInner}
-                    >
-                      {/* Top sheen for glassy 3D look */}
-                      <LinearGradient
-                        colors={["rgba(255,255,255,0.85)", "rgba(255,255,255,0)"]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 0, y: 1 }}
-                        style={styles.svcSheen}
-                        pointerEvents="none"
-                      />
-                      {/* Glossy icon puck with brand-colored shadow */}
-                      <View style={[styles.svcPuckOuter, { shadowColor: col }]}>
-                        <LinearGradient
-                          colors={[col, col + "DD", col + "B8"]}
-                          start={{ x: 0.2, y: 0 }}
-                          end={{ x: 0.8, y: 1 }}
-                          style={styles.svcPuckInner}
-                        >
-                          {/* tiny highlight dot for 3D feel */}
-                          <View style={styles.svcPuckHighlight} pointerEvents="none" />
-                          <MaterialCommunityIcons name={ico as any} size={40} color="#FFFFFF" />
-                        </LinearGradient>
-                      </View>
-                    </LinearGradient>
+                  <View style={styles.svcCardSurface}>
+                    <Image source={img} style={styles.svcCardImage} resizeMode="contain" />
                   </View>
                   <Text style={styles.svcCardTitle} numberOfLines={1}>{cat.title_ar}</Text>
                 </TouchableOpacity>
@@ -467,70 +438,33 @@ const styles = StyleSheet.create({
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
   svcCard: {
-    width: 124,
+    width: 104,
     alignItems: "center",
     marginBottom: 6,
   },
-  // 3D-feel surface: soft white-to-tint gradient + colored shadow
+  // Clean white card with the 3D illustration centered (matches reference design exactly)
   svcCardSurface: {
-    width: 110,
-    height: 118,
-    borderRadius: 32,
-    marginBottom: 12,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.18,
-    shadowRadius: 22,
-    elevation: 8,
+    width: 96,
+    height: 96,
+    borderRadius: 22,
+    marginBottom: 10,
     backgroundColor: "#FFFFFF",
-  },
-  svcCardSurfaceInner: {
-    flex: 1,
-    borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.85)",
-  },
-  svcSheen: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 44,
-  },
-  // Glossy icon "puck" — gradient + colored drop-shadow gives the 3D feel
-  svcPuckOuter: {
-    width: 70,
-    height: 70,
-    borderRadius: 22,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
     shadowRadius: 12,
-    elevation: 6,
-  },
-  svcPuckInner: {
-    width: 70,
-    height: 70,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
+    elevation: 4,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.35)",
+    borderColor: "#F1F5F9",
   },
-  svcPuckHighlight: {
-    position: "absolute",
-    top: 6,
-    left: 8,
-    width: 22,
-    height: 10,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.55)",
-    transform: [{ rotate: "-18deg" }],
+  svcCardImage: {
+    width: 80,
+    height: 80,
   },
   svcCardTitle: {
-    fontFamily: "Tajawal_700Bold",
+    fontFamily: "Tajawal_500Medium",
     fontSize: 13,
     color: "#1E293B",
     textAlign: "center",
