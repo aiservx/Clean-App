@@ -13,10 +13,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     icon: "./assets/images/icon.png",
     scheme: "mobile",
     userInterfaceStyle: "automatic",
-    // newArchEnabled is OFF for Expo Go compatibility (turbomodules + new arch
-    // can hang/crash on Expo Go on real Android devices). Re-enable for prod
-    // builds via EAS if needed.
-    newArchEnabled: false,
+    newArchEnabled: true,
     splash: {
       image: "./assets/images/icon.png",
       resizeMode: "contain",
