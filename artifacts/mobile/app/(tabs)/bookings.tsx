@@ -79,9 +79,9 @@ export default function BookingsScreen() {
         .from("bookings")
         .select(`
           id, status, total, scheduled_at, created_at,
-          services(title_ar),
-          providers!bookings_provider_id_fkey(profiles(full_name, avatar_url)),
-          addresses(street, district, city)
+          services:service_id(title_ar),
+          provider:provider_id(full_name, avatar_url),
+          addresses:address_id(street, district, city)
         `)
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
@@ -97,8 +97,8 @@ export default function BookingsScreen() {
           scheduled_at: b.scheduled_at,
           created_at: b.created_at,
           service_title: b.services?.title_ar || "خدمة تنظيف",
-          provider_name: b.providers?.profiles?.full_name || null,
-          provider_avatar: b.providers?.profiles?.avatar_url || null,
+          provider_name: b.provider?.full_name || null,
+          provider_avatar: b.provider?.avatar_url || null,
           addr_text: [b.addresses?.district, b.addresses?.city].filter(Boolean).join("، ") || b.addresses?.street || "—",
         }));
         setRows(mapped);

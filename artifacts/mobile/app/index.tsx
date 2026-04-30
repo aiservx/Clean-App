@@ -8,18 +8,26 @@ export default function Index() {
   const { session, profile, loading, profileLoaded } = useAuth();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [forceRoute, setForceRoute] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem("onboarded")
       .then((v) => setOnboarded(!!v))
       .catch((e) => {
         console.log("[v0] Onboarding check failed:", e);
-        setOnboarded(true); // Default to true if check fails
+        setOnboarded(true);
       });
   }, []);
 
+  // Safety: force route after 6s to prevent infinite loading on Expo Go
+  useEffect(() => {
+    const t = setTimeout(() => setForceRoute(true), 6000);
+    return () => clearTimeout(t);
+  }, []);
+
   // Wait for: auth loading, onboarded check, AND (when there is a session) for profileLoaded
-  if (loading || onboarded === null || (session && !profileLoaded)) {
+  const isStillLoading = loading || onboarded === null || (session && !profileLoaded);
+  if (isStillLoading && !forceRoute) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fff" }}>
         <ActivityIndicator color="#16C47F" size="large" />
