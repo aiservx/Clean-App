@@ -72,7 +72,13 @@ export default function HomeScreen() {
         setCats(FALLBACK_CATEGORIES as any);
       }
       requestLocation();
-      if (session?.user) registerForPush(session.user.id);
+      if (session?.user) {
+        try {
+          await registerForPush(session.user.id);
+        } catch (e) {
+          console.log("[v0] Push registration failed:", (e as Error).message);
+        }
+      }
     })();
   }, [session]);
 

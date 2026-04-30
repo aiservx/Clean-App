@@ -54,67 +54,75 @@ export default function ProviderHome() {
     }
     const uid = session.user.id;
 
-    const [{ data: prov }, locRes, { data: pendingRows }, { data: todayRows }, { data: ratingRow }] = await Promise.all([
-      supabase.from("providers").select("available, current_lat, current_lng, rating").eq("id", uid).maybeSingle(),
-      getCurrentResolved(),
-      supabase
-        .from("bookings")
-        .select("id, status, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
-        .or(`provider_id.is.null,provider_id.eq.${uid}`)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(20),
-      supabase
-        .from("bookings")
-        .select("total, status, created_at")
-        .eq("provider_id", uid)
-        .gte("created_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
-      supabase.from("reviews").select("rating").eq("provider_id", uid),
-    ]);
+    try {
+      const [{ data: prov }, locRes, { data: pendingRows }, { data: todayRows }, { data: ratingRow }] = await Promise.all([
+        supabase.from("providers").select("available, current_lat, current_lng, rating").eq("id", uid).maybeSingle(),
+        getCurrentResolved(),
+        supabase
+          .from("bookings")
+          .select("id, status, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
+          .or(`provider_id.is.null,provider_id.eq.${uid}`)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("bookings")
+          .select("total, status, created_at")
+          .eq("provider_id", uid)
+          .gte("created_at", new Date(new Date().setHours(0, 0, 0, 0)).toISOString()),
+        supabase.from("reviews").select("rating").eq("provider_id", uid),
+      ]);
 
-    if (prov?.available !== undefined) setOnline(!!prov.available);
-    if (locRes) {
-      setMyLoc(locRes);
-      // Update provider current location in DB
-      await supabase.from("providers").update({ current_lat: locRes.lat, current_lng: locRes.lng }).eq("id", uid);
+      if (prov?.available !== undefined) setOnline(!!prov.available);
+      if (locRes) {
+        setMyLoc(locRes);
+        // Update provider current location in DB
+        await supabase.from("providers").update({ current_lat: locRes.lat, current_lng: locRes.lng }).eq("id", uid);
+      }
+
+      const ref = locRes
+        ? { lat: locRes.lat, lng: locRes.lng }
+        : prov?.current_lat && prov?.current_lng
+        ? { lat: prov.current_lat, lng: prov.current_lng }
+        : null;
+
+      const mapped: NearbyOrder[] = (pendingRows ?? []).map((b: any) => {
+        const addr = b.addresses;
+        const lat = addr?.lat ?? null;
+        const lng = addr?.lng ?? null;
+        const d = ref && lat && lng ? distanceKm(ref, { lat, lng }) : null;
+        return {
+          id: b.id,
+          service_title: b.services?.title_ar || "خدمة",
+          client_name: b.profiles?.full_name || "عميل",
+          client_phone: b.profiles?.phone || null,
+          scheduled_at: b.scheduled_at,
+          total: Number(b.total || 0),
+          notes: b.notes,
+          addr_lat: lat,
+          addr_lng: lng,
+          addr_text: [addr?.district, addr?.city].filter(Boolean).join("، ") || addr?.street || "—",
+          d_km: d,
+          eta_min: d != null ? Math.max(5, Math.round((d / 30) * 60)) : null,
+        };
+      });
+
+      setOrders(mapped);
+
+      const todayCount = (todayRows ?? []).length;
+      const todayEarn = (todayRows ?? []).filter((r: any) => r.status === "completed").reduce((s: number, r: any) => s + Number(r.total || 0), 0);
+      const ratings = (ratingRow ?? []).map((r: any) => Number(r.rating || 0)).filter((x: number) => x > 0);
+      const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : Number(prov?.rating || 0);
+      setStats({ today: todayCount, earnings: todayEarn, rating: Number(avg.toFixed(1)) });
+
+      setLoading(false);
+    } catch (e) {
+      console.log("[v0] Error loading provider data:", (e as Error).message);
+      setLoading(false);
+      // Continue with empty state rather than crashing
+      setOrders([]);
+      setStats({ today: 0, earnings: 0, rating: 0 });
     }
-
-    const ref = locRes
-      ? { lat: locRes.lat, lng: locRes.lng }
-      : prov?.current_lat && prov?.current_lng
-      ? { lat: prov.current_lat, lng: prov.current_lng }
-      : null;
-
-    const mapped: NearbyOrder[] = (pendingRows ?? []).map((b: any) => {
-      const addr = b.addresses;
-      const lat = addr?.lat ?? null;
-      const lng = addr?.lng ?? null;
-      const d = ref && lat && lng ? distanceKm(ref, { lat, lng }) : null;
-      return {
-        id: b.id,
-        service_title: b.services?.title_ar || "خدمة",
-        client_name: b.profiles?.full_name || "عميل",
-        client_phone: b.profiles?.phone || null,
-        scheduled_at: b.scheduled_at,
-        total: Number(b.total || 0),
-        notes: b.notes,
-        addr_lat: lat,
-        addr_lng: lng,
-        addr_text: [addr?.district, addr?.city].filter(Boolean).join("، ") || addr?.street || "—",
-        d_km: d,
-        eta_min: d != null ? Math.max(5, Math.round((d / 30) * 60)) : null,
-      };
-    });
-
-    setOrders(mapped);
-
-    const todayCount = (todayRows ?? []).length;
-    const todayEarn = (todayRows ?? []).filter((r: any) => r.status === "completed").reduce((s: number, r: any) => s + Number(r.total || 0), 0);
-    const ratings = (ratingRow ?? []).map((r: any) => Number(r.rating || 0)).filter((x: number) => x > 0);
-    const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : Number(prov?.rating || 0);
-    setStats({ today: todayCount, earnings: todayEarn, rating: Number(avg.toFixed(1)) });
-
-    setLoading(false);
   }, [session]);
 
   useEffect(() => {

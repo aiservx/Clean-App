@@ -3,17 +3,21 @@ import * as Device from "expo-device";
 import { Platform } from "react-native";
 import { supabase } from "./supabase";
 
-try {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    } as any),
-  });
-} catch {
+// Safely configure notification handler without triggering remote push errors
+if (Platform.OS !== "web") {
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: false,
+        shouldSetBadge: true,
+      } as any),
+    });
+  } catch (e) {
+    console.log("[v0] Notification handler setup skipped:", (e as Error).message);
+  }
 }
 
 export async function registerForPush(userId: string) {

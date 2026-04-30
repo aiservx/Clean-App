@@ -20,16 +20,23 @@ import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Default to RTL on first launch (Arabic). Toggle handled by I18nProvider on lang change.
-AsyncStorage.getItem("app_lang").then((v) => {
-  const wantRTL = v !== "en";
-  if (I18nManager.isRTL !== wantRTL) {
-    try {
-      I18nManager.allowRTL(wantRTL);
-      I18nManager.forceRTL(wantRTL);
-    } catch {}
+// Initialize RTL support and app lang
+(async () => {
+  try {
+    const lang = await AsyncStorage.getItem("app_lang");
+    const wantRTL = lang !== "en";
+    if (I18nManager.isRTL !== wantRTL) {
+      try {
+        I18nManager.allowRTL(wantRTL);
+        I18nManager.forceRTL(wantRTL);
+      } catch (e) {
+        console.log("[v0] I18n setup error:", (e as Error).message);
+      }
+    }
+  } catch (e) {
+    console.log("[v0] App lang check failed, defaulting to RTL");
   }
-});
+})();
 
 SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();

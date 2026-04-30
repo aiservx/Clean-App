@@ -21,18 +21,26 @@ export default function LoginScreen() {
     if (!email || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
     setBusy(true);
 
-    const res = await signIn(email.trim(), pwd);
-    setBusy(false);
+    try {
+      const res = await signIn(email.trim(), pwd);
+      setBusy(false);
 
-    if (res.error) {
-      return Alert.alert(t("signin_error"), res.error);
-    }
+      if (res.error) {
+        return Alert.alert(t("signin_error"), res.error);
+      }
 
-    const role = res.role || "user";
-    if (role === "provider" || role === "admin") {
-      router.replace("/(provider)/home" as any);
-    } else {
-      router.replace("/(tabs)/home" as any);
+      const role = res.role || "user";
+      console.log("[v0] Login successful with role:", role);
+      
+      // Redirect based on role
+      if (role === "provider" || role === "admin") {
+        router.replace("/(provider)/home" as any);
+      } else {
+        router.replace("/(tabs)/home" as any);
+      }
+    } catch (e) {
+      setBusy(false);
+      Alert.alert(t("signin_error"), (e as Error).message);
     }
   };
 
