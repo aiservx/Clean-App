@@ -42,7 +42,7 @@ type Offer = { id: string; title_ar: string | null; desc_ar: string | null; disc
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { t } = useI18n();
+  const { t, isRTL } = useI18n();
   const { profile, session } = useAuth();
   const [loc, setLoc] = useState<ResolvedAddress | null>(null);
   const [locating, setLocating] = useState(false);
@@ -142,9 +142,9 @@ export default function HomeScreen() {
   const firstName = profile?.full_name?.split(" ")[0];
 
   return (
-    <View style={[styles.container, { backgroundColor: "#0F172A" }]}>
-      {/* FULLSCREEN MAP BACKGROUND */}
-      <View style={[styles.mapBg, { height: mapHeight }]}>
+    <View style={[styles.container, { backgroundColor: "#F8FAFC" }]}>
+      {/* FULLSCREEN MAP BACKGROUND (dark color sits behind the map only) */}
+      <View style={[styles.mapBg, { height: mapHeight, backgroundColor: "#0F172A" }]}>
         <AppMap
           style={StyleSheet.absoluteFill}
           region={region}
@@ -223,17 +223,17 @@ export default function HomeScreen() {
           <View style={styles.sheetGrabber} />
 
           {/* SERVICES (T042: moved above offers) */}
-          <View style={styles.sectionHeader}>
+          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={styles.sectionTitle}>{t("services")}</Text>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("services")}</Text>
           </View>
 
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 12, gap: 10 }}
+            contentContainerStyle={{ paddingHorizontal: 14, gap: 14 }}
             style={{ marginBottom: 22 }}
           >
             {cats.slice(0, 8).map((cat) => {
@@ -247,10 +247,36 @@ export default function HomeScreen() {
                   style={styles.svcCard}
                   onPress={() => router.push({ pathname: "/services", params: { cat: cat.id } } as any)}
                 >
-                  <View style={[styles.svcCardImageWrap, { backgroundColor: col + "1A" }]}>
-                    <View style={[styles.svcIconCircle, { backgroundColor: col + "26" }]}>
-                      <MaterialCommunityIcons name={ico as any} size={32} color={col} />
-                    </View>
+                  {/* 3D-style card: soft gradient surface + colored shadow + glossy icon puck */}
+                  <View style={[styles.svcCardSurface, { shadowColor: col }]}>
+                    <LinearGradient
+                      colors={["#FFFFFF", col + "10", col + "1F"]}
+                      start={{ x: 0.2, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.svcCardSurfaceInner}
+                    >
+                      {/* Top sheen for glassy 3D look */}
+                      <LinearGradient
+                        colors={["rgba(255,255,255,0.85)", "rgba(255,255,255,0)"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                        style={styles.svcSheen}
+                        pointerEvents="none"
+                      />
+                      {/* Glossy icon puck with brand-colored shadow */}
+                      <View style={[styles.svcPuckOuter, { shadowColor: col }]}>
+                        <LinearGradient
+                          colors={[col, col + "DD", col + "B8"]}
+                          start={{ x: 0.2, y: 0 }}
+                          end={{ x: 0.8, y: 1 }}
+                          style={styles.svcPuckInner}
+                        >
+                          {/* tiny highlight dot for 3D feel */}
+                          <View style={styles.svcPuckHighlight} pointerEvents="none" />
+                          <MaterialCommunityIcons name={ico as any} size={40} color="#FFFFFF" />
+                        </LinearGradient>
+                      </View>
+                    </LinearGradient>
                   </View>
                   <Text style={styles.svcCardTitle} numberOfLines={1}>{cat.title_ar}</Text>
                 </TouchableOpacity>
@@ -261,11 +287,11 @@ export default function HomeScreen() {
           {/* OFFERS (T042: moved below services, T043: soft coupon-style colors) */}
           {offers.length > 0 && (
             <>
-              <View style={styles.sectionHeader}>
+              <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
                 <TouchableOpacity onPress={() => router.push("/(tabs)/offers")}>
                   <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
                 </TouchableOpacity>
-                <Text style={styles.sectionTitle}>{t("offers") || "العروض"}</Text>
+                <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("offers")}</Text>
               </View>
               <ScrollView
                 horizontal
@@ -310,11 +336,11 @@ export default function HomeScreen() {
           )}
 
           {/* PROVIDERS */}
-          <View style={styles.sectionHeader}>
+          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={styles.sectionTitle}>{t("nearby_pros")}</Text>
+            <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("nearby_pros")}</Text>
           </View>
 
           {nearbyProviders.length === 0 ? (
@@ -441,31 +467,74 @@ const styles = StyleSheet.create({
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
   svcCard: {
-    width: 120,
+    width: 124,
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  svcCardImageWrap: {
-    width: 100,
-    height: 100,
-    borderRadius: 28,
+  // 3D-feel surface: soft white-to-tint gradient + colored shadow
+  svcCardSurface: {
+    width: 110,
+    height: 118,
+    borderRadius: 32,
+    marginBottom: 12,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 22,
+    elevation: 8,
+    backgroundColor: "#FFFFFF",
+  },
+  svcCardSurfaceInner: {
+    flex: 1,
+    borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.6)",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    elevation: 4,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.85)",
   },
-  svcIconCircle: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
+  svcSheen: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 44,
+  },
+  // Glossy icon "puck" — gradient + colored drop-shadow gives the 3D feel
+  svcPuckOuter: {
+    width: 70,
+    height: 70,
+    borderRadius: 22,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  svcPuckInner: {
+    width: 70,
+    height: 70,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.35)",
+  },
+  svcPuckHighlight: {
+    position: "absolute",
+    top: 6,
+    left: 8,
+    width: 22,
+    height: 10,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.55)",
+    transform: [{ rotate: "-18deg" }],
+  },
   svcCardTitle: {
     fontFamily: "Tajawal_700Bold",
-    fontSize: 13.5,
+    fontSize: 13,
     color: "#1E293B",
     textAlign: "center",
+    letterSpacing: 0.1,
   },
 
   emptyBox: { marginHorizontal: 16, padding: 26, borderRadius: 18, alignItems: "center", gap: 8, backgroundColor: "#fff" },
