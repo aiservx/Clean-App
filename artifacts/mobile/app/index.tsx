@@ -19,9 +19,14 @@ export default function Index() {
       });
   }, []);
 
-  // Safety: force route after 6s to prevent infinite loading on Expo Go
+  // Safety: force route after 6s to prevent infinite loading on Expo Go.
+  // Also default onboarded to true so the force-route doesn't accidentally
+  // redirect to onboarding when AsyncStorage is slow.
   useEffect(() => {
-    const t = setTimeout(() => setForceRoute(true), 6000);
+    const t = setTimeout(() => {
+      setOnboarded((prev) => prev ?? true);
+      setForceRoute(true);
+    }, 6000);
     return () => clearTimeout(t);
   }, []);
 
