@@ -18,7 +18,7 @@ export default function AuthGate({ children, require = "any" as Role | "any" }: 
     if (!isAuthorized) {
       // User doesn't have required role - redirect to their home
       if (profile.role === "provider" || profile.role === "admin") {
-        router.replace("/(provider)/home" as any);
+        router.replace("/(provider)/dashboard" as any);
       } else {
         router.replace("/(tabs)/home" as any);
       }
