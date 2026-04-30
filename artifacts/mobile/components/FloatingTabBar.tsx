@@ -47,12 +47,15 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
         const color = isActive ? colors.primary : colors.mutedForeground;
         return (
           <TouchableOpacity key={it.key} style={s.tab} onPress={() => goto(it.path)} activeOpacity={0.7}>
-            {it.iconLib === "mci" ? (
-              <MaterialCommunityIcons name={it.icon as any} size={22} color={color} />
-            ) : (
-              <Feather name={it.icon as any} size={22} color={color} />
-            )}
-            <Text style={[s.label, { color }]}>{it.label}</Text>
+            <View style={[s.iconWrap, isActive && { backgroundColor: colors.primary + "14" }]}>
+              {it.iconLib === "mci" ? (
+                <MaterialCommunityIcons name={it.icon as any} size={21} color={color} />
+              ) : (
+                <Feather name={it.icon as any} size={21} color={color} />
+              )}
+            </View>
+            <Text style={[s.label, { color, fontFamily: isActive ? "Tajawal_700Bold" : "Tajawal_500Medium" }]}>{it.label}</Text>
+            {isActive && <View style={[s.activeDot, { backgroundColor: colors.primary }]} />}
           </TouchableOpacity>
         );
       })}
@@ -66,16 +69,20 @@ const s = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingTop: 10,
+    paddingTop: 8,
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-around",
+    borderTopWidth: 0.5,
+    borderTopColor: "rgba(0,0,0,0.04)",
     shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 10,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 12,
   },
-  tab: { alignItems: "center", justifyContent: "center", flex: 1 },
-  label: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 4 },
+  tab: { alignItems: "center", justifyContent: "center", flex: 1, gap: 2 },
+  iconWrap: { width: 36, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  label: { fontSize: 10, marginTop: 1 },
+  activeDot: { width: 4, height: 4, borderRadius: 2, marginTop: 3 },
 });

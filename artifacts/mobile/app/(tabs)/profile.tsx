@@ -177,9 +177,14 @@ export default function ProfileScreen() {
         </View>
 
         {/* Sign Out */}
-        <TouchableOpacity style={s.signOutBtn} onPress={onSignOut}>
-          <Feather name="log-out" size={18} color="#EF4444" />
-          <Text style={s.signOutText}>{t("signout")}</Text>
+        <TouchableOpacity style={s.signOutBtn} onPress={onSignOut} activeOpacity={0.85}>
+          <View style={s.signOutInner}>
+            <View style={s.signOutIconWrap}>
+              <Feather name="log-out" size={16} color="#EF4444" />
+            </View>
+            <Text style={s.signOutText}>{t("signout")}</Text>
+            <Feather name="chevron-left" size={16} color="#FCA5A5" />
+          </View>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -240,6 +245,8 @@ const s = StyleSheet.create({
   menuTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 2 },
   menuSub: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   menuIconWrap: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  signOutBtn: { marginHorizontal: 16, marginTop: 4, marginBottom: 16, height: 52, borderRadius: 18, backgroundColor: "#FEF2F2", flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 10 },
-  signOutText: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#EF4444" },
+  signOutBtn: { marginHorizontal: 16, marginTop: 8, marginBottom: 24, borderRadius: 18, borderWidth: 1, borderColor: "#FECACA", backgroundColor: "#FFF5F5", overflow: "hidden", shadowColor: "#EF4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 },
+  signOutInner: { flexDirection: "row-reverse", alignItems: "center", paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
+  signOutIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#FEE2E2", alignItems: "center", justifyContent: "center" },
+  signOutText: { flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#DC2626", textAlign: "right" },
 });
