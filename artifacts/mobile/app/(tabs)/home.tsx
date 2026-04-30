@@ -242,7 +242,7 @@ export default function HomeScreen() {
                 >
                   <View style={[styles.svcCardImageWrap, { backgroundColor: col + "1A" }]}>
                     <View style={[styles.svcIconCircle, { backgroundColor: col + "26" }]}>
-                      <MaterialCommunityIcons name={ico as any} size={42} color={col} />
+                      <MaterialCommunityIcons name={ico as any} size={32} color={col} />
                     </View>
                   </View>
                   <Text style={styles.svcCardTitle} numberOfLines={1}>{cat.title_ar}</Text>
@@ -434,24 +434,26 @@ const styles = StyleSheet.create({
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
   svcCard: {
-    width: 140,
+    width: 120,
     alignItems: "center",
     marginBottom: 4,
   },
   svcCardImageWrap: {
-    width: 128,
-    height: 115,
-    borderRadius: 24,
+    width: 100,
+    height: 100,
+    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.6)",
     shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    elevation: 4,
   },
-  svcIconCircle: { width: 80, height: 80, borderRadius: 40, alignItems: "center", justifyContent: "center" },
+  svcIconCircle: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   svcCardTitle: {
     fontFamily: "Tajawal_700Bold",
     fontSize: 13.5,

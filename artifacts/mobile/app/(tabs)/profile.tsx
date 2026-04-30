@@ -54,19 +54,19 @@ export default function ProfileScreen() {
   const userEmail = profile?.email || "";
 
   return (
-    <View style={[s.root, { backgroundColor: "#F8FAFC" }]}>
+    <View style={[s.root, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity style={s.hIcon} onPress={() => router.push("/notifications")}>
-          <Feather name="bell" size={20} color="#1E293B" />
+        <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/notifications")}>
+          <Feather name="bell" size={20} color={colors.foreground} />
           <View style={s.notifDot} />
         </TouchableOpacity>
         <View style={s.hCenter}>
-          <Text style={s.hTitle}>{t("profile_title")}</Text>
-          <Text style={s.hSub}>{t("profile_sub")}</Text>
+          <Text style={[s.hTitle, { color: colors.foreground }]}>{t("profile_title")}</Text>
+          <Text style={[s.hSub, { color: colors.mutedForeground }]}>{t("profile_sub")}</Text>
         </View>
-        <TouchableOpacity style={s.hIcon} onPress={() => router.push("/settings")}>
-          <Feather name="settings" size={20} color="#1E293B" />
+        <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/settings")}>
+          <Feather name="settings" size={20} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -76,13 +76,13 @@ export default function ProfileScreen() {
           <View style={s.profileInfo}>
             <View style={s.nameRow}>
               <MaterialCommunityIcons name="check-decagram" size={18} color="#3B82F6" />
-              <Text style={s.userName}>{userName}</Text>
+              <Text style={[s.userName, { color: colors.foreground }]}>{userName}</Text>
             </View>
-            <Text style={s.userDetail}>{userPhone}</Text>
-            <Text style={s.userDetail}>{userEmail}</Text>
-            <TouchableOpacity style={s.editBtn} onPress={() => router.push("/edit-profile")}>
+            <Text style={[s.userDetail, { color: colors.mutedForeground }]}>{userPhone}</Text>
+            <Text style={[s.userDetail, { color: colors.mutedForeground }]}>{userEmail}</Text>
+            <TouchableOpacity style={[s.editBtn, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => router.push("/edit-profile")}>
               <Feather name="edit-2" size={14} color="#3B82F6" />
-              <Text style={s.editBtnText}>تعديل الملف الشخصي</Text>
+              <Text style={[s.editBtnText, { color: colors.foreground }]}>تعديل الملف الشخصي</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={s.avatarWrap} onPress={() => router.push("/edit-profile")}>
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
             <Text style={s.seeAll}>عرض الكل</Text>
           </TouchableOpacity>
           <View style={s.secTitleRow}>
-            <Text style={s.secTitle}>العناوين المحفوظة</Text>
+            <Text style={[s.secTitle, { color: colors.foreground }]}>العناوين المحفوظة</Text>
             <View style={[s.secIconWrap, { backgroundColor: "#DBEAFE" }]}>
               <Feather name="map-pin" size={16} color="#3B82F6" />
             </View>
@@ -131,7 +131,7 @@ export default function ProfileScreen() {
           ) : (
             <>
               {displayAddresses.map((addr: any) => (
-                <View key={addr.id} style={s.addressItem}>
+                <View key={addr.id} style={[s.addressItem, { backgroundColor: colors.card }]}>
                   <TouchableOpacity>
                     <Text style={s.addrMore}>...</Text>
                   </TouchableOpacity>
@@ -141,8 +141,8 @@ export default function ProfileScreen() {
                     </View>
                   )}
                   <View style={s.addrTextWrap}>
-                    <Text style={s.addrTitle}>{addr.title || "عنوان"}</Text>
-                    <Text style={s.addrSub} numberOfLines={1}>{addr.address || addr.street || ""}</Text>
+                    <Text style={[s.addrTitle, { color: colors.foreground }]}>{addr.title || "عنوان"}</Text>
+                    <Text style={[s.addrSub, { color: colors.mutedForeground }]} numberOfLines={1}>{addr.address || addr.street || ""}</Text>
                   </View>
                   <View style={[s.addrIcon, { backgroundColor: addr.iconBg || "#DCFCE7" }]}>
                     <Feather name={(addr.icon || "map-pin") as any} size={20} color={addr.iconColor || "#16C47F"} />
@@ -157,7 +157,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Menu */}
-        <View style={s.menuCard}>
+        <View style={[s.menuCard, { backgroundColor: colors.card }]}>
           {MENU.map((item, i) => (
             <TouchableOpacity
               key={item.id}
@@ -166,8 +166,8 @@ export default function ProfileScreen() {
             >
               <Feather name="chevron-left" size={18} color="#CBD5E1" />
               <View style={s.menuTextWrap}>
-                <Text style={s.menuTitle}>{item.title}</Text>
-                <Text style={s.menuSub}>{item.sub}</Text>
+                <Text style={[s.menuTitle, { color: colors.foreground }]}>{item.title}</Text>
+                <Text style={[s.menuSub, { color: colors.mutedForeground }]}>{item.sub}</Text>
               </View>
               <View style={[s.menuIconWrap, { backgroundColor: item.bg }]}>
                 <Feather name={item.icon as any} size={20} color={item.color} />
@@ -189,19 +189,19 @@ export default function ProfileScreen() {
 const s = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 12 },
-  hIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  hIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   notifDot: { position: "absolute", top: 10, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: "#3B82F6", borderWidth: 2, borderColor: "#FFF" },
   hCenter: { flex: 1, alignItems: "center" },
-  hTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#1E293B" },
-  hSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "#94A3B8", marginTop: 2 },
+  hTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
+  hSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 2 },
 
   profileRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 24, marginBottom: 16 },
   profileInfo: { flex: 1, alignItems: "flex-end", marginRight: 16 },
   nameRow: { flexDirection: "row-reverse", alignItems: "center", gap: 6, marginBottom: 4 },
-  userName: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#1E293B" },
-  userDetail: { fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#64748B", marginBottom: 2 },
+  userName: { fontFamily: "Tajawal_700Bold", fontSize: 20 },
+  userDetail: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginBottom: 2 },
   editBtn: { flexDirection: "row-reverse", alignItems: "center", gap: 6, marginTop: 10, backgroundColor: "#FFF", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: "#E2E8F0" },
-  editBtnText: { fontFamily: "Tajawal_600SemiBold", fontSize: 12, color: "#1E293B" },
+  editBtnText: { fontFamily: "Tajawal_600SemiBold", fontSize: 12 },
   avatarWrap: { position: "relative" },
   avatar: { width: 90, height: 90, borderRadius: 45 },
   cameraBadge: { position: "absolute", bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: "#3B82F6", borderWidth: 3, borderColor: "#FFF", alignItems: "center", justifyContent: "center" },
@@ -215,17 +215,17 @@ const s = StyleSheet.create({
 
   secHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12 },
   secTitleRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
-  secTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#1E293B" },
+  secTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   secIconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   seeAllRow: { flexDirection: "row", alignItems: "center", gap: 2 },
   seeAll: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#3B82F6" },
 
   addressList: { paddingHorizontal: 16, marginBottom: 20 },
-  addressItem: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFF", padding: 14, borderRadius: 18, marginBottom: 10, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
+  addressItem: { flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 18, marginBottom: 10, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
   addrIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   addrTextWrap: { flex: 1, alignItems: "flex-end", marginHorizontal: 12 },
-  addrTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#1E293B" },
-  addrSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "#64748B", marginTop: 2 },
+  addrTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
+  addrSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 2 },
   addrMore: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#94A3B8", paddingHorizontal: 6 },
   defaultBadge: { backgroundColor: "#DCFCE7", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, marginRight: 4 },
   defaultBadgeText: { fontFamily: "Tajawal_600SemiBold", fontSize: 10, color: "#16C47F" },
@@ -233,12 +233,12 @@ const s = StyleSheet.create({
   addAddr: { alignItems: "center", paddingVertical: 10 },
   addAddrText: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#3B82F6" },
 
-  menuCard: { marginHorizontal: 16, backgroundColor: "#FFF", borderRadius: 22, paddingHorizontal: 16, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 8, elevation: 1, marginBottom: 16 },
+  menuCard: { marginHorizontal: 16, borderRadius: 22, paddingHorizontal: 16, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 8, elevation: 1, marginBottom: 16 },
   menuItem: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
   menuBorder: { borderBottomWidth: 1, borderBottomColor: "#F1F5F9" },
   menuTextWrap: { flex: 1, alignItems: "flex-end", marginHorizontal: 14 },
-  menuTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#1E293B", marginBottom: 2 },
-  menuSub: { fontFamily: "Tajawal_400Regular", fontSize: 11, color: "#94A3B8" },
+  menuTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 2 },
+  menuSub: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   menuIconWrap: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   signOutBtn: { marginHorizontal: 16, marginTop: 4, marginBottom: 16, height: 52, borderRadius: 18, backgroundColor: "#FEF2F2", flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 10 },
   signOutText: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#EF4444" },
