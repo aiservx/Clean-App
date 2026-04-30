@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -10,55 +10,15 @@ import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
 import { SEASONAL_PROMOS, FEATURED_PROMOS } from "@/lib/promotions";
 
-const { width: SCREEN_W } = Dimensions.get("window");
-const HERO_CARD_W = SCREEN_W - 32;
+const PREVIEW_COUNT = 2;
 
 type Stat = { id: string; icon: string; label: string; value: string; color: string; isReferral?: boolean };
 
 const STATS: Stat[] = [
   { id: "coupons", icon: "tag", label: "كوبونات", value: "12", color: "#16C47F" },
-  { id: "seasonal", icon: "calendar", label: "موسم", value: "5", color: "#16C47F" },
-  { id: "exclusive", icon: "gift", label: "حصرية", value: "8", color: "#16C47F" },
+  { id: "seasonal", icon: "calendar", label: "موسم", value: String(SEASONAL_PROMOS.length), color: "#16C47F" },
+  { id: "exclusive", icon: "gift", label: "حصرية", value: String(FEATURED_PROMOS.length), color: "#16C47F" },
   { id: "referral", icon: "users", label: "دعوة الأصدقاء", value: "اربح 50 ر.س", color: "#16C47F", isReferral: true },
-];
-
-const SEASONAL = [
-  {
-    id: "eid",
-    label: "عرض العيد",
-    title: "عرض عيد الأضحى",
-    subtitle: "خصم\nعلى جميع خدمات التنظيف",
-    discount: "25",
-    countdown: { days: "05", hours: "18", minutes: "32" },
-    bg: ["#FFF5F5", "#FFF0F0"] as const,
-    accentBg: "#16C47F",
-    textColor: "#0F172A",
-    image: require("@/assets/images/illustration-bucket.png"),
-  },
-  {
-    id: "spring",
-    label: "تنظيف الربيع",
-    title: "تنظيف الربيع",
-    subtitle: "خصم\nعلى التنظيف العميق",
-    discount: "20",
-    countdown: { days: "08", hours: "21", minutes: "47" },
-    bg: ["#F0FFF4", "#E8F5EE"] as const,
-    accentBg: "#16C47F",
-    textColor: "#0F172A",
-    image: require("@/assets/images/illustration-vacuum.png"),
-  },
-  {
-    id: "summer",
-    label: "استعد للصيف",
-    title: "استعد للصيف",
-    subtitle: "خصم\nعلى تنظيف المكيفات",
-    discount: "15",
-    countdown: { days: "10", hours: "15", minutes: "30" },
-    bg: ["#F0F9FF", "#E0F2FE"] as const,
-    accentBg: "#3B82F6",
-    textColor: "#0F172A",
-    image: require("@/assets/images/illustration-office.png"),
-  },
 ];
 
 const COUPONS = [
@@ -92,24 +52,11 @@ export default function OffersScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [activeDot, setActiveDot] = useState(0);
-  const heroScrollRef = useRef<ScrollView>(null);
+  const [showAllSeasonal, setShowAllSeasonal] = useState(false);
+  const [showAllFeatured, setShowAllFeatured] = useState(false);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveDot((prev) => {
-        const next = (prev + 1) % SEASONAL_PROMOS.length;
-        heroScrollRef.current?.scrollTo({ x: next * (HERO_CARD_W + 12), animated: true });
-        return next;
-      });
-    }, 4500);
-    return () => clearInterval(timer);
-  }, []);
-
-  const onHeroScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const idx = Math.round(e.nativeEvent.contentOffset.x / (HERO_CARD_W + 12));
-    if (idx !== activeDot) setActiveDot(idx);
-  };
+  const visibleSeasonal = showAllSeasonal ? SEASONAL_PROMOS : SEASONAL_PROMOS.slice(0, PREVIEW_COUNT);
+  const visibleFeatured = showAllFeatured ? FEATURED_PROMOS : FEATURED_PROMOS.slice(0, PREVIEW_COUNT);
 
   const copyCode = (code: string, id: string) => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -132,89 +79,6 @@ export default function OffersScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
-        {/* Hero Slider — Seasonal banners with text + discount overlay */}
-        <View style={styles.heroWrap}>
-          <ScrollView
-            ref={heroScrollRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={onHeroScroll}
-            decelerationRate="fast"
-            snapToInterval={HERO_CARD_W + 12}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-          >
-            {SEASONAL_PROMOS.map((slide) => (
-              <TouchableOpacity
-                key={slide.id}
-                activeOpacity={0.92}
-                onPress={() => copyCode(slide.code, slide.id)}
-                style={[styles.heroCard, { width: HERO_CARD_W }]}
-              >
-                <Image source={slide.image} style={styles.heroFullImage} resizeMode="cover" />
-
-                {/* Soft scrim on the left side so the text reads on any banner */}
-                <LinearGradient
-                  colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0.05)", "rgba(0,0,0,0)"]}
-                  start={{ x: 0, y: 0.5 }}
-                  end={{ x: 0.7, y: 0.5 }}
-                  style={StyleSheet.absoluteFillObject}
-                />
-
-                {/* Text block in the empty (left) area of the banner */}
-                <View style={styles.heroOverlay}>
-                  <View style={[styles.heroBadge, { backgroundColor: slide.badgeBg }]}>
-                    <Feather name="zap" size={10} color={slide.badgeText} />
-                    <Text style={[styles.heroBadgeText, { color: slide.badgeText }]}>{slide.badge}</Text>
-                  </View>
-
-                  <Text style={[styles.heroTitle, { color: slide.textColor }]} numberOfLines={2}>
-                    {slide.title}
-                  </Text>
-                  <Text style={[styles.heroSub, { color: slide.textColor, opacity: 0.92 }]} numberOfLines={2}>
-                    {slide.subtitle}
-                  </Text>
-
-                  <View style={styles.heroCtaRow}>
-                    <View style={[styles.heroDiscountChip, { backgroundColor: slide.ctaBg }]}>
-                      <Text style={[styles.heroDiscountNum, { color: slide.ctaText }]}>{slide.discount}%</Text>
-                      <Text style={[styles.heroDiscountLbl, { color: slide.ctaText }]}>خصم</Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => copyCode(slide.code, slide.id)}
-                      activeOpacity={0.85}
-                      style={[styles.heroCta, { backgroundColor: slide.ctaBg }]}
-                    >
-                      <Feather name={copiedId === slide.id ? "check" : "tag"} size={12} color={slide.ctaText} />
-                      <Text style={[styles.heroCtaText, { color: slide.ctaText }]}>
-                        {copiedId === slide.id ? "تم نسخ الكود" : slide.cta}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          <View style={styles.dotsRow}>
-            {SEASONAL_PROMOS.map((_, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => {
-                  setActiveDot(i);
-                  heroScrollRef.current?.scrollTo({ x: i * (HERO_CARD_W + 12), animated: true });
-                }}
-                style={[
-                  styles.pageDot,
-                  {
-                    backgroundColor: activeDot === i ? colors.primary : "#CBD5E1",
-                    width: activeDot === i ? 18 : 6,
-                  },
-                ]}
-              />
-            ))}
-          </View>
-        </View>
-
         {/* 4 stat cards */}
         <View style={styles.statsRow}>
           {STATS.map((stat) => (
@@ -230,78 +94,97 @@ export default function OffersScreen() {
           ))}
         </View>
 
-        {/* Seasonal Offers */}
+        {/* ── Seasonal offers ── show 2 by default, toggle to show all 8 */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity>
-            <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
+          <TouchableOpacity
+            onPress={() => setShowAllSeasonal((v) => !v)}
+            style={styles.seeAllChip}
+            activeOpacity={0.7}
+          >
+            <Feather name={showAllSeasonal ? "chevron-up" : "chevron-down"} size={12} color={colors.primary} />
+            <Text style={[styles.seeAll, { color: colors.primary }]}>
+              {showAllSeasonal ? "عرض أقل" : `عرض الكل (${SEASONAL_PROMOS.length})`}
+            </Text>
           </TouchableOpacity>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض موسمية</Text>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, gap: 10, marginBottom: 22 }}
-        >
-          {SEASONAL.map((s) => (
+        <View style={{ paddingHorizontal: 16, gap: 12, marginBottom: 22 }}>
+          {visibleSeasonal.map((slide) => (
             <TouchableOpacity
-              key={s.id}
-              activeOpacity={0.85}
-              style={{ width: 180 }}
+              key={slide.id}
+              activeOpacity={0.92}
+              onPress={() => copyCode(slide.code, slide.id)}
+              style={styles.heroCard}
             >
+              <Image source={slide.image} style={styles.heroFullImage} resizeMode="cover" />
+
+              {/* Soft scrim on the left side so the text reads on any banner */}
               <LinearGradient
-                colors={[...s.bg]}
-                style={styles.seasonalCard}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-              >
-                {/* Label badge */}
-                <View style={[styles.seasonalLabel, { backgroundColor: s.accentBg }]}>
-                  <Text style={styles.seasonalLabelText}>{s.label}</Text>
+                colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0.05)", "rgba(0,0,0,0)"]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 0.7, y: 0.5 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+
+              {/* Floating discount % badge in the top-left */}
+              <View style={styles.heroDiscountBadge}>
+                <Text style={styles.heroDiscountBadgeText}>-{slide.discount}%</Text>
+              </View>
+
+              {/* Text block in the empty (left) area of the banner */}
+              <View style={styles.heroOverlay}>
+                <View style={[styles.heroBadge, { backgroundColor: slide.badgeBg }]}>
+                  <Feather name="zap" size={10} color={slide.badgeText} />
+                  <Text style={[styles.heroBadgeText, { color: slide.badgeText }]}>{slide.badge}</Text>
                 </View>
 
-                {/* Image */}
-                <Image source={s.image} style={styles.seasonalImage} resizeMode="contain" />
+                <View>
+                  <Text style={[styles.heroTitle, { color: slide.textColor }]} numberOfLines={2}>
+                    {slide.title}
+                  </Text>
+                  <Text style={[styles.heroSub, { color: slide.textColor, opacity: 0.92 }]} numberOfLines={2}>
+                    {slide.subtitle}
+                  </Text>
+                </View>
 
-                {/* Discount */}
-                <Text style={[styles.seasonalSubtitle, { color: s.textColor }]}>{s.subtitle}</Text>
-                <Text style={[styles.seasonalDiscount, { color: s.accentBg }]}>{s.discount}%</Text>
-
-                {/* Countdown */}
-                <View style={styles.seasonalCountdownWrap}>
-                  <Text style={styles.seasonalCountdownLabel}>ينتهي خلال</Text>
-                  <View style={styles.countdownRow}>
-                    <View style={styles.countdownBox}>
-                      <Text style={[styles.countdownNum, { color: s.accentBg }]}>{s.countdown.minutes}</Text>
-                      <Text style={styles.countdownUnit}>د</Text>
-                    </View>
-                    <Text style={styles.countdownSep}>:</Text>
-                    <View style={styles.countdownBox}>
-                      <Text style={[styles.countdownNum, { color: s.accentBg }]}>{s.countdown.hours}</Text>
-                      <Text style={styles.countdownUnit}>س</Text>
-                    </View>
-                    <Text style={styles.countdownSep}>:</Text>
-                    <View style={styles.countdownBox}>
-                      <Text style={[styles.countdownNum, { color: s.accentBg }]}>{s.countdown.days}</Text>
-                      <Text style={styles.countdownUnit}>أيام</Text>
-                    </View>
+                <View style={styles.heroCtaRow}>
+                  <TouchableOpacity
+                    onPress={() => copyCode(slide.code, slide.id)}
+                    activeOpacity={0.85}
+                    style={[styles.heroCta, { backgroundColor: slide.ctaBg }]}
+                  >
+                    <Feather name={copiedId === slide.id ? "check" : "tag"} size={12} color={slide.ctaText} />
+                    <Text style={[styles.heroCtaText, { color: slide.ctaText }]}>
+                      {copiedId === slide.id ? "تم نسخ الكود" : slide.cta}
+                    </Text>
+                  </TouchableOpacity>
+                  <View style={styles.heroCodePill}>
+                    <Text style={[styles.heroCodeText, { color: slide.textColor }]}>{slide.code}</Text>
                   </View>
                 </View>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
 
-        {/* Featured promo banners — image 2 cards with overlay text */}
+        {/* ── Featured offers ── show 2 by default, toggle to show all */}
         <View style={styles.sectionHeader}>
-          <TouchableOpacity>
-            <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
+          <TouchableOpacity
+            onPress={() => setShowAllFeatured((v) => !v)}
+            style={styles.seeAllChip}
+            activeOpacity={0.7}
+          >
+            <Feather name={showAllFeatured ? "chevron-up" : "chevron-down"} size={12} color={colors.primary} />
+            <Text style={[styles.seeAll, { color: colors.primary }]}>
+              {showAllFeatured ? "عرض أقل" : `عرض الكل (${FEATURED_PROMOS.length})`}
+            </Text>
           </TouchableOpacity>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض حصرية</Text>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12, marginBottom: 22 }}>
-          {FEATURED_PROMOS.map((p) => (
+          {visibleFeatured.map((p) => (
             <TouchableOpacity
               key={p.id}
               activeOpacity={0.9}
@@ -450,24 +333,47 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
 
-  // Hero
-  heroWrap: { marginBottom: 18 },
+  // Seasonal banner cards (full-width, image with overlay text)
   heroCard: {
-    borderRadius: 24,
+    borderRadius: 22,
     overflow: "hidden",
-    height: 220,
+    height: 170,
     position: "relative",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   heroFullImage: {
     width: "100%",
     height: "100%",
   },
+  heroDiscountBadge: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  heroDiscountBadgeText: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 12,
+    color: "#0F172A",
+  },
   heroOverlay: {
     position: "absolute",
-    top: 16,
-    bottom: 16,
-    left: 16,
-    width: "55%",
+    top: 14,
+    bottom: 14,
+    left: 14,
+    width: "58%",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
@@ -475,26 +381,26 @@ const styles = StyleSheet.create({
     flexDirection: "row-reverse",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
     borderRadius: 100,
+    marginTop: 24, // leave room for the floating discount badge
   },
   heroBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
   heroTitle: {
     fontFamily: "Tajawal_700Bold",
-    fontSize: 17,
+    fontSize: 15,
     textAlign: "left",
-    lineHeight: 22,
-    marginTop: 6,
-    textShadowColor: "rgba(0,0,0,0.25)",
+    lineHeight: 19,
+    textShadowColor: "rgba(0,0,0,0.22)",
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    textShadowRadius: 3,
   },
   heroSub: {
     fontFamily: "Tajawal_500Medium",
-    fontSize: 11,
+    fontSize: 10,
     textAlign: "left",
-    lineHeight: 15,
+    lineHeight: 14,
     marginTop: 2,
     textShadowColor: "rgba(0,0,0,0.2)",
     textShadowOffset: { width: 0, height: 1 },
@@ -503,20 +409,8 @@ const styles = StyleSheet.create({
   heroCtaRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginTop: 6,
+    gap: 6,
   },
-  heroDiscountChip: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    minWidth: 52,
-  },
-  heroDiscountNum: { fontFamily: "Tajawal_700Bold", fontSize: 16, lineHeight: 18 },
-  heroDiscountLbl: { fontFamily: "Tajawal_500Medium", fontSize: 9 },
   heroCta: {
     flexDirection: "row-reverse",
     alignItems: "center",
@@ -526,9 +420,29 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   heroCtaText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  heroCodePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.7)",
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.18)",
+    borderStyle: "dashed",
+  },
+  heroCodeText: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 10,
+    letterSpacing: 0.4,
+  },
 
-  dotsRow: { flexDirection: "row", justifyContent: "center", gap: 5, marginTop: 12 },
-  pageDot: { height: 6, borderRadius: 3 },
+  // "عرض الكل" toggle pill
+  seeAllChip: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
 
   // Featured promo banners (image 2)
   featuredCard: {
@@ -665,32 +579,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   seeAll: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
-
-  // Seasonal cards
-  seasonalCard: {
-    borderRadius: 20,
-    padding: 14,
-    alignItems: "center",
-    minHeight: 260,
-  },
-  seasonalLabel: {
-    alignSelf: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 100,
-    marginBottom: 8,
-  },
-  seasonalLabelText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FFF" },
-  seasonalImage: { width: 70, height: 70, marginBottom: 8 },
-  seasonalSubtitle: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "center", lineHeight: 16, marginBottom: 4 },
-  seasonalDiscount: { fontFamily: "Tajawal_700Bold", fontSize: 32, textAlign: "center", marginBottom: 6 },
-  seasonalCountdownWrap: { alignItems: "center", marginTop: 4 },
-  seasonalCountdownLabel: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#64748B", marginBottom: 4 },
-  countdownRow: { flexDirection: "row-reverse", alignItems: "center", gap: 4 },
-  countdownBox: { alignItems: "center", minWidth: 24 },
-  countdownNum: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
-  countdownUnit: { fontFamily: "Tajawal_400Regular", fontSize: 9, color: "#64748B" },
-  countdownSep: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#94A3B8" },
 
   // Coupons
   couponCard: {
