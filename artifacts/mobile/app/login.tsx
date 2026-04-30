@@ -45,22 +45,27 @@ export default function LoginScreen() {
   };
 
   const browseAsGuest = async () => {
-    // Clear any stale session before guest browsing
-    await signOut();
+    // Clear any stale session before guest browsing.
+    // signOut() now clears local state in a `finally` block, so it's
+    // safe to await even if the network call fails.
+    try {
+      await signOut();
+    } catch (e) {
+      console.warn("[v0] signOut failed during guest browse:", (e as Error)?.message);
+    }
     router.replace("/(tabs)/home" as any);
   };
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 24 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: colors.card }]}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
-        </TouchableOpacity>
-        <View style={[styles.logo, { backgroundColor: colors.primary }]}>
-          <MaterialCommunityIcons name="broom" size={32} color="#FFF" />
+        <View style={styles.heroCenter}>
+          <View style={[styles.logo, { backgroundColor: colors.primary }]}>
+            <MaterialCommunityIcons name="broom" size={36} color="#FFF" />
+          </View>
+          <Text style={[styles.title, { color: colors.foreground }]}>{t("login_title")}</Text>
+          <Text style={[styles.sub, { color: colors.mutedForeground }]}>{t("login_sub")}</Text>
         </View>
-        <Text style={[styles.title, { color: colors.foreground }]}>{t("login_title")}</Text>
-        <Text style={[styles.sub, { color: colors.mutedForeground }]}>{t("login_sub")}</Text>
 
         <View style={[styles.field, { backgroundColor: colors.card }]}>
           <Feather name="mail" size={18} color={colors.mutedForeground} />
@@ -113,10 +118,10 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20 },
-  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", marginBottom: 24 },
-  logo: { width: 72, height: 72, borderRadius: 24, alignItems: "center", justifyContent: "center", alignSelf: "flex-end", marginBottom: 16 },
-  title: { fontFamily: "Tajawal_700Bold", fontSize: 26, textAlign: "right", marginBottom: 4 },
-  sub: { fontFamily: "Tajawal_500Medium", fontSize: 14, textAlign: "right", marginBottom: 24 },
+  heroCenter: { alignItems: "center", marginBottom: 32 },
+  logo: { width: 88, height: 88, borderRadius: 28, alignItems: "center", justifyContent: "center", marginBottom: 18, shadowColor: "#16C47F", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 6 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 28, textAlign: "center", marginBottom: 6 },
+  sub: { fontFamily: "Tajawal_500Medium", fontSize: 14, textAlign: "center", marginBottom: 0 },
   field: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, height: 56, borderRadius: 16, marginBottom: 12, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14 },
   btn: { height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },
