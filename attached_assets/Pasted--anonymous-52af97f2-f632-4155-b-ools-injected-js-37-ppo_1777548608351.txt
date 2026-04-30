@@ -1,0 +1,71 @@
+	(anonymous)	@	52af97f2-f632-4155-b…ools/injected.js:37
+ppokdtzlisaxsrmtwlrb…ant_type=password:1 
+ Failed to load resource: the server responded with a status of 400 ()
+Turn on Console insights in Settings to receive AI assistance for understanding and addressing console warnings and errors. Learn more
+ppokdtzlisaxsrmtwlrb…ant_type=password:1 
+ Failed to load resource: the server responded with a status of 400 ()
+ppokdtzlisaxsrmtwlrb…ant_type=password:1 
+ Failed to load resource: the server responded with a status of 400 ()
+injected.js:37 [v0] Login successful with role: user
+injected.js:37 Error: cannot add `postgres_changes` callbacks for realtime:home-providers-live after `subscribe()`.
+    at RealtimeChannel.on (entry.bundle?platfor…uterRoot…:130268:15)
+    at entry.bundle?platfor…uterRoot…:155455:71
+    at react-stack-bottom-frame (entry.bundle?platfor…outerRoot…:16716:20)
+    at runWithFiberInDEV (entry.bundle?platfor…routerRoot…:4635:70)
+    at commitHookEffectListMount (entry.bundle?platfor…outerRoot…:9625:620)
+    at commitHookPassiveMountEffects (entry.bundle?platfor…routerRoot…:9662:58)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10618:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…uterRoot…:10624:381)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platfor…outerRoot…:10617:11)
+
+
+The above error occurred in the <HomeScreen(./(tabs)/home.tsx)> component.
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+ef6bc6a…:1 
+ GET https://gravatar.com/avatar/ef6bc6a…?d=404 404 (Not Found)
+2503498…:1 
+ GET https://gravatar.com/avatar/2503498…?d=404 404 (Not Found)
+ef6bc6a…:1 
+ GET https://gravatar.com/avatar/ef6bc6a…?d=404 404 (Not Found)
+2503498…:1 
+ GET https://gravatar.com/avatar/2503498…?d=404 404 (Not Found)
+ef6bc6a…:1 
+ GET https://gravatar.com/avatar/ef6bc6a…?d=404 404 (Not Found)
+2503498…:1 
+ GET https://gravatar.com/avatar/2503498…?d=404 404 (Not Found)
+injected.js:37 Running application "main" with appParams:
+ 
+{rootTag: '#root', hydrate: undefined}
+ 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+injected.js:37 "shadow*" style props are deprecated. Use "boxShadow".
+injected.js:37 [expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.
+injected.js:37 props.pointerEvents is deprecated. Use style.pointerEvents
