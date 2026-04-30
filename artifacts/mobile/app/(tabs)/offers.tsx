@@ -8,6 +8,7 @@ import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
+import { SEASONAL_PROMOS, FEATURED_PROMOS } from "@/lib/promotions";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const HERO_CARD_W = SCREEN_W - 32;
@@ -19,12 +20,6 @@ const STATS: Stat[] = [
   { id: "seasonal", icon: "calendar", label: "موسم", value: "5", color: "#16C47F" },
   { id: "exclusive", icon: "gift", label: "حصرية", value: "8", color: "#16C47F" },
   { id: "referral", icon: "users", label: "دعوة الأصدقاء", value: "اربح 50 ر.س", color: "#16C47F", isReferral: true },
-];
-
-const HERO_SLIDES = [
-  { id: "s1", image: require("@/assets/images/offers-hero-1.png") },
-  { id: "s2", image: require("@/assets/images/offers-hero-2.png") },
-  { id: "s3", image: require("@/assets/images/offers-hero-3.png") },
 ];
 
 const SEASONAL = [
@@ -103,11 +98,11 @@ export default function OffersScreen() {
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveDot((prev) => {
-        const next = (prev + 1) % HERO_SLIDES.length;
+        const next = (prev + 1) % SEASONAL_PROMOS.length;
         heroScrollRef.current?.scrollTo({ x: next * (HERO_CARD_W + 12), animated: true });
         return next;
       });
-    }, 4000);
+    }, 4500);
     return () => clearInterval(timer);
   }, []);
 
@@ -137,7 +132,7 @@ export default function OffersScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
-        {/* Hero Slider - Full image banners */}
+        {/* Hero Slider — Seasonal banners with text + discount overlay */}
         <View style={styles.heroWrap}>
           <ScrollView
             ref={heroScrollRef}
@@ -148,15 +143,60 @@ export default function OffersScreen() {
             snapToInterval={HERO_CARD_W + 12}
             contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
           >
-            {HERO_SLIDES.map((slide) => (
-              <View key={slide.id} style={[styles.heroCard, { width: HERO_CARD_W }]}>
+            {SEASONAL_PROMOS.map((slide) => (
+              <TouchableOpacity
+                key={slide.id}
+                activeOpacity={0.92}
+                onPress={() => copyCode(slide.code, slide.id)}
+                style={[styles.heroCard, { width: HERO_CARD_W }]}
+              >
                 <Image source={slide.image} style={styles.heroFullImage} resizeMode="cover" />
-              </View>
+
+                {/* Soft scrim on the left side so the text reads on any banner */}
+                <LinearGradient
+                  colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0.05)", "rgba(0,0,0,0)"]}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 0.7, y: 0.5 }}
+                  style={StyleSheet.absoluteFillObject}
+                />
+
+                {/* Text block in the empty (left) area of the banner */}
+                <View style={styles.heroOverlay}>
+                  <View style={[styles.heroBadge, { backgroundColor: slide.badgeBg }]}>
+                    <Feather name="zap" size={10} color={slide.badgeText} />
+                    <Text style={[styles.heroBadgeText, { color: slide.badgeText }]}>{slide.badge}</Text>
+                  </View>
+
+                  <Text style={[styles.heroTitle, { color: slide.textColor }]} numberOfLines={2}>
+                    {slide.title}
+                  </Text>
+                  <Text style={[styles.heroSub, { color: slide.textColor, opacity: 0.92 }]} numberOfLines={2}>
+                    {slide.subtitle}
+                  </Text>
+
+                  <View style={styles.heroCtaRow}>
+                    <View style={[styles.heroDiscountChip, { backgroundColor: slide.ctaBg }]}>
+                      <Text style={[styles.heroDiscountNum, { color: slide.ctaText }]}>{slide.discount}%</Text>
+                      <Text style={[styles.heroDiscountLbl, { color: slide.ctaText }]}>خصم</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => copyCode(slide.code, slide.id)}
+                      activeOpacity={0.85}
+                      style={[styles.heroCta, { backgroundColor: slide.ctaBg }]}
+                    >
+                      <Feather name={copiedId === slide.id ? "check" : "tag"} size={12} color={slide.ctaText} />
+                      <Text style={[styles.heroCtaText, { color: slide.ctaText }]}>
+                        {copiedId === slide.id ? "تم نسخ الكود" : slide.cta}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
 
           <View style={styles.dotsRow}>
-            {HERO_SLIDES.map((_, i) => (
+            {SEASONAL_PROMOS.map((_, i) => (
               <TouchableOpacity
                 key={i}
                 onPress={() => {
@@ -251,6 +291,64 @@ export default function OffersScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+
+        {/* Featured promo banners — image 2 cards with overlay text */}
+        <View style={styles.sectionHeader}>
+          <TouchableOpacity>
+            <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
+          </TouchableOpacity>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض حصرية</Text>
+        </View>
+
+        <View style={{ paddingHorizontal: 16, gap: 12, marginBottom: 22 }}>
+          {FEATURED_PROMOS.map((p) => (
+            <TouchableOpacity
+              key={p.id}
+              activeOpacity={0.9}
+              onPress={() => copyCode(p.code, p.id)}
+              style={styles.featuredCard}
+            >
+              <Image source={p.image} style={styles.featuredImage} resizeMode="cover" />
+
+              {/* Subtle scrim on the LEFT (text-side) so light text reads */}
+              <LinearGradient
+                colors={["rgba(0,0,0,0.18)", "rgba(0,0,0,0.04)", "rgba(0,0,0,0)"]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 0.6, y: 0.5 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+
+              {/* Floating discount % badge in the top-left corner */}
+              <View style={styles.featuredDiscountBadge}>
+                <Text style={styles.featuredDiscountNum}>-{p.discount}%</Text>
+              </View>
+
+              {/* Text block on the empty left half of the banner */}
+              <View style={styles.featuredOverlay}>
+                <View style={[styles.featuredBadge, { backgroundColor: p.badgeBg }]}>
+                  <Text style={[styles.featuredBadgeText, { color: p.badgeText }]}>{p.badge}</Text>
+                </View>
+                <Text style={[styles.featuredTitle, { color: p.titleColor }]} numberOfLines={2}>
+                  {p.title}
+                </Text>
+                <Text style={[styles.featuredSub, { color: p.subColor }]} numberOfLines={2}>
+                  {p.subtitle}
+                </Text>
+                <View style={styles.featuredCtaRow}>
+                  <View style={[styles.featuredCta, { backgroundColor: p.ctaBg }]}>
+                    <Feather name={copiedId === p.id ? "check" : "arrow-left"} size={12} color={p.ctaText} />
+                    <Text style={[styles.featuredCtaText, { color: p.ctaText }]}>
+                      {copiedId === p.id ? "تم النسخ" : p.cta}
+                    </Text>
+                  </View>
+                  <View style={styles.featuredCodePill}>
+                    <Text style={styles.featuredCodeText}>{p.code}</Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Premium Coupons */}
         <View style={styles.sectionHeader}>
@@ -358,13 +456,174 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: "hidden",
     height: 220,
+    position: "relative",
   },
   heroFullImage: {
     width: "100%",
     height: "100%",
   },
+  heroOverlay: {
+    position: "absolute",
+    top: 16,
+    bottom: 16,
+    left: 16,
+    width: "55%",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  heroBadge: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+  },
+  heroBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
+  heroTitle: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 17,
+    textAlign: "left",
+    lineHeight: 22,
+    marginTop: 6,
+    textShadowColor: "rgba(0,0,0,0.25)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  heroSub: {
+    fontFamily: "Tajawal_500Medium",
+    fontSize: 11,
+    textAlign: "left",
+    lineHeight: 15,
+    marginTop: 2,
+    textShadowColor: "rgba(0,0,0,0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  heroCtaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 6,
+  },
+  heroDiscountChip: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 52,
+  },
+  heroDiscountNum: { fontFamily: "Tajawal_700Bold", fontSize: 16, lineHeight: 18 },
+  heroDiscountLbl: { fontFamily: "Tajawal_500Medium", fontSize: 9 },
+  heroCta: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 100,
+  },
+  heroCtaText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
+
   dotsRow: { flexDirection: "row", justifyContent: "center", gap: 5, marginTop: 12 },
   pageDot: { height: 6, borderRadius: 3 },
+
+  // Featured promo banners (image 2)
+  featuredCard: {
+    borderRadius: 22,
+    overflow: "hidden",
+    height: 150,
+    position: "relative",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  featuredImage: { width: "100%", height: "100%" },
+  featuredDiscountBadge: {
+    position: "absolute",
+    top: 12,
+    left: 12,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  featuredDiscountNum: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 12,
+    color: "#0F172A",
+  },
+  featuredOverlay: {
+    position: "absolute",
+    top: 14,
+    bottom: 14,
+    left: 14,
+    width: "58%",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  featuredBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 100,
+    marginTop: 24, // leave room for floating discount badge
+  },
+  featuredBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
+  featuredTitle: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 15,
+    textAlign: "left",
+    lineHeight: 19,
+    marginTop: 4,
+    textShadowColor: "rgba(0,0,0,0.18)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  featuredSub: {
+    fontFamily: "Tajawal_500Medium",
+    fontSize: 10,
+    textAlign: "left",
+    lineHeight: 14,
+    marginTop: 1,
+  },
+  featuredCtaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  featuredCta: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 100,
+  },
+  featuredCtaText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  featuredCodePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.55)",
+    borderStyle: "dashed",
+  },
+  featuredCodeText: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 10,
+    color: "#FFFFFF",
+    letterSpacing: 0.4,
+  },
 
   // Stats row
   statsRow: {

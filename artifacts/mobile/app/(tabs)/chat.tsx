@@ -15,6 +15,7 @@ import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/loca
 import { iconForService, colorForService } from "../../lib/serviceIcons";
 import GuestEmpty from "@/components/GuestEmpty";
 import FloatingTabBar from "@/components/FloatingTabBar";
+import { findPromotionAnswer } from "@/lib/promotions";
 
 type ServiceItem = {
   id: string;
@@ -66,9 +67,15 @@ const nextId = () => `msg-${++msgId}`;
 // ── Lightweight rule-based AI for service/order knowledge ──
 function answerFromKb(text: string, ctx: { hasOpenBooking: boolean }): string | null {
   const t = text.toLowerCase().trim();
+
+  // Promotions / coupons / refer-a-friend always check first so the
+  // assistant gives the live promo data instead of the generic fallback.
+  const promoAns = findPromotionAnswer(text);
+  if (promoAns) return promoAns;
+
   // greetings
   if (/^(hi|hello|مرحبا|اهلا|أهلا|السلام|سلام)/i.test(t)) {
-    return "أهلاً 👋 يسعدني مساعدتك! يمكنك سؤالي عن:\n• الخدمات والأسعار\n• حالة طلبك أو الفاتورة\n• استرداد المبلغ أو الإلغاء\n• فتح بلاغ أو شكوى";
+    return "أهلاً 👋 يسعدني مساعدتك! يمكنك سؤالي عن:\n• الخدمات والأسعار\n• العروض والكوبونات الفعّالة\n• دعوة الأصدقاء وكسب 50 ر.س\n• حالة طلبك أو الفاتورة\n• استرداد المبلغ أو الإلغاء";
   }
   if (/(سعر|تكلف|كم تكلفة|كم سعر)/i.test(text)) {
     return "تبدأ أسعارنا من 85 ر.س لتنظيف المنازل، و120 ر.س للكنب، و250 ر.س للفلل. يضاف رسوم خدمة 10 ر.س + ضريبة 15%. تظهر الفاتورة الكاملة قبل الدفع.";
@@ -102,9 +109,9 @@ function answerFromKb(text: string, ctx: { hasOpenBooking: boolean }): string | 
   if (/(عنوان|address)/i.test(text)) {
     return "يمكنك حفظ أكثر من عنوان (منزل، عمل، عائلة) من 'الإعدادات' ➜ 'العناوين'. سأستخدم العنوان الافتراضي تلقائياً.";
   }
-  if (/(عرض|عروض|كوبون|خصم|promo|coupon|كود)/i.test(text)) {
-    return "لدينا عروض دورية في الصفحة الرئيسية. جرّب كود 'CLEAN30' للخصم 30 ر.س على أول طلب، أو 'NEW50' للجدد فقط.";
-  }
+  // Note: promotions / coupons / referrals are handled at the top of this fn
+  // by findPromotionAnswer() so the assistant always quotes the live data
+  // from lib/promotions.ts (single source of truth).
   return null;
 }
 
@@ -487,6 +494,8 @@ export default function ChatScreen() {
   const QuickActions = () => (
     <View style={s.qaWrap}>
       {[
+        { id: "promos", label: "العروض والكوبونات", icon: "tag", onPress: () => { addUserMessage("ما هي العروض والكوبونات الفعّالة؟"); const a = answerFromKb("عروض وكوبونات", { hasOpenBooking }); a && addBotMessage(a); } },
+        { id: "refer", label: "دعوة صديق", icon: "user-plus", onPress: () => { addUserMessage("نظام دعوة الأصدقاء"); const a = answerFromKb("دعوة صديق", { hasOpenBooking }); a && addBotMessage(a); setTimeout(() => router.push("/referrals"), 1500); } },
         { id: "track", label: "تتبع طلبي", icon: "navigation-2", onPress: () => { addUserMessage("تتبع طلبي"); const a = answerFromKb("اين طلبي", { hasOpenBooking }); a && addBotMessage(a); if (hasOpenBooking) setTimeout(() => router.push("/(tabs)/bookings"), 1200); } },
         { id: "refund", label: "استرداد المبلغ", icon: "rotate-ccw", onPress: () => { addUserMessage("استرداد المبلغ"); const a = answerFromKb("استرداد", { hasOpenBooking }); a && addBotMessage(a); } },
         { id: "support", label: "دعم", icon: "headphones", onPress: () => { addUserMessage("التواصل مع الدعم"); const a = answerFromKb("دعم", { hasOpenBooking }); a && addBotMessage(a); } },

@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
+import { REFERRAL_PROGRAM } from "@/lib/promotions";
 
 const FRIENDS = [
   { n: "خالد العتيبي", st: "نشط", reward: "50 ر.س" },
@@ -18,20 +19,35 @@ export default function Referrals() {
 
   const onShare = () => {
     if (Platform.OS === "web") return;
-    Share.share({ message: `انضم لتطبيق نظافة باستخدام كودي ${code} واحصل على خصم 50 ر.س على أول طلب!` });
+    Share.share({ message: `انضم لتطبيق نظافة باستخدام كودي ${code} واحصل على خصم ${REFERRAL_PROGRAM.friendDiscount} ر.س على أول طلب!` });
   };
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="دعوة الأصدقاء" subtitle="اكسب 50 ر.س لكل صديق" />
+      <ScreenHeader title="دعوة الأصدقاء" subtitle={`اكسب ${REFERRAL_PROGRAM.rewardPerFriend} ر.س لكل صديق`} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        <LinearGradient colors={["#F59E0B", "#FB923C"]} style={styles.hero}>
-          <View style={{ alignItems: "center" }}>
-            <MaterialCommunityIcons name="gift" size={56} color="#FFF" />
-            <Text style={styles.heroT}>ادع صديق واربح 50 ر.س</Text>
-            <Text style={styles.heroS}>لكل صديق ينضم ويطلب أول خدمة عبر دعوتك</Text>
+        {/* Banner hero — orange promo image with overlay */}
+        <View style={styles.hero}>
+          <Image source={REFERRAL_PROGRAM.hero.image} style={styles.heroImg} resizeMode="cover" />
+          <LinearGradient
+            colors={["rgba(0,0,0,0.32)", "rgba(0,0,0,0.05)", "rgba(0,0,0,0)"]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 0.7, y: 0.5 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <View style={styles.heroContent}>
+            <View style={styles.heroBadge}>
+              <MaterialCommunityIcons name="gift" size={12} color="#FFFFFF" />
+              <Text style={styles.heroBadgeT}>{REFERRAL_PROGRAM.hero.badge}</Text>
+            </View>
+            <Text style={styles.heroT}>{REFERRAL_PROGRAM.hero.title}</Text>
+            <Text style={styles.heroS}>{REFERRAL_PROGRAM.hero.subtitle}</Text>
+            <TouchableOpacity style={styles.heroCta} activeOpacity={0.85} onPress={onShare}>
+              <Feather name="share-2" size={13} color="#0F172A" />
+              <Text style={styles.heroCtaT}>{REFERRAL_PROGRAM.hero.cta}</Text>
+            </TouchableOpacity>
           </View>
-        </LinearGradient>
+        </View>
 
         <View style={[styles.codeBox, { backgroundColor: colors.card }]}>
           <Text style={[styles.codeLabel, { color: colors.mutedForeground }]}>كود الدعوة الخاص بك</Text>
@@ -104,9 +120,70 @@ export default function Referrals() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  hero: { borderRadius: 22, padding: 22, alignItems: "center", marginBottom: 14 },
-  heroT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 18, marginTop: 12 },
-  heroS: { color: "rgba(255,255,255,0.9)", fontFamily: "Tajawal_500Medium", fontSize: 12, marginTop: 4, textAlign: "center" },
+  hero: {
+    borderRadius: 22,
+    overflow: "hidden",
+    marginBottom: 14,
+    height: 180,
+    position: "relative",
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  heroImg: { width: "100%", height: "100%" },
+  heroContent: {
+    position: "absolute",
+    top: 16,
+    bottom: 16,
+    left: 16,
+    width: "60%",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  heroBadge: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(255,255,255,0.22)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
+  },
+  heroBadgeT: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 10 },
+  heroT: {
+    color: "#FFFFFF",
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 17,
+    textAlign: "left",
+    lineHeight: 22,
+    textShadowColor: "rgba(0,0,0,0.25)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  heroS: {
+    color: "rgba(255,255,255,0.95)",
+    fontFamily: "Tajawal_500Medium",
+    fontSize: 11,
+    textAlign: "left",
+    lineHeight: 16,
+    textShadowColor: "rgba(0,0,0,0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  heroCta: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 100,
+  },
+  heroCtaT: { color: "#0F172A", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   codeBox: { padding: 16, borderRadius: 18, marginBottom: 14, alignItems: "center" },
   codeLabel: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginBottom: 8 },
   codeRow: { flexDirection: "row-reverse", alignItems: "center", gap: 14 },
