@@ -523,10 +523,10 @@ async function main() {
   // Skip static build on Vercel CI - just create minimal output
   if (process.env.VERCEL || process.env.CI) {
     console.log("Running on CI - creating minimal build output...");
-    const staticBuild = path.join(projectRoot, "static-build");
-    fs.mkdirSync(staticBuild, { recursive: true });
+    const publicDir = path.join(projectRoot, "public");
+    fs.mkdirSync(publicDir, { recursive: true });
     fs.writeFileSync(
-      path.join(staticBuild, "index.html"),
+      path.join(publicDir, "index.html"),
       `<!DOCTYPE html>
 <html>
 <head>
