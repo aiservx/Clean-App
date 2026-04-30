@@ -92,27 +92,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let unsub: any;
 
     (async () => {
-      const { data: { session: s0 } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      setSession(s0);
-      if (s0?.user) {
-        await loadProfile(s0.user.id);
-      } else {
-        setProfileLoaded(true);
-      }
-      setLoading(false);
-
-      const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
-        setSession(s);
-        if (s?.user) {
-          setProfileLoaded(false);
-          await loadProfile(s.user.id);
+      // Guard the entire bootstrap. If getSession() throws (e.g. corrupted
+      // AsyncStorage session, network failure, invalid Supabase URL), we must
+      // still finish loading so the app shows the login screen instead of
+      // crashing on launch and getting stuck.
+      try {
+        const { data: { session: s0 } } = await supabase.auth.getSession();
+        if (!mounted) return;
+        setSession(s0);
+        if (s0?.user) {
+          try {
+            await loadProfile(s0.user.id);
+          } catch (e) {
+            console.warn("[v0] loadProfile failed on bootstrap:", (e as Error)?.message);
+            setProfileLoaded(true);
+          }
         } else {
+          setProfileLoaded(true);
+        }
+      } catch (e) {
+        console.warn("[v0] supabase.auth.getSession() failed:", (e as Error)?.message);
+        // Try to recover by clearing any corrupted persisted session.
+        try {
+          await supabase.auth.signOut();
+        } catch {}
+        if (mounted) {
+          setSession(null);
           setProfile(null);
           setProfileLoaded(true);
         }
-      });
-      unsub = sub.subscription;
+      } finally {
+        if (mounted) setLoading(false);
+      }
+
+      try {
+        const { data: sub } = supabase.auth.onAuthStateChange(async (_e, s) => {
+          setSession(s);
+          if (s?.user) {
+            setProfileLoaded(false);
+            try {
+              await loadProfile(s.user.id);
+            } catch (e) {
+              console.warn("[v0] loadProfile failed in onAuthStateChange:", (e as Error)?.message);
+              setProfileLoaded(true);
+            }
+          } else {
+            setProfile(null);
+            setProfileLoaded(true);
+          }
+        });
+        unsub = sub.subscription;
+      } catch (e) {
+        console.warn("[v0] onAuthStateChange subscribe failed:", (e as Error)?.message);
+      }
     })();
 
     return () => {
@@ -122,15 +154,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadProfile]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
-    if (data.user) {
-      const p = await ensureProfile(data.user.id);
-      setProfile(p);
-      setProfileLoaded(true);
-      return { role: p.role };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: error.message };
+      if (data.user) {
+        try {
+          const p = await ensureProfile(data.user.id);
+          setProfile(p);
+          setProfileLoaded(true);
+          return { role: p.role };
+        } catch (e) {
+          // Auth succeeded but profile fetch failed — let the user continue
+          // with a default role rather than crashing the login flow.
+          console.warn("[v0] ensureProfile after signIn failed:", (e as Error)?.message);
+          setProfileLoaded(true);
+          return { role: "user" as Role };
+        }
+      }
+      return {};
+    } catch (e) {
+      // Network failure, invalid Supabase URL, etc. — surface as a friendly error
+      // instead of letting the exception propagate and crash the screen.
+      return { error: (e as Error)?.message || "Network error" };
     }
-    return {};
   }, []);
 
   const signUp = useCallback(async (p: { email: string; password: string; full_name: string; phone: string; role: Role }) => {
