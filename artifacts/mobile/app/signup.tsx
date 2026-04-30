@@ -24,12 +24,20 @@ export default function SignupScreen() {
     if (!name || !email || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
     if (pwd.length < 6) return Alert.alert(t("error"), "Password must be at least 6 characters");
     setBusy(true);
-    const { error } = await signUp({ email: email.trim(), password: pwd, full_name: name, phone, role });
-    setBusy(false);
-    if (error) return Alert.alert(t("error"), error);
-    Alert.alert(t("ok"), "Account created. Sign in to continue.", [
-      { text: t("ok"), onPress: () => router.replace("/login") },
-    ]);
+    try {
+      const { error } = await signUp({ email: email.trim(), password: pwd, full_name: name, phone, role });
+      if (error) {
+        setBusy(false);
+        return Alert.alert(t("error"), error);
+      }
+      setBusy(false);
+      Alert.alert(t("ok"), "Account created. Sign in to continue.", [
+        { text: t("ok"), onPress: () => router.replace("/login") },
+      ]);
+    } catch (e) {
+      setBusy(false);
+      Alert.alert(t("error"), (e as Error)?.message || "Network error");
+    }
   };
 
   return (

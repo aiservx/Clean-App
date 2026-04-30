@@ -23,31 +23,27 @@ export default function LoginScreen() {
 
     try {
       const res = await signIn(email.trim(), pwd);
-      setBusy(false);
 
       if (res.error) {
+        setBusy(false);
         return Alert.alert(t("signin_error"), res.error);
       }
 
       const role = res.role || "user";
-      console.log("[v0] Login successful with role:", role);
-      
-      // Redirect based on role — use distinct paths to avoid /home collision on native
+
       if (role === "provider" || role === "admin") {
         router.replace("/(provider)/dashboard" as any);
       } else {
         router.replace("/(tabs)/home" as any);
       }
     } catch (e) {
-      setBusy(false);
       Alert.alert(t("signin_error"), (e as Error).message);
+    } finally {
+      setBusy(false);
     }
   };
 
   const browseAsGuest = async () => {
-    // Clear any stale session before guest browsing.
-    // signOut() now clears local state in a `finally` block, so it's
-    // safe to await even if the network call fails.
     try {
       await signOut();
     } catch (e) {

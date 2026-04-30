@@ -2,24 +2,21 @@ import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const anon = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
+// Hardcoded credentials — these are the publishable anon key, safe to embed
+// in client code (same approach as artifacts/admin/src/lib/supabase.ts).
+// Env-var override is kept so EAS secrets / .env still win when present.
+const SUPABASE_URL = "https://ppokdtzlisaxsrmtwlrb.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_4aV1hEm-Ow4oy6AAgUR7rg_miOdFXHa";
 
-// Validate that env vars are present and look reasonable. If they are missing
-// at build time (common cause of APK crashes on login), log loudly so we can
-// see it in `adb logcat`.
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL || SUPABASE_URL;
+const anon = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_ANON_KEY;
+
 export const supabaseConfigured =
-  !!process.env.EXPO_PUBLIC_SUPABASE_URL &&
-  !!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY &&
-  url.startsWith("https://") &&
-  url !== "https://placeholder.supabase.co";
+  url.startsWith("https://") && url !== "https://placeholder.supabase.co";
 
 if (!supabaseConfigured) {
   console.warn(
-    "[v0] Supabase env vars missing or invalid at build time. " +
-      "EXPO_PUBLIC_SUPABASE_URL=" + (process.env.EXPO_PUBLIC_SUPABASE_URL ? "set" : "MISSING") +
-      ", EXPO_PUBLIC_SUPABASE_ANON_KEY=" + (process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ? "set" : "MISSING") +
-      ". Auth calls will fail. Make sure these are passed to `eas build` (eas.json env) or `expo build`."
+    "[v0] Supabase URL looks invalid (" + url + "). Auth calls will fail.",
   );
 }
 
