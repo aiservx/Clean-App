@@ -150,9 +150,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setProfileLoaded(true);
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      setSession(null);
+      setProfile(null);
+      setProfileLoaded(true);
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {

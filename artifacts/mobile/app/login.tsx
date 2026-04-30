@@ -45,7 +45,14 @@ export default function LoginScreen() {
   };
 
   const browseAsGuest = async () => {
-    try { await signOut(); } catch {}
+    // Clear any stale session before guest browsing.
+    // signOut() now clears local state in a `finally` block, so it's
+    // safe to await even if the network call fails.
+    try {
+      await signOut();
+    } catch (e) {
+      console.warn("[v0] signOut failed during guest browse:", (e as Error)?.message);
+    }
     router.replace("/(tabs)/home" as any);
   };
 
