@@ -20,19 +20,21 @@ import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 
-// ── RTL: force Arabic RTL synchronously BEFORE first render ──
-// I18nManager.forceRTL persists across launches. On the very first launch
-// isRTL is still false; we call forceRTL(true) and the flag takes effect on
-// the next JS bundle load.  For all subsequent launches isRTL will be true
-// and the entire layout renders right-to-left automatically.
-// IMPORTANT: all flexDirection:"row" will be right-to-left when isRTL is true.
+// ── RTL: ensure RTL is enabled on first launch (Arabic default) ──
+// I18nManager.forceRTL persists across launches. On first install isRTL is
+// false, so we force it to true (Arabic default). On subsequent launches the
+// persisted value is already correct — if the user switched to English via
+// settings, forceRTL(false) was called and persisted, so we respect it here
+// by only forcing RTL when the flag isn't already set.
 I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+if (!I18nManager.isRTL) {
+  I18nManager.forceRTL(true);
+}
 
 // Web: I18nManager is a no-op — apply direction via DOM
 if (typeof document !== "undefined") {
-  document.documentElement.dir = "rtl";
-  document.documentElement.lang = "ar";
+  document.documentElement.dir = I18nManager.isRTL ? "rtl" : "ltr";
+  document.documentElement.lang = I18nManager.isRTL ? "ar" : "en";
 }
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
