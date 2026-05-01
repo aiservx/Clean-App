@@ -20,21 +20,20 @@ import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 
-// ── RTL: ensure RTL is enabled on first launch (Arabic default) ──
-// I18nManager.forceRTL persists across launches. On first install isRTL is
-// false, so we force it to true (Arabic default). On subsequent launches the
-// persisted value is already correct — if the user switched to English via
-// settings, forceRTL(false) was called and persisted, so we respect it here
-// by only forcing RTL when the flag isn't already set.
+// ── RTL: default to Arabic RTL at module scope ──
+// On first install isRTL is false; we set forceRTL(true) so the *next* launch
+// renders RTL.  The I18nProvider (i18n.tsx) reconciles this on mount: it reads
+// the stored language from AsyncStorage and calls forceRTL(lang==="ar") — which
+// overwrites whatever we set here.  Because forceRTL only affects the *next*
+// launch and the I18nProvider runs *after* this module-scope code, the provider
+// always has the last word on what gets persisted.
 I18nManager.allowRTL(true);
-if (!I18nManager.isRTL) {
-  I18nManager.forceRTL(true);
-}
+I18nManager.forceRTL(true);
 
-// Web: I18nManager is a no-op — apply direction via DOM
+// Web: direction is handled by I18nProvider via DOM
 if (typeof document !== "undefined") {
-  document.documentElement.dir = I18nManager.isRTL ? "rtl" : "ltr";
-  document.documentElement.lang = I18nManager.isRTL ? "ar" : "en";
+  document.documentElement.dir = "rtl";
+  document.documentElement.lang = "ar";
 }
 
 SplashScreen.preventAutoHideAsync().catch(() => {});

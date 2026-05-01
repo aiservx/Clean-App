@@ -186,6 +186,21 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     AsyncStorage.getItem(KEY).then((v) => {
       if (v === "ar" || v === "en") setLangState(v);
+      // Reconcile RTL direction with stored language.
+      // _layout.tsx sets forceRTL(true) unconditionally at module scope
+      // (Arabic default for first launch). Here we overwrite with the
+      // actual stored preference so the correct direction persists for
+      // the next launch.  This runs after module scope, so last-writer-wins.
+      const wantRTL = v !== "en"; // default to Arabic if no preference stored
+      try {
+        I18nManager.allowRTL(wantRTL);
+        I18nManager.forceRTL(wantRTL);
+      } catch {}
+      // Web DOM
+      if (Platform.OS === "web" && typeof document !== "undefined") {
+        document.documentElement.dir = wantRTL ? "rtl" : "ltr";
+        document.documentElement.lang = wantRTL ? "ar" : "en";
+      }
     });
   }, []);
 
