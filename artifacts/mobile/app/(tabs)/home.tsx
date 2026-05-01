@@ -292,7 +292,7 @@ export default function HomeScreen() {
           <View style={styles.sheetGrabber} />
 
           {/* SERVICES — 2-column grid showing all 18 categories with discount banners between rows */}
-          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row" : "row" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
@@ -359,7 +359,7 @@ export default function HomeScreen() {
           {/* OFFERS (T042: moved below services, T043: soft coupon-style colors) */}
           {offers.length > 0 && (
             <>
-              <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+              <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row" : "row" }]}>
                 <TouchableOpacity onPress={() => router.push("/(tabs)/offers")}>
                   <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
                 </TouchableOpacity>
@@ -408,7 +408,7 @@ export default function HomeScreen() {
           )}
 
           {/* PROVIDERS */}
-          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row-reverse" : "row" }]}>
+          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row" : "row" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   topFade: { position: "absolute", top: 0, left: 0, right: 0 },
 
   floatHeader: { position: "absolute", left: 0, right: 0, paddingHorizontal: 14, gap: 12, zIndex: 5 },
-  headerRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 8 },
 
   headerIconBtn: { borderRadius: 14, overflow: "hidden" },
   iconBlur: {
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
 
   searchWrap: { borderRadius: 18, overflow: "hidden" },
   searchBlur: {
-    flexDirection: "row-reverse", alignItems: "center", gap: 10, paddingHorizontal: 14, height: 50, borderRadius: 18,
+    flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, height: 50, borderRadius: 18,
     backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)",
   },
   searchPlaceholder: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#94A3B8", textAlign: "right" },
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   sheetGrabber: { width: 38, height: 4, borderRadius: 2, backgroundColor: "#CBD5E1", alignSelf: "center", marginBottom: 14 },
 
   offerCard: { width: 290, height: 110, borderRadius: 20, overflow: "hidden" },
-  offerInner: { flex: 1, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12 },
+  offerInner: { flex: 1, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
   offerBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, marginBottom: 6 },
   offerBadgeText: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 10 },
   offerTitle: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 3 },
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   discountText: { color: "#0F172A", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   offerIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
 
-  sectionHeader: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A" },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   catGrid: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
     justifyContent: "space-between",
@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
   provDot: { position: "absolute", bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: "#10B981", borderWidth: 2.5, borderColor: "#fff" },
   provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
-  provMeta: { flexDirection: "row-reverse", alignItems: "center", gap: 4, marginBottom: 8 },
+  provMeta: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 },
   provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
   provDivider: { color: "#CBD5E1", fontSize: 10 },
   provExp: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#64748B" },
@@ -693,10 +693,10 @@ const styles = StyleSheet.create({
   provPriceText: { color: "#16C47F", fontFamily: "Tajawal_700Bold", fontSize: 10 },
 
   botWrap: { marginHorizontal: 16, marginTop: 22, borderRadius: 22, overflow: "hidden", shadowColor: "#7C3AED", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 14, elevation: 5 },
-  botCard: { flexDirection: "row-reverse", alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
+  botCard: { flexDirection: "row", alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
   botIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" },
   botContent: { flex: 1, alignItems: "flex-end" },
-  botTitleRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+  botTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   botBadgeAi: { backgroundColor: "rgba(255,255,255,0.22)", paddingHorizontal: 7, paddingVertical: 2, borderRadius: 100 },
   botBadgeAiText: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 10, letterSpacing: 1 },
   botTitle: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },

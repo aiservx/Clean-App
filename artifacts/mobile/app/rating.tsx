@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { supabase } from "@/lib/supabase";
 
 const TAGS = [
   { label: "الاهتمام بالتفاصيل", icon: "checkbox-marked-outline" },
@@ -18,9 +19,27 @@ const TAGS = [
 export default function RatingScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const params = useLocalSearchParams<{ bookingId?: string }>();
   const [rating, setRating] = useState(4);
   const [comment, setComment] = useState("");
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [providerName, setProviderName] = useState("");
+  const [providerAvatar, setProviderAvatar] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.bookingId) return;
+    supabase
+      .from("bookings")
+      .select("provider:profiles!bookings_provider_id_fkey(full_name, avatar_url)")
+      .eq("id", params.bookingId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.provider) {
+          setProviderName((data.provider as any).full_name || "");
+          setProviderAvatar((data.provider as any).avatar_url || null);
+        }
+      });
+  }, [params.bookingId]);
 
   const ratingLabels = ["", "سيء جداً", "سيء", "متوسط", "ممتاز", "رائع"];
 
@@ -54,13 +73,19 @@ export default function RatingScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 160 }} showsVerticalScrollIndicator={false}>
           {/* Profile Card */}
           <LinearGradient colors={["#EDE9FE", "#F0F4FF"]} style={s.profileCard}>
-            <Image source={require("@/assets/images/cleaner-fatima.png")} style={s.avatar} />
-            <Text style={s.name}>فاطمة أحمد</Text>
-            <Text style={s.role}>منظفة محترفة</Text>
+            {providerAvatar ? (
+              <Image source={{ uri: providerAvatar }} style={s.avatar} />
+            ) : (
+              <View style={[s.avatar, { backgroundColor: "#7C3AED22", alignItems: "center", justifyContent: "center" }]}>
+                <Text style={{ fontFamily: "Tajawal_700Bold", color: "#7C3AED", fontSize: 28 }}>{(providerName || "م").charAt(0)}</Text>
+              </View>
+            )}
+            <Text style={s.name}>{providerName || "مزود الخدمة"}</Text>
+            <Text style={s.role}>مزود خدمة</Text>
           </LinearGradient>
 
           {/* Rating Section */}
-          <Text style={s.ratingHeading}>قيم تجربتك مع فاطمة</Text>
+          <Text style={s.ratingHeading}>{providerName ? `قيم تجربتك مع ${providerName.split(" ")[0]}` : "قيم تجربتك"}</Text>
           <View style={s.starsRow}>
             {[1, 2, 3, 4, 5].map((star) => (
               <TouchableOpacity
@@ -168,7 +193,7 @@ const s = StyleSheet.create({
   role: { fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#64748B", marginTop: 2 },
 
   ratingHeading: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#1E293B", textAlign: "center", marginBottom: 14 },
-  starsRow: { flexDirection: "row-reverse", justifyContent: "center", gap: 8, marginBottom: 6 },
+  starsRow: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 6 },
   ratingLabel: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F", textAlign: "center", marginBottom: 20 },
 
   commentSection: { paddingHorizontal: 20, marginBottom: 16 },
@@ -179,14 +204,14 @@ const s = StyleSheet.create({
   charCount: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "#94A3B8" },
 
   tagsSection: { paddingHorizontal: 20, marginBottom: 16 },
-  tagsGrid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 },
-  tag: { flexDirection: "row-reverse", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: "#FFF", borderWidth: 1.5, borderColor: "#E2E8F0" },
+  tagsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  tag: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: "#FFF", borderWidth: 1.5, borderColor: "#E2E8F0" },
   tagText: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#64748B" },
 
-  trustBanner: { marginHorizontal: 20, borderRadius: 20, backgroundColor: "#F0FDF4", padding: 16, flexDirection: "row-reverse", alignItems: "center", marginBottom: 16 },
+  trustBanner: { marginHorizontal: 20, borderRadius: 20, backgroundColor: "#F0FDF4", padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 16 },
   trustContent: { flex: 1, alignItems: "flex-end" },
   trustTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#1E293B", marginBottom: 4 },
-  trustDescRow: { flexDirection: "row-reverse", alignItems: "center", gap: 4 },
+  trustDescRow: { flexDirection: "row", alignItems: "center", gap: 4 },
   trustDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, color: "#64748B" },
   trustIconWrap: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#DCFCE7", alignItems: "center", justifyContent: "center", marginLeft: 12 },
 

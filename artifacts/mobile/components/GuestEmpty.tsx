@@ -34,6 +34,6 @@ const styles = StyleSheet.create({
   iconWrap: { width: 96, height: 96, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 8 },
   t: { fontFamily: "Tajawal_700Bold", fontSize: 22, textAlign: "center" },
   s: { fontFamily: "Tajawal_500Medium", fontSize: 14, textAlign: "center", marginBottom: 12 },
-  btn: { height: 54, borderRadius: 18, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 10 },
+  btn: { height: 54, borderRadius: 18, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 10 },
   btnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
 });

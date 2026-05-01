@@ -228,7 +228,7 @@ export default function BookingDetails() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  statusCard: { padding: 18, borderRadius: 18, flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
+  statusCard: { padding: 18, borderRadius: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
   statusL: { color: "rgba(255,255,255,0.8)", fontFamily: "Tajawal_500Medium", fontSize: 11 },
   statusT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 22, marginVertical: 2 },
   statusS: { color: "rgba(255,255,255,0.95)", fontFamily: "Tajawal_500Medium", fontSize: 12 },
@@ -245,12 +245,12 @@ const styles = StyleSheet.create({
   tlIconCol: { alignItems: "center", marginLeft: 12, position: "relative", paddingVertical: 4 },
   tlDot: { width: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center", zIndex: 1 },
   tlLine: { position: "absolute", top: 18, bottom: -28, width: 2, alignSelf: "center" },
-  dRow: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingVertical: 6 },
+  dRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 6 },
   dL: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
   dV: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24, flexDirection: "row-reverse", gap: 10 },
+  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24, flexDirection: "row", gap: 10 },
   cancelBtn: { paddingHorizontal: 16, height: 48, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   cancelT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  trackBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
+  trackBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   trackT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13 },
 });

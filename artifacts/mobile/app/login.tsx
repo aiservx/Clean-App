@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   logo: { width: 88, height: 88, borderRadius: 28, alignItems: "center", justifyContent: "center", marginBottom: 18, shadowColor: "#16C47F", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 6 },
   title: { fontFamily: "Tajawal_700Bold", fontSize: 28, textAlign: "center", marginBottom: 6 },
   sub: { fontFamily: "Tajawal_500Medium", fontSize: 14, textAlign: "center", marginBottom: 0 },
-  field: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, height: 56, borderRadius: 16, marginBottom: 12, gap: 10 },
+  field: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 56, borderRadius: 16, marginBottom: 12, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14 },
   btn: { height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   btnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },

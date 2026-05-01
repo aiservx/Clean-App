@@ -19,28 +19,21 @@ import { BookingProvider } from "@/store/booking";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Initialize RTL support and app lang
-(async () => {
-  try {
-    const lang = await AsyncStorage.getItem("app_lang");
-    const wantRTL = lang !== "en";
-    try {
-      I18nManager.allowRTL(wantRTL);
-      I18nManager.forceRTL(wantRTL);
-    } catch (e) {
-      console.log("[v0] I18n setup error:", (e as Error).message);
-    }
-    // Web: I18nManager is a no-op — apply direction via DOM
-    if (typeof document !== "undefined") {
-      document.documentElement.dir = wantRTL ? "rtl" : "ltr";
-      document.documentElement.lang = wantRTL ? "ar" : "en";
-    }
-  } catch (e) {
-    console.log("[v0] App lang check failed, defaulting to RTL");
-  }
-})();
+// ── RTL: force Arabic RTL synchronously BEFORE first render ──
+// I18nManager.forceRTL persists across launches. On the very first launch
+// isRTL is still false; we call forceRTL(true) and the flag takes effect on
+// the next JS bundle load.  For all subsequent launches isRTL will be true
+// and the entire layout renders right-to-left automatically.
+// IMPORTANT: all flexDirection:"row" will be right-to-left when isRTL is true.
+I18nManager.allowRTL(true);
+I18nManager.forceRTL(true);
+
+// Web: I18nManager is a no-op — apply direction via DOM
+if (typeof document !== "undefined") {
+  document.documentElement.dir = "rtl";
+  document.documentElement.lang = "ar";
+}
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 const queryClient = new QueryClient();

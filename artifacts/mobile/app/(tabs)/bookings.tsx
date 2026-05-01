@@ -228,7 +228,7 @@ export default function BookingsScreen() {
                           {item.provider_name || "بانتظار التخصيص"}
                         </Text>
                         <Text style={[styles.bookingDate, { color: colors.mutedForeground }]}>{fmtDate(item.scheduled_at)}</Text>
-                        <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4, marginTop: 2 }}>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
                           <Feather name="map-pin" size={10} color={colors.mutedForeground} />
                           <Text style={[styles.bookingDate, { color: colors.mutedForeground }]} numberOfLines={1}>{item.addr_text}</Text>
                         </View>
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   headerTitleContainer: { alignItems: "flex-end" },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 22 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 14 },
-  filtersScroll: { paddingHorizontal: 16, gap: 12, marginBottom: 14, paddingVertical: 4, flexDirection: "row-reverse" },
+  filtersScroll: { paddingHorizontal: 16, gap: 12, marginBottom: 14, paddingVertical: 4, flexDirection: "row" },
   filterPill: {
     paddingHorizontal: 20, paddingVertical: 10, borderRadius: 100, borderWidth: 1,
     shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
     borderRadius: 24, padding: 18,
     shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2,
   },
-  cardHeader: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 10 },
+  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 10 },
   serviceName: { fontFamily: "Tajawal_700Bold", fontSize: 15, flex: 1, textAlign: "right" },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 100 },
   statusText: { fontFamily: "Tajawal_600SemiBold", fontSize: 11 },
   divider: { height: 1, marginBottom: 14 },
-  cardContent: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  cleanerInfo: { flexDirection: "row-reverse", alignItems: "center", gap: 12, flex: 1 },
+  cardContent: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  cleanerInfo: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
   cleanerAvatar: { width: 48, height: 48, borderRadius: 24 },
   textWrap: { alignItems: "flex-end", flex: 1 },
   cleanerName: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2 },
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   priceValue: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
   priceLabel: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   cardFooter: { flexDirection: "row", gap: 10, marginTop: 4 },
-  actionBtn: { flex: 1.4, height: 42, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 6 },
+  actionBtn: { flex: 1.4, height: 42, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 },
   actionBtnText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   reorderBtn: { flex: 1, height: 42, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   reorderBtnText: { fontFamily: "Tajawal_600SemiBold", fontSize: 12 },

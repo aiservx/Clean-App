@@ -227,7 +227,7 @@ export default function NotificationsScreen() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  tabs: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 8, marginBottom: 12, alignItems: "center" },
+  tabs: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 12, alignItems: "center" },
   tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: "#FFFFFF" },
   tabT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   markAll: { marginRight: "auto" },
