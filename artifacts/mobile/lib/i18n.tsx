@@ -202,27 +202,31 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(KEY, l);
     setLangState(l);
     const wantRTL = l === "ar";
+    try {
+      I18nManager.allowRTL(wantRTL);
+      I18nManager.forceRTL(wantRTL);
+    } catch {}
+    // Web: apply direction via DOM immediately without needing a reload
+    if (Platform.OS === "web") {
+      if (typeof document !== "undefined") {
+        document.documentElement.dir = wantRTL ? "rtl" : "ltr";
+        document.documentElement.lang = l;
+      }
+      return; // no reload needed on web — React re-renders handle the rest
+    }
+    // Native: requires full reload to flip layout direction
     if (I18nManager.isRTL !== wantRTL) {
       try {
-        I18nManager.allowRTL(wantRTL);
-        I18nManager.forceRTL(wantRTL);
-      } catch {}
-      // RN requires a full reload to flip layout direction.
-      try {
-        // @ts-ignore - expo-updates is optional; if missing we fall through
+        // @ts-ignore
         const Updates = await import("expo-updates");
         if ((Updates as any).reloadAsync) await (Updates as any).reloadAsync();
       } catch {
-        if (Platform.OS === "web") {
-          (globalThis as any).location?.reload?.();
-        } else {
-          Alert.alert(
-            l === "ar" ? "أعد تشغيل التطبيق" : "Restart required",
-            l === "ar"
-              ? "أغلق التطبيق وأعد فتحه لتطبيق اتجاه الكتابة الجديد."
-              : "Close and reopen the app to apply the new writing direction."
-          );
-        }
+        Alert.alert(
+          l === "ar" ? "أعد تشغيل التطبيق" : "Restart required",
+          l === "ar"
+            ? "أغلق التطبيق وأعد فتحه لتطبيق اتجاه الكتابة الجديد."
+            : "Close and reopen the app to apply the new writing direction."
+        );
       }
     }
   }, []);

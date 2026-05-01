@@ -166,8 +166,22 @@ export default function ProviderHome() {
   const toggleOnline = async (v: boolean) => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setOnline(v);
-    if (session?.user) {
-      await supabase.from("providers").update({ available: v }).eq("id", session.user.id);
+    if (!session?.user) return;
+    if (v) {
+      // When going online: grab GPS location and publish it immediately
+      const loc = await getCurrentResolved();
+      await supabase.from("providers").update({
+        available: true,
+        current_lat: loc?.lat ?? null,
+        current_lng: loc?.lng ?? null,
+      }).eq("id", session.user.id);
+    } else {
+      // When going offline: clear location so provider disappears from customer map
+      await supabase.from("providers").update({
+        available: false,
+        current_lat: null,
+        current_lng: null,
+      }).eq("id", session.user.id);
     }
   };
 
@@ -180,7 +194,12 @@ export default function ProviderHome() {
       .eq("id", id)
       .in("status", ["pending"]);
     if (error) return Alert.alert("خطأ", error.message);
-    await supabase.from("booking_status_log").insert({ booking_id: id, status: "accepted", note: "قبل المزود الطلب" });
+    await Promise.all([
+      supabase.from("booking_status_log").insert({ booking_id: id, status: "accepted", note: "قبل المزود الطلب" }),
+      // Hide provider from customer main map once they accept a booking
+      supabase.from("providers").update({ available: false }).eq("id", session.user.id),
+    ]);
+    setOnline(false);
     Alert.alert("✓ تم القبول", "تم تخصيص الطلب لك");
     loadAll();
   };

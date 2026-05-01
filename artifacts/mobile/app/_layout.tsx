@@ -26,13 +26,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
   try {
     const lang = await AsyncStorage.getItem("app_lang");
     const wantRTL = lang !== "en";
-    if (I18nManager.isRTL !== wantRTL) {
-      try {
-        I18nManager.allowRTL(wantRTL);
-        I18nManager.forceRTL(wantRTL);
-      } catch (e) {
-        console.log("[v0] I18n setup error:", (e as Error).message);
-      }
+    try {
+      I18nManager.allowRTL(wantRTL);
+      I18nManager.forceRTL(wantRTL);
+    } catch (e) {
+      console.log("[v0] I18n setup error:", (e as Error).message);
+    }
+    // Web: I18nManager is a no-op — apply direction via DOM
+    if (typeof document !== "undefined") {
+      document.documentElement.dir = wantRTL ? "rtl" : "ltr";
+      document.documentElement.lang = wantRTL ? "ar" : "en";
     }
   } catch (e) {
     console.log("[v0] App lang check failed, defaulting to RTL");

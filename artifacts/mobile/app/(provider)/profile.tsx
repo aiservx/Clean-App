@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Al
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { getCurrentResolved } from "@/lib/location";
 import { router } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
@@ -43,8 +44,20 @@ export default function ProviderProfile() {
 
   const toggleOnline = async (v: boolean) => {
     setOnline(v);
-    if (session?.user) {
-      await supabase.from("providers").update({ available: v }).eq("id", session.user.id);
+    if (!session?.user) return;
+    if (v) {
+      const loc = await getCurrentResolved();
+      await supabase.from("providers").update({
+        available: true,
+        current_lat: loc?.lat ?? null,
+        current_lng: loc?.lng ?? null,
+      }).eq("id", session.user.id);
+    } else {
+      await supabase.from("providers").update({
+        available: false,
+        current_lat: null,
+        current_lng: null,
+      }).eq("id", session.user.id);
     }
   };
 

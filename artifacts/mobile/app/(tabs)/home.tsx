@@ -126,7 +126,10 @@ export default function HomeScreen() {
         .from("providers")
         .select("id, rating, experience_years, current_lat, current_lng, available, hourly_rate, profiles(full_name, avatar_url)")
         .eq("status", "approved")
-        .limit(10);
+        .eq("available", true)   // show only online providers
+        .not("current_lat", "is", null) // must have a real location
+        .not("current_lng", "is", null)
+        .limit(20);
       if (data) setProviders(data as any);
     } catch {}
   };
@@ -263,20 +266,16 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Search bar floating */}
-        <TouchableOpacity activeOpacity={0.95} onPress={() => router.push("/search")} style={styles.searchWrap}>
-          <BlurView intensity={Platform.OS === "ios" ? 60 : 100} tint="light" style={styles.searchBlur}>
-            <Feather name="search" size={18} color="#64748B" />
-            <Text style={styles.searchPlaceholder}>{t("search_placeholder")}</Text>
-            <View style={[styles.searchAction, { backgroundColor: colors.primary }]}>
-              <Ionicons name="options-outline" size={16} color="#fff" />
-            </View>
+        {/* Search — compact iOS-style icon button */}
+        <TouchableOpacity activeOpacity={0.95} onPress={() => router.push("/search")} style={styles.searchIconBtn}>
+          <BlurView intensity={Platform.OS === "ios" ? 60 : 100} tint="light" style={styles.searchIconBlur}>
+            <Feather name="search" size={20} color="#64748B" />
           </BlurView>
         </TouchableOpacity>
       </View>
 
-      {/* GPS button on map */}
-      <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { top: mapHeight - 60 }]}>
+      {/* GPS button — inside the map, not above the scroll sheet */}
+      <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { top: mapHeight - 100, zIndex: 4 }]}>
         <BlurView intensity={Platform.OS === "ios" ? 70 : 100} tint="light" style={styles.gpsBlur}>
           {locating ? <ActivityIndicator size="small" color={colors.primary} /> : <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />}
         </BlurView>
@@ -508,6 +507,13 @@ const styles = StyleSheet.create({
   },
   searchPlaceholder: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#94A3B8", textAlign: "right" },
   searchAction: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  searchIconBtn: { borderRadius: 14, overflow: "hidden" },
+  searchIconBlur: {
+    width: 46, height: 46, borderRadius: 14,
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.85)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.6)",
+  },
 
   userLocationDot: { position: "absolute", top: "45%", left: "50%", marginLeft: -12, marginTop: -12, alignItems: "center", justifyContent: "center", width: 24, height: 24 },
   userLocationInner: { width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: "#fff" },

@@ -80,7 +80,7 @@ export default function BookingsScreen() {
         .select(`
           id, status, total, scheduled_at, created_at,
           services:service_id(title_ar),
-          provider:provider_id(full_name, avatar_url),
+          provider:profiles!bookings_provider_id_fkey(full_name, avatar_url),
           addresses:address_id(street, district, city)
         `)
         .eq("user_id", session.user.id)

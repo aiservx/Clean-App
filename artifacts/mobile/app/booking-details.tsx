@@ -1,70 +1,171 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
 
 import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
-const TIMELINE = [
-  { t: "تم استلام الطلب", time: "10:00 ص", done: true },
-  { t: "تأكيد العامل وبدء التحرك", time: "10:05 ص", done: true },
-  { t: "العامل في الطريق إليك", time: "10:10 ص", done: true, active: true },
-  { t: "وصول العامل وبدء العمل", time: "—", done: false },
-  { t: "إنجاز الخدمة", time: "—", done: false },
-  { t: "الدفع والتقييم", time: "—", done: false },
-];
+type StatusLog = { id: string; status: string; note: string | null; created_at: string };
+type BookingDetail = {
+  id: string; status: string; total: number;
+  scheduled_at: string | null; payment_method: string | null; notes: string | null; created_at: string;
+  services: { title_ar: string; base_price: number; duration_min: number } | null;
+  provider: { full_name: string | null; avatar_url: string | null } | null;
+  addresses: { street: string | null; district: string | null; city: string | null } | null;
+  status_log: StatusLog[];
+};
+
+const STATUS_AR: Record<string, string> = {
+  pending: "قيد الانتظار", accepted: "مقبول", on_the_way: "في الطريق",
+  in_progress: "جاري التنفيذ", completed: "مكتمل", cancelled: "ملغي", rejected: "مرفوض",
+};
+const STATUS_ICON: Record<string, string> = {
+  pending: "clock", accepted: "check-circle", on_the_way: "truck",
+  in_progress: "tool", completed: "award", cancelled: "x-circle", rejected: "x-circle",
+};
+const STATUS_FLOW = ["pending", "accepted", "on_the_way", "in_progress", "completed"];
+const FLOW_AR: Record<string, string> = {
+  pending: "تم استلام الطلب", accepted: "تأكيد المزود وبدء التحضير",
+  on_the_way: "المزود في الطريق إليك", in_progress: "بدء تنفيذ الخدمة", completed: "إنجاز الخدمة",
+};
+
+const fmtDate = (iso: string | null) => {
+  if (!iso) return "موعد مرن";
+  const d = new Date(iso);
+  const t = d.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === new Date().toDateString()) return `اليوم، ${t}`;
+  return `${d.toLocaleDateString("ar-SA", { day: "numeric", month: "short" })} ، ${t}`;
+};
+const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
 
 export default function BookingDetails() {
-  const insets = useSafeAreaInsets();
   const colors = useColors();
+  const { session } = useAuth();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [booking, setBooking] = useState<BookingDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    if (!id) { setLoading(false); return; }
+    try {
+      const [bookingRes, logRes] = await Promise.all([
+        supabase.from("bookings").select(`
+          id, status, total, scheduled_at, payment_method, notes, created_at,
+          services:service_id(title_ar, base_price, duration_min),
+          provider:profiles!bookings_provider_id_fkey(full_name, avatar_url),
+          addresses:address_id(street, district, city)
+        `).eq("id", id).maybeSingle(),
+        supabase.from("booking_status_log").select("id, status, note, created_at")
+          .eq("booking_id", id).order("created_at", { ascending: true }),
+      ]);
+      if (bookingRes.data) setBooking({ ...bookingRes.data as any, status_log: logRes.data ?? [] });
+    } catch {}
+    setLoading(false);
+  }, [id]);
+
+  useEffect(() => {
+    load();
+    if (!id) return;
+    const ch = supabase.channel(`booking-detail-${id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings", filter: `id=eq.${id}` }, () => load())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "booking_status_log", filter: `booking_id=eq.${id}` }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [load, id]);
+
+  const cancelBooking = () => {
+    if (!booking || !session?.user) return;
+    Alert.alert("إلغاء الطلب", "هل أنت متأكد من إلغاء هذا الطلب؟", [
+      { text: "تراجع", style: "cancel" },
+      { text: "إلغاء الطلب", style: "destructive", onPress: async () => {
+        await supabase.from("bookings").update({ status: "cancelled" }).eq("id", booking.id);
+        await supabase.from("booking_status_log").insert({ booking_id: booking.id, status: "cancelled", note: "ألغى العميل الطلب" });
+        router.back();
+      }},
+    ]);
+  };
+
+  if (loading) return (
+    <View style={[styles.c, { backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }]}>
+      <ActivityIndicator color={colors.primary} size="large" />
+    </View>
+  );
+
+  if (!booking) return (
+    <View style={[styles.c, { backgroundColor: colors.background }]}>
+      <ScreenHeader title="تفاصيل الطلب" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Feather name="alert-circle" size={48} color={colors.mutedForeground} />
+        <Text style={[{ fontFamily: "Tajawal_700Bold", fontSize: 16, color: colors.foreground, marginTop: 12 }]}>لم يُعثر على الطلب</Text>
+      </View>
+    </View>
+  );
+
+  const isActive = ["pending", "accepted", "on_the_way", "in_progress"].includes(booking.status);
+  const isDone = ["completed", "cancelled", "rejected"].includes(booking.status);
+  const isCancellable = booking.status === "pending";
+  const currentIdx = STATUS_FLOW.indexOf(booking.status);
+  const tax = booking.total * 0.15;
+  const base = booking.total - tax;
+  const addrText = [booking.addresses?.district, booking.addresses?.city].filter(Boolean).join("، ") || booking.addresses?.street || "—";
+  const bookingNum = booking.id.split("-")[0].toUpperCase();
+
+  const timeline = STATUS_FLOW.map((step, i) => {
+    const log = booking.status_log.find((l) => l.status === step);
+    const done = i <= currentIdx && !["cancelled", "rejected"].includes(booking.status);
+    return { step, label: FLOW_AR[step], done, active: i === currentIdx && isActive, time: log ? fmtTime(log.created_at) : "—" };
+  });
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
-      <ScreenHeader title="تفاصيل الطلب" subtitle="طلب رقم #4587" />
+      <ScreenHeader title="تفاصيل الطلب" subtitle={`طلب رقم #${bookingNum}`} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-        <View style={[styles.statusCard, { backgroundColor: colors.primary }]}>
-          <View>
+
+        <View style={[styles.statusCard, { backgroundColor: isDone && booking.status !== "completed" ? "#EF4444" : colors.primary }]}>
+          <View style={{ flex: 1 }}>
             <Text style={styles.statusL}>الحالة الحالية</Text>
-            <Text style={styles.statusT}>قيد التنفيذ</Text>
-            <Text style={styles.statusS}>العامل في الطريق إليك - 12 دقيقة</Text>
+            <Text style={styles.statusT}>{STATUS_AR[booking.status] ?? booking.status}</Text>
+            <Text style={styles.statusS}>{fmtDate(booking.scheduled_at)}</Text>
           </View>
-          <MaterialCommunityIcons name="truck-delivery" size={50} color="#FFF" />
+          <Feather name={(STATUS_ICON[booking.status] ?? "circle") as any} size={46} color="rgba(255,255,255,0.85)" />
         </View>
 
-        <View style={[styles.box, { backgroundColor: colors.card }]}>
-          <View style={styles.row}>
-            <Image source={require("@/assets/images/cleaner-fatima.png")} style={styles.av} />
-            <View style={{ flex: 1, marginHorizontal: 10, alignItems: "flex-end" }}>
-              <Text style={[styles.n, { color: colors.foreground }]}>أحمد علي</Text>
-              <Text style={[styles.s, { color: colors.mutedForeground }]}>عامل نظافة محترف</Text>
-              <View style={{ flexDirection: "row-reverse", gap: 4, alignItems: "center", marginTop: 2 }}>
-                <Feather name="star" size={11} color={colors.warning} />
-                <Text style={[styles.s, { color: colors.foreground, fontFamily: "Tajawal_700Bold" }]}>4.9</Text>
+        {booking.provider && (
+          <View style={[styles.box, { backgroundColor: colors.card }]}>
+            <View style={styles.row}>
+              {booking.provider.avatar_url
+                ? <Image source={{ uri: booking.provider.avatar_url }} style={styles.av} />
+                : <View style={[styles.av, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
+                    <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 18, color: colors.primary }}>{booking.provider.full_name?.charAt(0) ?? "م"}</Text>
+                  </View>
+              }
+              <View style={{ flex: 1, marginHorizontal: 10, alignItems: "flex-end" }}>
+                <Text style={[styles.n, { color: colors.foreground }]}>{booking.provider.full_name ?? "مزود الخدمة"}</Text>
+                <Text style={[styles.s, { color: colors.mutedForeground }]}>مزود خدمة معتمد</Text>
               </View>
-            </View>
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              <TouchableOpacity style={[styles.icon, { backgroundColor: colors.primaryLight }]} onPress={() => router.push("/chat-detail?name=أحمد علي")}>
+              <TouchableOpacity
+                style={[styles.icon, { backgroundColor: colors.primaryLight }]}
+                onPress={() => router.push(`/chat-detail?name=${encodeURIComponent(booking.provider?.full_name ?? "مزود")}&bookingId=${booking.id}` as any)}
+              >
                 <Feather name="message-circle" size={16} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.icon, { backgroundColor: colors.successLight }]}>
-                <Feather name="phone" size={16} color={colors.success} />
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        )}
 
         <Text style={[styles.label, { color: colors.foreground }]}>تتبع الطلب</Text>
         <View style={[styles.box, { backgroundColor: colors.card }]}>
-          {TIMELINE.map((s, i) => (
-            <View key={i} style={styles.tlRow}>
+          {timeline.map((s, i) => (
+            <View key={s.step} style={styles.tlRow}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.tlT, { color: s.done ? colors.foreground : colors.mutedForeground, fontFamily: s.active ? "Tajawal_700Bold" : "Tajawal_500Medium" }]}>{s.t}</Text>
+                <Text style={[styles.tlT, { color: s.done ? colors.foreground : colors.mutedForeground, fontFamily: s.active ? "Tajawal_700Bold" : "Tajawal_500Medium" }]}>{s.label}</Text>
                 <Text style={[styles.tlTime, { color: colors.mutedForeground }]}>{s.time}</Text>
               </View>
               <View style={styles.tlIconCol}>
-                {i < TIMELINE.length - 1 && <View style={[styles.tlLine, { backgroundColor: TIMELINE[i + 1].done ? colors.primary : colors.border }]} />}
+                {i < timeline.length - 1 && <View style={[styles.tlLine, { backgroundColor: timeline[i + 1]?.done ? colors.primary : colors.border }]} />}
                 <View style={[styles.tlDot, { backgroundColor: s.done ? colors.primary : colors.border, borderWidth: s.active ? 4 : 0, borderColor: colors.primaryLight }]}>
                   {s.done && <Feather name="check" size={10} color="#FFF" />}
                 </View>
@@ -76,10 +177,11 @@ export default function BookingDetails() {
         <Text style={[styles.label, { color: colors.foreground }]}>تفاصيل الخدمة</Text>
         <View style={[styles.box, { backgroundColor: colors.card }]}>
           {[
-            { l: "نوع الخدمة", v: "تنظيف عميق للمنزل" },
-            { l: "التاريخ والوقت", v: "اليوم، 10:00 ص - 12:00 م" },
-            { l: "العنوان", v: "حي النخيل، شارع الأمير نايف، الرياض" },
-            { l: "ملاحظات", v: "—" },
+            { l: "نوع الخدمة",    v: booking.services?.title_ar ?? "خدمة تنظيف" },
+            { l: "التاريخ والوقت", v: fmtDate(booking.scheduled_at) },
+            { l: "العنوان",        v: addrText },
+            { l: "ملاحظات",        v: booking.notes || "لا توجد" },
+            { l: "طريقة الدفع",   v: booking.payment_method === "cash" ? "نقدي" : booking.payment_method === "card" ? "بطاقة" : "—" },
           ].map((d) => (
             <View key={d.l} style={styles.dRow}>
               <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
@@ -91,30 +193,33 @@ export default function BookingDetails() {
         <Text style={[styles.label, { color: colors.foreground }]}>ملخص الفاتورة</Text>
         <View style={[styles.box, { backgroundColor: colors.card }]}>
           {[
-            { l: "سعر الخدمة", v: "85 ر.س" },
-            { l: "رسوم خدمة", v: "5 ر.س" },
-            { l: "خصم كوبون", v: "−10 ر.س", danger: true },
-            { l: "ضريبة (15%)", v: "12 ر.س" },
+            { l: "قيمة الخدمة",  v: `${base.toFixed(0)} ر.س` },
+            { l: "ضريبة (15%)", v: `${tax.toFixed(0)} ر.س` },
           ].map((d) => (
             <View key={d.l} style={styles.dRow}>
-              <Text style={[styles.dV, { color: d.danger ? colors.success : colors.foreground }]}>{d.v}</Text>
+              <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
               <Text style={[styles.dL, { color: colors.mutedForeground }]}>{d.l}</Text>
             </View>
           ))}
           <View style={[styles.dRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10, marginTop: 4 }]}>
-            <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 16, color: colors.primary }}>92 ر.س</Text>
+            <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 16, color: colors.primary }}>{booking.total.toFixed(0)} ر.س</Text>
             <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.foreground }}>الإجمالي</Text>
           </View>
         </View>
       </ScrollView>
 
       <View style={[styles.bottom, { backgroundColor: colors.card }]}>
-        <TouchableOpacity style={[styles.cancelBtn]} onPress={() => router.back()}>
-          <Text style={[styles.cancelT, { color: colors.danger }]}>إلغاء الطلب</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.trackBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/tracking")}>
-          <Feather name="map-pin" size={16} color="#FFF" />
-          <Text style={styles.trackT}>تتبع مباشر</Text>
+        {isCancellable && (
+          <TouchableOpacity style={styles.cancelBtn} onPress={cancelBooking}>
+            <Text style={[styles.cancelT, { color: "#EF4444" }]}>إلغاء الطلب</Text>
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity
+          style={[styles.trackBtn, { backgroundColor: colors.primary }]}
+          onPress={() => isActive ? router.push(`/tracking?bookingId=${booking.id}` as any) : router.back()}
+        >
+          {isActive && <Feather name="map-pin" size={16} color="#FFF" />}
+          <Text style={styles.trackT}>{isActive ? "تتبع مباشر" : "رجوع"}</Text>
         </TouchableOpacity>
       </View>
     </View>

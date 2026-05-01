@@ -126,3 +126,26 @@ Massive issue-list pass. All 35 tasks (T001–T090) addressed.
 
 ### Free-tier note
 - Replit free tier blocks third-party connectors; this build relies only on Supabase (already wired) and Expo OTA. APK builds run on Expo's EAS cloud — see `artifacts/mobile/BUILD_APK.md`.
+
+## 2026-05-01 — Real data: chat + booking-details + notifications
+
+All remaining hardcoded/fake data replaced with live Supabase queries:
+
+### Chat (fully real data)
+- `app/chat-detail.tsx` — uses `chat_rooms` + `messages` tables. Auto-creates a room per booking on first open. Realtime INSERT subscription for live delivery. Empty state shown when no messages. Sends via `messages` insert.
+- `app/(provider)/chat.tsx` — queries `chat_rooms` where `provider_id = current user`. Shows last message body + relative timestamp. Falls back to service name + booking status as subtitle. Tap → navigates to `chat-detail` with `roomId`.
+
+### Booking details (fully real data)
+- `app/booking-details.tsx` — reads booking by `id` from nav params. Fetches real `booking_status_log` for timeline. Shows real service, address, payment method, notes, provider avatar. Cancel inserts status log row. Track button routes with real `bookingId`. Realtime subscriptions keep card live.
+- `app/(tabs)/bookings.tsx` already passes `id: item.id` in nav params — no change needed.
+
+### Provider notifications (fully real data)
+- `app/provider-notifications.tsx` — fully rewritten: queries `notifications` table for current user, realtime INSERT channel, mark-one + mark-all-read. Proper empty state.
+
+### Chat rooms migration
+- `db/migration_messages.sql` — adds `read` column to existing `messages` table + indexes. Run once in Supabase SQL Editor if not already applied.
+
+### DB schema notes
+- `bookings.user_id` = customer (FK `bookings_user_id_fkey`)
+- `bookings.provider_id` = provider (FK `bookings_provider_id_fkey`)
+- `chat_rooms` links `user_id` + `provider_id` + `booking_id`; messages use `room_id`
