@@ -223,7 +223,7 @@ export default function ProviderWallet() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 14 },
+  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 14 },
   hT: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   balCard: { marginHorizontal: 16, padding: 20, borderRadius: 22, marginBottom: 14 },
   balL: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "right" },
@@ -239,10 +239,10 @@ const styles = StyleSheet.create({
   miniC: { flex: 1, padding: 12, borderRadius: 14, alignItems: "flex-end" },
   miniV: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 4 },
   miniL: { fontFamily: "Tajawal_500Medium", fontSize: 9 },
-  sectionH: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 10 },
+  sectionH: { flexDirection: "row-reverse", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 10 },
   sectionT: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  txRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
+  txRow: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14 },
   txT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   txP: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   txStPill: { paddingHorizontal: 6, paddingVertical: 1, borderRadius: 100 },

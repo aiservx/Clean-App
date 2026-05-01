@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   tabT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   markAll: { marginRight: "auto" },
   markAllT: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
-  row: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 16, gap: 10 },
+  row: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 16, gap: 10 },
   dot: { width: 7, height: 7, borderRadius: 4, position: "absolute", top: 12, left: 12 },
   rowText: { flex: 1, alignItems: "flex-end" },
   rowTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2 },

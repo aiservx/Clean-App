@@ -312,7 +312,7 @@ export default function OffersScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
 
   // Section header
   sectionHeader: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
     marginTop: 22,
     borderRadius: 24,
     padding: 16,
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     overflow: "hidden",
     minHeight: 130,

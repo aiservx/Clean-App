@@ -187,7 +187,7 @@ export default function ServicesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
+  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
   iconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   headerTitleContainer: { alignItems: "flex-end" },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   cardContent: { padding: 12, alignItems: "flex-end" },
   serviceTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 4 },
   serviceDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginBottom: 10, textAlign: "right", minHeight: 28 },
-  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" },
+  cardFooter: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", width: "100%" },
   arrowBtn: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   priceText: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
 });

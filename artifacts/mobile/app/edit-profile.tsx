@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   cameraBtn: { position: "absolute", bottom: 0, left: 0, width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#FFF" },
   changeT: { fontFamily: "Tajawal_700Bold", fontSize: 12, textAlign: "center", marginBottom: 18 },
   label: { fontFamily: "Tajawal_700Bold", fontSize: 12, textAlign: "right", marginBottom: 6, marginTop: 8 },
-  inputWrap: { flexDirection: "row", alignItems: "center", height: 48, borderRadius: 12, paddingHorizontal: 14, gap: 10 },
+  inputWrap: { flexDirection: "row-reverse", alignItems: "center", height: 48, borderRadius: 12, paddingHorizontal: 14, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13 },
   bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24 },
   btn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center" },

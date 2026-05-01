@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   defT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 10 },
   addBtn: { borderWidth: 1, borderStyle: "dashed", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6, marginTop: 12 },
   addT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  row: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
+  row: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14 },
   rowT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   icon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
 });

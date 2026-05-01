@@ -167,7 +167,7 @@ export default function ProviderProfile() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 14 },
+  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 14 },
   hT: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   profileCard: { marginHorizontal: 16, padding: 18, borderRadius: 22, alignItems: "center", marginBottom: 14 },
   avatar: { width: 90, height: 90, borderRadius: 45, borderWidth: 4, borderColor: "#FFF" },
@@ -181,16 +181,16 @@ const styles = StyleSheet.create({
   statL: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 1 },
   sep: { width: 1, height: 22, backgroundColor: "rgba(255,255,255,0.3)" },
   statusBox: { paddingHorizontal: 16, marginBottom: 14 },
-  statusItem: { padding: 14, borderRadius: 16, flexDirection: "row", alignItems: "center" },
+  statusItem: { padding: 14, borderRadius: 16, flexDirection: "row-reverse", alignItems: "center" },
   statusT: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
   statusS: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "right", marginTop: 2 },
   statusIcon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   dot: { width: 10, height: 10, borderRadius: 5 },
   menu: { paddingHorizontal: 16, gap: 8 },
-  menuItem: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
+  menuItem: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14 },
   menuT: { flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginHorizontal: 10 },
   menuI: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  signOutBtn: { flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 16, marginTop: 12, backgroundColor: "#FFF5F5", borderWidth: 1, borderColor: "#FECACA", shadowColor: "#EF4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 },
+  signOutBtn: { flexDirection: "row-reverse", alignItems: "center", padding: 14, borderRadius: 16, marginTop: 12, backgroundColor: "#FFF5F5", borderWidth: 1, borderColor: "#FECACA", shadowColor: "#EF4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 },
   signOutText: { flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#DC2626", textAlign: "right", marginHorizontal: 10 },
   signOutIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#FEE2E2", alignItems: "center", justifyContent: "center" },
 });

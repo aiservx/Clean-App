@@ -31,7 +31,7 @@ export async function registerForPush(userId: string) {
       final = status;
     }
     if (final !== "granted") return null;
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId: "dd03c810-2182-47e7-9a0a-823fdcc351b8" })).data;
     if (token && userId) {
       await supabase.from("push_tokens").upsert({ user_id: userId, token, platform: Platform.OS }, { onConflict: "token" });
     }

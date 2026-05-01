@@ -3,7 +3,11 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
+// Safe BlurView: falls back to a translucent View on Android to avoid native crashes
+import { BlurView as ExpoBlurView } from "expo-blur";
+const BlurView = Platform.OS === "android"
+  ? ({ style, children }: any) => <View style={[style, { backgroundColor: "rgba(255,255,255,0.85)" }]}>{children}</View>
+  : ExpoBlurView;
 import { router } from "expo-router";
 import AppMap from "@/components/AppMap";
 import { useColors } from "@/hooks/useColors";
@@ -112,7 +116,7 @@ type Offer = { id: string; title_ar: string | null; desc_ar: string | null; disc
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { t, isRTL } = useI18n();
+  const { t } = useI18n();
   const { profile, session } = useAuth();
   const [loc, setLoc] = useState<ResolvedAddress | null>(null);
   const [locating, setLocating] = useState(false);
@@ -292,11 +296,11 @@ export default function HomeScreen() {
           <View style={styles.sheetGrabber} />
 
           {/* SERVICES — 2-column grid showing all 18 categories with discount banners between rows */}
-          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row" : "row" }]}>
+          <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("services")}</Text>
+            <Text style={[styles.sectionTitle, { textAlign: "right" }]}>{t("services")}</Text>
           </View>
 
           <View style={styles.catGridWrap}>
@@ -359,11 +363,11 @@ export default function HomeScreen() {
           {/* OFFERS (T042: moved below services, T043: soft coupon-style colors) */}
           {offers.length > 0 && (
             <>
-              <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row" : "row" }]}>
+              <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
                 <TouchableOpacity onPress={() => router.push("/(tabs)/offers")}>
                   <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
                 </TouchableOpacity>
-                <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("offers")}</Text>
+                <Text style={[styles.sectionTitle, { textAlign: "right" }]}>{t("offers")}</Text>
               </View>
               <ScrollView
                 horizontal
@@ -408,11 +412,11 @@ export default function HomeScreen() {
           )}
 
           {/* PROVIDERS */}
-          <View style={[styles.sectionHeader, { flexDirection: isRTL ? "row" : "row" }]}>
+          <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={[styles.sectionTitle, { textAlign: isRTL ? "right" : "left" }]}>{t("nearby_pros")}</Text>
+            <Text style={[styles.sectionTitle, { textAlign: "right" }]}>{t("nearby_pros")}</Text>
           </View>
 
           {nearbyProviders.length === 0 ? (
@@ -483,7 +487,7 @@ const styles = StyleSheet.create({
   topFade: { position: "absolute", top: 0, left: 0, right: 0 },
 
   floatHeader: { position: "absolute", left: 0, right: 0, paddingHorizontal: 14, gap: 12, zIndex: 5 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
 
   headerIconBtn: { borderRadius: 14, overflow: "hidden" },
   iconBlur: {
@@ -546,7 +550,7 @@ const styles = StyleSheet.create({
   discountText: { color: "#0F172A", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   offerIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
 
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
+  sectionHeader: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A" },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 

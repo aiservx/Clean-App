@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import { View, Text, StyleSheet, Dimensions, ScrollView, ImageBackground, TouchableOpacity, Platform, I18nManager } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, StyleSheet, Dimensions, ImageBackground, TouchableOpacity, Platform, ViewToken } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
@@ -46,6 +46,13 @@ export default function OnboardingScreen() {
     AsyncStorage.setItem("onboarded", "1").then(() => router.replace("/login"));
   };
 
+  const onViewRef = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    if (viewableItems.length > 0 && viewableItems[0].index != null) {
+      setActiveIndex(viewableItems[0].index);
+    }
+  });
+  const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
@@ -63,12 +70,9 @@ export default function OnboardingScreen() {
         data={ONBOARDING_DATA}
         horizontal
         pagingEnabled
-        inverted={I18nManager.isRTL}
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => {
-          const idx = Math.round(e.nativeEvent.contentOffset.x / width);
-          setActiveIndex(idx);
-        }}
+        onViewableItemsChanged={onViewRef.current}
+        viewabilityConfig={viewConfigRef.current}
         keyExtractor={(item) => item.id}
         getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
         style={styles.scrollView}
