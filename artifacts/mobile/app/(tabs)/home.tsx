@@ -134,9 +134,8 @@ export default function HomeScreen() {
       const { data } = await supabase
         .from("providers")
         .select("id, rating, experience_years, current_lat, current_lng, available, hourly_rate, profiles(full_name, avatar_url)")
-        .eq("status", "approved")
-        .eq("available", true)   // show only online providers
-        .not("current_lat", "is", null) // must have a real location
+        .eq("available", true)
+        .not("current_lat", "is", null)
         .not("current_lng", "is", null)
         .limit(20);
       if (data) setProviders(data as any);

@@ -45,19 +45,22 @@ export default function ProviderProfile() {
   const toggleOnline = async (v: boolean) => {
     setOnline(v);
     if (!session?.user) return;
+    const uid = session.user.id;
     if (v) {
       const loc = await getCurrentResolved();
-      await supabase.from("providers").update({
+      const payload = {
+        id: uid,
         available: true,
         current_lat: loc?.lat ?? null,
         current_lng: loc?.lng ?? null,
-      }).eq("id", session.user.id);
+      };
+      const { error } = await supabase.from("providers").upsert(payload, { onConflict: "id" });
+      if (error) {
+        // fallback to update
+        await supabase.from("providers").update({ available: true, current_lat: loc?.lat ?? null, current_lng: loc?.lng ?? null }).eq("id", uid);
+      }
     } else {
-      await supabase.from("providers").update({
-        available: false,
-        current_lat: null,
-        current_lng: null,
-      }).eq("id", session.user.id);
+      await supabase.from("providers").update({ available: false, current_lat: null, current_lng: null }).eq("id", uid);
     }
   };
 
