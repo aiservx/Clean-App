@@ -20,7 +20,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "echo '[start-all] Per-artifact workflows manage api/admin/expo. This is a no-op orchestrator.' && sleep infinity"
+args = "bash scripts/start-all.sh"
 
 [[workflows.workflow]]
 name = "artifacts/mockup-sandbox: Component Preview Server"
@@ -122,36 +122,8 @@ localPort = 8080
 externalPort = 80
 
 [[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 8082
-externalPort = 3003
-
-[[ports]]
-localPort = 8083
-externalPort = 4200
-
-[[ports]]
-localPort = 8084
-externalPort = 5000
-
-[[ports]]
-localPort = 8085
-externalPort = 5173
-
-[[ports]]
-localPort = 8086
-externalPort = 6000
-
-[[ports]]
 localPort = 18115
 externalPort = 3002
-
-[[ports]]
-localPort = 18116
-externalPort = 3000
 
 [[ports]]
 localPort = 23744
