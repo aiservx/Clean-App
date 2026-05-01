@@ -296,7 +296,7 @@ export default function HomeScreen() {
           <View style={styles.sheetGrabber} />
 
           {/* SERVICES — 2-column grid showing all 18 categories with discount banners between rows */}
-          <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
+          <View style={[styles.sectionHeader]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
@@ -363,7 +363,7 @@ export default function HomeScreen() {
           {/* OFFERS (T042: moved below services, T043: soft coupon-style colors) */}
           {offers.length > 0 && (
             <>
-              <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
+              <View style={[styles.sectionHeader]}>
                 <TouchableOpacity onPress={() => router.push("/(tabs)/offers")}>
                   <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
                 </TouchableOpacity>
@@ -412,7 +412,7 @@ export default function HomeScreen() {
           )}
 
           {/* PROVIDERS */}
-          <View style={[styles.sectionHeader, { flexDirection: "row-reverse" }]}>
+          <View style={[styles.sectionHeader]}>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
