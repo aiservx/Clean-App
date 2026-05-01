@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   statV: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   statL: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 2 },
   l: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 8 },
-  benefit: { flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 14 },
+  benefit: { flexDirection: "row-reverse", alignItems: "center", padding: 14, borderRadius: 14 },
   bT: { fontFamily: "Tajawal_700Bold", fontSize: 12, flex: 1, textAlign: "right", marginHorizontal: 10 },
   bI: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24 },

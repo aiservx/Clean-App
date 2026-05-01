@@ -92,9 +92,9 @@ export default function ProviderHours() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  tipBox: { padding: 12, borderRadius: 12, flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14 },
+  tipBox: { padding: 12, borderRadius: 12, flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 14 },
   tipT: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1, textAlign: "right" },
-  dayRow: { padding: 12, borderRadius: 14, flexDirection: "row", alignItems: "center", gap: 10 },
+  dayRow: { padding: 12, borderRadius: 14, flexDirection: "row-reverse", alignItems: "center", gap: 10 },
   dayL: { fontFamily: "Tajawal_700Bold", fontSize: 13, width: 70, textAlign: "right" },
   timeBox: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   timeT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },

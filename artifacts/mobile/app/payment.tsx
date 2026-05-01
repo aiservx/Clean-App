@@ -315,7 +315,7 @@ const lg = StyleSheet.create({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
+  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
   safeBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100 },
   safeBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   iconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   totalSubLight: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 4 },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18, textAlign: "center", marginBottom: 12 },
   methodsContainer: { paddingHorizontal: 16, gap: 12, marginBottom: 16 },
-  methodItem: { flexDirection: "row", alignItems: "center", padding: 16, borderRadius: 20, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
+  methodItem: { flexDirection: "row-reverse", alignItems: "center", padding: 16, borderRadius: 20, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
   radioContainer: { marginRight: 16 },
   radioActive: { width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   radioInactive: { width: 24, height: 24, borderRadius: 12, borderWidth: 1 },

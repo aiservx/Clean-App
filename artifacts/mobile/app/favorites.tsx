@@ -59,7 +59,7 @@ export default function FavoritesScreen() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  card: { padding: 12, borderRadius: 18, flexDirection: "row", alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  card: { padding: 12, borderRadius: 18, flexDirection: "row-reverse", alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   n: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   statsRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4, marginBottom: 8 },
   exp: { fontFamily: "Tajawal_500Medium", fontSize: 10 },

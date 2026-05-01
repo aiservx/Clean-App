@@ -149,7 +149,7 @@ export default function ProviderDetail() {
 const styles = StyleSheet.create({
   c: { flex: 1 },
   heroBg: { paddingHorizontal: 16, paddingBottom: 18 },
-  topRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  topRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 10 },
   icon: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   heroContent: { alignItems: "center", marginTop: 6 },
   avatar: { width: 110, height: 110, borderRadius: 55, borderWidth: 4, borderColor: "#FFFFFF" },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   review: { padding: 12, borderRadius: 14, marginBottom: 8 },
   rN: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   rT: { fontFamily: "Tajawal_400Regular", fontSize: 11, textAlign: "right", marginTop: 6, lineHeight: 16 },
-  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, flexDirection: "row", alignItems: "center", gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 10 },
+  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 10 },
   priceWrap: { alignItems: "flex-end" },
   priceL: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   priceV: { fontFamily: "Tajawal_700Bold", fontSize: 18 },

@@ -459,7 +459,7 @@ export default function BookingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   totalLabel: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   totalValue: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   paymentRow: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "space-between",
     marginHorizontal: 24,
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  paymentInfo: { flexDirection: "row", alignItems: "center", gap: 8 },
+  paymentInfo: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
   paymentText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14 },
   paymentLabel: { fontFamily: "Tajawal_500Medium", fontSize: 13 },
   bottomBar: {
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   confirmBtn: {
     height: 64,
     borderRadius: 20,
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     paddingHorizontal: 20,
     gap: 12,

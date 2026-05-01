@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   sCol: { flex: 1 },
   sCL: { color: "rgba(255,255,255,0.7)", fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right" },
   sCV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginTop: 2 },
-  row: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
+  row: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14 },
   title: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   amt: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   statusPill: { paddingHorizontal: 6, paddingVertical: 1, borderRadius: 100 },

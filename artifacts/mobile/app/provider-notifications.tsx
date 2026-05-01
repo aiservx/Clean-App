@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: "#FFF" },
   tabT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   markAll: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
-  row: { flexDirection: "row", alignItems: "center", borderRadius: 16, padding: 14, gap: 10, position: "relative" },
+  row: { flexDirection: "row-reverse", alignItems: "center", borderRadius: 16, padding: 14, gap: 10, position: "relative" },
   dot: { position: "absolute", top: 14, left: 14, width: 8, height: 8, borderRadius: 4 },
   text: { flex: 1, alignItems: "flex-end", gap: 2 },
   t: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },

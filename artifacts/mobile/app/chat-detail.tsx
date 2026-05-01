@@ -132,7 +132,7 @@ export default function ChatDetail() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingBottom: 12, gap: 10, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
+  header: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 14, paddingBottom: 12, gap: 10, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
   icon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   hN: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   hS: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: "78%", padding: 10, borderRadius: 16, gap: 4 },
   bubbleT: { fontFamily: "Tajawal_500Medium", fontSize: 13, textAlign: "right" },
   bubbleTime: { fontFamily: "Tajawal_400Regular", fontSize: 9, textAlign: "left" },
-  inputBar: { flexDirection: "row", alignItems: "center", padding: 10, gap: 10, borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" },
+  inputBar: { flexDirection: "row-reverse", alignItems: "center", padding: 10, gap: 10, borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)" },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13, maxHeight: 100, paddingVertical: 6, paddingHorizontal: 10 },
   sendBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
 });

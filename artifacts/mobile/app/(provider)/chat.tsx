@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 16, marginBottom: 14 },
   hT: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   hS: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: 14, borderBottomWidth: 1 },
+  row: { flexDirection: "row-reverse", alignItems: "center", paddingVertical: 14, borderBottomWidth: 1 },
   left: { alignItems: "center", justifyContent: "center", width: 50 },
   time: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   center: { flex: 1, alignItems: "flex-end", marginHorizontal: 12 },

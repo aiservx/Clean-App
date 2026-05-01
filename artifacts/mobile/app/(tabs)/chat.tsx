@@ -739,7 +739,7 @@ const s = StyleSheet.create({
   container: { flex: 1 },
 
   header: { paddingBottom: 14, paddingHorizontal: 16 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  headerRow: { flexDirection: "row-reverse", alignItems: "center", gap: 10 },
   botAvatarHeader: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
   headerInfo: { flex: 1, alignItems: "flex-end" },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#FFF" },
@@ -748,8 +748,8 @@ const s = StyleSheet.create({
   headerBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FFF" },
 
   messagesContent: { padding: 16, paddingBottom: 20, gap: 12 },
-  botMsgWrap: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
-  userMsgWrap: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  botMsgWrap: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 8 },
+  userMsgWrap: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 8 },
   botAvatarSmall: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#EDE9FE", alignItems: "center", justifyContent: "center", marginTop: 4 },
   botBubble: { backgroundColor: "#F1F5F9", borderRadius: 18, borderTopRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 },
   userBubble: { backgroundColor: "#7C3AED", borderRadius: 18, borderTopLeftRadius: 4, paddingHorizontal: 14, paddingVertical: 10, alignSelf: "flex-end" },

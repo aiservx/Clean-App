@@ -10,7 +10,14 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
+// Safe KeyboardProvider wrapper — falls back to a plain wrapper if the native module crashes
+let KeyboardProvider: React.ComponentType<{ children: React.ReactNode }>;
+try {
+  KeyboardProvider = require("react-native-keyboard-controller").KeyboardProvider;
+} catch {
+  // eslint-disable-next-line react/display-name
+  KeyboardProvider = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+}
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { I18nManager, Text } from "react-native";
 

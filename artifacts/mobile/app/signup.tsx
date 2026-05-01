@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   roleRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
   roleC: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, padding: 14, borderRadius: 16, borderWidth: 1.5 },
   roleT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  field: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 54, borderRadius: 16, marginBottom: 10, gap: 10 },
+  field: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, height: 54, borderRadius: 16, marginBottom: 10, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14 },
   btn: { height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   btnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },

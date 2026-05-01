@@ -134,11 +134,11 @@ const styles = StyleSheet.create({
   c: { flex: 1 },
   sT: { fontFamily: "Tajawal_700Bold", fontSize: 11, textAlign: "right", marginBottom: 6, marginRight: 4 },
   section: { borderRadius: 16, paddingHorizontal: 14 },
-  item: { flexDirection: "row", alignItems: "center", paddingVertical: 12, gap: 10 },
+  item: { flexDirection: "row-reverse", alignItems: "center", paddingVertical: 12, gap: 10 },
   itemT: { fontFamily: "Tajawal_700Bold", fontSize: 13, flex: 1, textAlign: "right" },
   itemIcon: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", alignItems: "center", justifyContent: "center", padding: 24 },
   modalCard: { width: "100%", maxWidth: 380, borderRadius: 18, padding: 16 },
   modalTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 10, textAlign: "right" },
-  modalRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10, gap: 8 },
+  modalRow: { flexDirection: "row-reverse", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10, gap: 8 },
 });

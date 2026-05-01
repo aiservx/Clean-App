@@ -6,7 +6,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { KeyboardAvoidingView as RNKeyboardAvoidingView } from "react-native";
+let KeyboardAvoidingView: any;
+try {
+  KeyboardAvoidingView = require("react-native-keyboard-controller").KeyboardAvoidingView;
+} catch {
+  KeyboardAvoidingView = RNKeyboardAvoidingView;
+}
 import { supabase } from "@/lib/supabase";
 
 const TAGS = [
@@ -208,10 +214,10 @@ const s = StyleSheet.create({
   tag: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, backgroundColor: "#FFF", borderWidth: 1.5, borderColor: "#E2E8F0" },
   tagText: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#64748B" },
 
-  trustBanner: { marginHorizontal: 20, borderRadius: 20, backgroundColor: "#F0FDF4", padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 16 },
+  trustBanner: { marginHorizontal: 20, borderRadius: 20, backgroundColor: "#F0FDF4", padding: 16, flexDirection: "row-reverse", alignItems: "center", marginBottom: 16 },
   trustContent: { flex: 1, alignItems: "flex-end" },
   trustTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#1E293B", marginBottom: 4 },
-  trustDescRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  trustDescRow: { flexDirection: "row-reverse", alignItems: "center", gap: 4 },
   trustDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, color: "#64748B" },
   trustIconWrap: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#DCFCE7", alignItems: "center", justifyContent: "center", marginLeft: 12 },
 

@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   faqQ: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   faqA: { fontFamily: "Tajawal_400Regular", fontSize: 12, textAlign: "right", lineHeight: 18, marginTop: 8 },
   aiCard: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     padding: 18,
     borderRadius: 20,
