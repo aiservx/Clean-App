@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Platform, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Platform, Alert, ActivityIndicator } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -11,17 +11,74 @@ import { supabase } from "@/lib/supabase";
 
 export default function EditProfile() {
   const colors = useColors();
-  const { profile, session } = useAuth();
+  const { profile, session, refreshProfile } = useAuth();
   const [name, setName] = useState(profile?.full_name || "");
   const [phone, setPhone] = useState(profile?.phone || "");
   const [email, setEmail] = useState(profile?.email || session?.user?.email || "");
   const [city, setCity] = useState("");
   const [photo, setPhoto] = useState<string | null>(profile?.avatar_url || null);
+  const [saving, setSaving] = useState(false);
+  const [photoChanged, setPhotoChanged] = useState(false);
 
   const pickImage = async () => {
-    if (Platform.OS === "web") return;
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
-    if (!r.canceled) setPhoto(r.assets[0].uri);
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("تحتاج إذن الوصول إلى الصور");
+      return;
+    }
+    const r = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+      allowsEditing: true,
+      aspect: [1, 1],
+    });
+    if (!r.canceled && r.assets[0]) {
+      setPhoto(r.assets[0].uri);
+      setPhotoChanged(true);
+    }
+  };
+
+  const save = async () => {
+    if (!session?.user) return;
+    setSaving(true);
+    try {
+      let avatarUrl = profile?.avatar_url || null;
+
+      // Upload photo if changed
+      if (photoChanged && photo && !photo.startsWith("http")) {
+        const ext = photo.split(".").pop() || "jpg";
+        const fileName = `${session.user.id}/avatar-${Date.now()}.${ext}`;
+        const response = await fetch(photo);
+        const blob = await response.blob();
+        const { error: uploadErr } = await supabase.storage
+          .from("avatars")
+          .upload(fileName, blob, { contentType: `image/${ext}`, upsert: true });
+        if (!uploadErr) {
+          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(fileName);
+          avatarUrl = urlData.publicUrl;
+        }
+      }
+
+      // Update profile in DB
+      const { error } = await supabase.from("profiles").update({
+        full_name: name.trim() || null,
+        phone: phone.trim() || null,
+        avatar_url: avatarUrl,
+      }).eq("id", session.user.id);
+
+      if (error) {
+        Alert.alert("خطأ", error.message);
+      } else {
+        await refreshProfile();
+        Alert.alert("تم", "تم حفظ التغييرات بنجاح", [
+          { text: "حسناً", onPress: () => router.back() },
+        ]);
+      }
+    } catch (e) {
+      Alert.alert("خطأ", (e as Error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -45,13 +102,19 @@ export default function EditProfile() {
         {[
           { l: "الاسم الكامل", v: name, s: setName, i: "user" },
           { l: "رقم الهاتف", v: phone, s: setPhone, i: "phone" },
-          { l: "البريد الإلكتروني", v: email, s: setEmail, i: "mail" },
+          { l: "البريد الإلكتروني", v: email, s: setEmail, i: "mail", disabled: true },
           { l: "المدينة", v: city, s: setCity, i: "map-pin" },
         ].map((f) => (
           <View key={f.l}>
             <Text style={[styles.label, { color: colors.foreground }]}>{f.l}</Text>
-            <View style={[styles.inputWrap, { backgroundColor: colors.card }]}>
-              <TextInput style={[styles.input, { color: colors.foreground }]} value={f.v} onChangeText={f.s} textAlign="right" />
+            <View style={[styles.inputWrap, { backgroundColor: colors.card, opacity: (f as any).disabled ? 0.5 : 1 }]}>
+              <TextInput
+                style={[styles.input, { color: colors.foreground }]}
+                value={f.v}
+                onChangeText={f.s}
+                textAlign="right"
+                editable={!(f as any).disabled}
+              />
               <Feather name={f.i as any} size={16} color={colors.mutedForeground} />
             </View>
           </View>
@@ -59,8 +122,12 @@ export default function EditProfile() {
       </ScrollView>
 
       <View style={[styles.bottom, { backgroundColor: colors.card }]}>
-        <TouchableOpacity style={[styles.btn, { backgroundColor: colors.primary }]} onPress={() => router.back()}>
-          <Text style={styles.btnT}>حفظ التغييرات</Text>
+        <TouchableOpacity style={[styles.btn, { backgroundColor: colors.primary }]} onPress={save} disabled={saving}>
+          {saving ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.btnT}>حفظ التغييرات</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

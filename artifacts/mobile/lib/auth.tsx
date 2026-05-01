@@ -20,7 +20,7 @@ type Ctx = {
   loading: boolean;
   profileLoaded: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string; role?: Role }>;
-  signUp: (p: { email: string; password: string; full_name: string; phone: string; role: Role }) => Promise<{ error?: string }>;
+  signUp: (p: { email: string; password: string; full_name: string; phone: string; role: Role; username?: string; gender?: string }) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
@@ -177,12 +177,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const signUp = useCallback(async (p: { email: string; password: string; full_name: string; phone: string; role: Role }) => {
+  const signUp = useCallback(async (p: { email: string; password: string; full_name: string; phone: string; role: Role; username?: string; gender?: string }) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email: p.email,
         password: p.password,
-        options: { data: { full_name: p.full_name, phone: p.phone, role: p.role } },
+        options: { data: { full_name: p.full_name, phone: p.phone, role: p.role, username: p.username, gender: p.gender } },
       });
       if (error) return { error: error.message };
       if (data.user) {

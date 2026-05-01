@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,27 +7,114 @@ import { router, useLocalSearchParams } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
 import { useBooking } from "@/store/booking";
+import { supabase } from "@/lib/supabase";
+import { distanceKm, getCurrentResolved } from "@/lib/location";
 
-const PROVIDERS: any = {
-  "1": { n: "أحمد علي", title: "عامل نظافة محترف", r: "4.9", reviews: 234, exp: "5", price: 85, img: require("@/assets/images/cleaner-fatima.png") },
-  "2": { n: "سعد عبدالله", title: "خبير تنظيف عميق", r: "4.8", reviews: 187, exp: "3", price: 95, img: require("@/assets/images/cleaner-sara.png") },
-  "3": { n: "محمد حسين", title: "متخصص تنظيف فلل", r: "4.7", reviews: 156, exp: "4", price: 110, img: require("@/assets/images/cleaner-noura.png") },
+type ProviderData = {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  rating: number;
+  experience_years: number;
+  hourly_rate: number;
+  current_lat: number | null;
+  current_lng: number | null;
+  bio: string | null;
 };
 
-const SKILLS = ["تنظيف منازل", "تنظيف عميق", "تنظيف كنب", "تنظيف سجاد", "تنظيف مطابخ"];
-const REVIEWS = [
-  { n: "خالد م.", r: 5, t: "ممتاز جداً، عمل دقيق ونظيف" },
-  { n: "سارة ع.", r: 5, t: "محترم وسريع، أنصح به بشدة" },
-  { n: "فهد س.", r: 4, t: "خدمة جيدة وفي الوقت" },
-];
+type Review = { id: string; reviewer_name: string; rating: number; comment: string };
 
 export default function ProviderDetail() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const p = PROVIDERS[id || "1"] || PROVIDERS["1"];
   const [fav, setFav] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [provider, setProvider] = useState<ProviderData | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [distance, setDistance] = useState<number | null>(null);
   const booking = useBooking();
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [provRes, me] = await Promise.all([
+          supabase
+            .from("providers")
+            .select("id, rating, experience_years, hourly_rate, current_lat, current_lng, profiles(full_name, avatar_url)")
+            .eq("id", id)
+            .maybeSingle(),
+          getCurrentResolved(),
+        ]);
+        if (cancelled) return;
+        const row: any = provRes.data;
+        if (row) {
+          const p: ProviderData = {
+            id: row.id,
+            full_name: row.profiles?.full_name || "فني",
+            avatar_url: row.profiles?.avatar_url || null,
+            rating: Number(row.rating || 0),
+            experience_years: Number(row.experience_years || 0),
+            hourly_rate: Number(row.hourly_rate || 0),
+            current_lat: row.current_lat,
+            current_lng: row.current_lng,
+            bio: null,
+          };
+          setProvider(p);
+          if (me && row.current_lat && row.current_lng) {
+            setDistance(distanceKm({ lat: me.lat, lng: me.lng }, { lat: row.current_lat, lng: row.current_lng }));
+          }
+        }
+
+        // Load reviews
+        const { data: revRows } = await supabase
+          .from("reviews")
+          .select("id, rating, comment, profiles!reviews_user_id_fkey(full_name)")
+          .eq("provider_id", id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+        if (!cancelled && revRows) {
+          setReviews(revRows.map((r: any) => ({
+            id: r.id,
+            reviewer_name: r.profiles?.full_name || "عميل",
+            rating: Number(r.rating || 5),
+            comment: r.comment || "",
+          })));
+        }
+      } catch (e) {
+        console.log("[v0] provider detail load failed:", (e as Error).message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View style={[styles.c, { backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  const p = provider;
+  if (!p) {
+    return (
+      <View style={[styles.c, { backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }]}>
+        <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.mutedForeground }}>لم يتم العثور على المزود</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+          <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary }}>رجوع</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const initials = p.full_name.trim().split(" ").map((s) => s[0]).slice(0, 2).join("");
+  const eta = distance != null ? Math.max(3, Math.round((distance / 25) * 60)) : null;
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
@@ -47,30 +134,52 @@ export default function ProviderDetail() {
           </View>
 
           <View style={styles.heroContent}>
-            <Image source={p.img} style={styles.avatar} />
+            {p.avatar_url ? (
+              <Image source={{ uri: p.avatar_url }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
+                <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 36 }}>{initials}</Text>
+              </View>
+            )}
             <View style={styles.verifyBadge}>
               <MaterialCommunityIcons name="check-decagram" size={20} color="#FFF" />
             </View>
-            <Text style={[styles.n, { color: colors.foreground }]}>{p.n}</Text>
-            <Text style={[styles.title, { color: colors.mutedForeground }]}>{p.title}</Text>
+            <Text style={[styles.n, { color: colors.foreground }]}>{p.full_name}</Text>
+            <Text style={[styles.title, { color: colors.mutedForeground }]}>مزود خدمة</Text>
             <View style={styles.statsRow}>
               <View style={styles.statBox}>
-                <Text style={[styles.statV, { color: colors.foreground }]}>{p.r}</Text>
+                <Text style={[styles.statV, { color: colors.foreground }]}>{p.rating.toFixed(1)}</Text>
                 <Text style={[styles.statL, { color: colors.mutedForeground }]}>التقييم</Text>
               </View>
               <View style={[styles.statSep, { backgroundColor: colors.border }]} />
               <View style={styles.statBox}>
-                <Text style={[styles.statV, { color: colors.foreground }]}>{p.reviews}</Text>
+                <Text style={[styles.statV, { color: colors.foreground }]}>{reviews.length}</Text>
                 <Text style={[styles.statL, { color: colors.mutedForeground }]}>التقييمات</Text>
               </View>
               <View style={[styles.statSep, { backgroundColor: colors.border }]} />
               <View style={styles.statBox}>
-                <Text style={[styles.statV, { color: colors.foreground }]}>{p.exp}</Text>
+                <Text style={[styles.statV, { color: colors.foreground }]}>{p.experience_years}</Text>
                 <Text style={[styles.statL, { color: colors.mutedForeground }]}>سنوات خبرة</Text>
               </View>
             </View>
           </View>
         </LinearGradient>
+
+        {/* Distance & ETA */}
+        {distance != null && (
+          <View style={[styles.distRow, { backgroundColor: colors.card }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              <MaterialCommunityIcons name="map-marker-distance" size={16} color={colors.primary} />
+              <Text style={[styles.distT, { color: colors.primary }]}>{distance < 1 ? `${Math.round(distance * 1000)} م` : `${distance.toFixed(1)} كم`}</Text>
+            </View>
+            {eta != null && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <MaterialCommunityIcons name="clock-outline" size={16} color="#8B5CF6" />
+                <Text style={[styles.distT, { color: "#8B5CF6" }]}>~ {eta} دقيقة</Text>
+              </View>
+            )}
+          </View>
+        )}
 
         <View style={[styles.row, { gap: 10, paddingHorizontal: 16, marginTop: 14 }]}>
           <TouchableOpacity style={[styles.actBtn, { backgroundColor: colors.card, flex: 1 }]}>
@@ -87,42 +196,28 @@ export default function ProviderDetail() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
-          <Text style={[styles.sT, { color: colors.foreground }]}>نبذة عني</Text>
-          <Text style={[styles.about, { color: colors.mutedForeground }]}>
-            عامل نظافة محترف بخبرة {p.exp} سنوات في تقديم خدمات تنظيف عالية الجودة للمنازل والمكاتب. ملتزم بالمواعيد ودقيق في العمل.
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={[styles.sT, { color: colors.foreground }]}>الخدمات المقدمة</Text>
-          <View style={styles.skills}>
-            {SKILLS.map((s) => (
-              <View key={s} style={[styles.skill, { backgroundColor: colors.primaryLight }]}>
-                <Text style={[styles.skillT, { color: colors.primary }]}>{s}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
+        {/* Reviews section */}
         <View style={styles.section}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <Text style={[styles.sT, { color: colors.foreground, marginBottom: 0 }]}>التقييمات</Text>
-            <TouchableOpacity><Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 12 }}>عرض الكل</Text></TouchableOpacity>
           </View>
-          {REVIEWS.map((rv, i) => (
-            <View key={i} style={[styles.review, { backgroundColor: colors.card }]}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={[styles.rN, { color: colors.foreground }]}>{rv.n}</Text>
-                <View style={{ flexDirection: "row" }}>
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Feather key={s} name="star" size={11} color={s <= rv.r ? colors.warning : colors.border} />
-                  ))}
+          {reviews.length === 0 ? (
+            <Text style={[styles.about, { color: colors.mutedForeground }]}>لا توجد تقييمات بعد</Text>
+          ) : (
+            reviews.map((rv) => (
+              <View key={rv.id} style={[styles.review, { backgroundColor: colors.card }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                  <Text style={[styles.rN, { color: colors.foreground }]}>{rv.reviewer_name}</Text>
+                  <View style={{ flexDirection: "row" }}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Feather key={s} name="star" size={11} color={s <= rv.rating ? colors.warning : colors.border} />
+                    ))}
+                  </View>
                 </View>
+                {rv.comment ? <Text style={[styles.rT, { color: colors.mutedForeground }]}>{rv.comment}</Text> : null}
               </View>
-              <Text style={[styles.rT, { color: colors.mutedForeground }]}>{rv.t}</Text>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </ScrollView>
 
@@ -130,7 +225,7 @@ export default function ProviderDetail() {
         <TouchableOpacity
           style={[styles.bookBtn, { backgroundColor: colors.primary }]}
           onPress={() => {
-            booking.setCleanerId(id || "1");
+            booking.setCleanerId(id || "");
             router.push("/booking");
           }}
         >
@@ -139,7 +234,7 @@ export default function ProviderDetail() {
         </TouchableOpacity>
         <View style={styles.priceWrap}>
           <Text style={[styles.priceL, { color: colors.mutedForeground }]}>ابتداءً من</Text>
-          <Text style={[styles.priceV, { color: colors.foreground }]}>{p.price} <Text style={{ fontSize: 12, color: colors.mutedForeground }}>ر.س</Text></Text>
+          <Text style={[styles.priceV, { color: colors.foreground }]}>{p.hourly_rate} <Text style={{ fontSize: 12, color: colors.mutedForeground }}>ر.س</Text></Text>
         </View>
       </View>
     </View>
@@ -161,22 +256,21 @@ const styles = StyleSheet.create({
   statV: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   statL: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 1 },
   statSep: { width: 1, height: 22 },
+  distRow: { flexDirection: "row", justifyContent: "center", gap: 24, marginHorizontal: 16, marginTop: 12, paddingVertical: 10, borderRadius: 14 },
+  distT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   row: { flexDirection: "row" },
   actBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", padding: 11, borderRadius: 14, gap: 6 },
   actT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   section: { paddingHorizontal: 16, marginTop: 16 },
   sT: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 8 },
   about: { fontFamily: "Tajawal_400Regular", fontSize: 12, textAlign: "right", lineHeight: 18 },
-  skills: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  skill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100 },
-  skillT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   review: { padding: 12, borderRadius: 14, marginBottom: 8 },
   rN: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  rT: { fontFamily: "Tajawal_400Regular", fontSize: 11, textAlign: "right", marginTop: 6, lineHeight: 16 },
-  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 10 },
-  priceWrap: { alignItems: "flex-end" },
+  rT: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginTop: 4, textAlign: "right" },
+  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: "#F1F5F9" },
+  bookBtn: { flex: 1, height: 50, borderRadius: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+  bookBtnT: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#FFF" },
+  priceWrap: { alignItems: "flex-end", marginRight: 12 },
   priceL: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   priceV: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
-  bookBtn: { flex: 1, height: 50, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
-  bookBtnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });
