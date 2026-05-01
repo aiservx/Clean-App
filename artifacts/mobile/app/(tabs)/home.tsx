@@ -199,6 +199,20 @@ export default function HomeScreen() {
 
   const requestLocation = async () => {
     setLocating(true);
+    if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLoc((prev) => prev ?? {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            street: null, district: null, city: null, region: null, country: null,
+            formatted: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`,
+          });
+        },
+        () => {},
+        { timeout: 6000, maximumAge: 60000 }
+      );
+    }
     const r = await getCurrentResolved();
     if (r) setLoc(r);
     setLocating(false);

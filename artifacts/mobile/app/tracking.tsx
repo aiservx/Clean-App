@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Platform, ActivityIndicator, Animated, Alert,
+  Platform, ActivityIndicator, Animated, Alert, Linking,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -91,20 +91,26 @@ export default function TrackingScreen() {
 
   const isProvider = profile?.role === "provider";
 
+  const loadBooking = async () => {
+    if (!session) return;
+    const sel = `*, services(title_ar, base_price), addresses(*), provider:profiles!bookings_provider_id_fkey(full_name, phone, avatar_url), client:profiles!bookings_user_id_fkey(full_name, phone, avatar_url), provider_data:providers!bookings_provider_id_fkey(current_lat, current_lng, vehicle, plate, rating)`;
+    let q;
+    if (params.id) {
+      q = supabase.from("bookings").select(sel).eq("id", params.id).limit(1);
+    } else {
+      q = supabase.from("bookings").select(sel).in("status", ["pending", "accepted", "on_the_way", "in_progress"]).order("created_at", { ascending: false }).limit(1);
+    }
+    if (isProvider) q = q.eq("provider_id", session.user.id);
+    else q = q.eq("user_id", session.user.id);
+    const { data, error } = await q.maybeSingle();
+    if (error) console.log("[v0] tracking query error:", error.message);
+    return data;
+  };
+
   useEffect(() => {
     if (!session) return;
     (async () => {
-      const sel = `*, services(title_ar, base_price), addresses(*), provider:profiles!bookings_provider_id_fkey(full_name, phone, avatar_url), client:profiles!bookings_user_id_fkey(full_name, phone, avatar_url), provider_data:providers!bookings_provider_id_fkey(current_lat, current_lng, vehicle, plate, rating)`;
-      let q;
-      if (params.id) {
-        q = supabase.from("bookings").select(sel).eq("id", params.id).limit(1);
-      } else {
-        q = supabase.from("bookings").select(sel).in("status", ["pending", "accepted", "on_the_way", "in_progress"]).order("created_at", { ascending: false }).limit(1);
-      }
-      if (isProvider) q = q.eq("provider_id", session.user.id);
-      else q = q.eq("user_id", session.user.id);
-      const { data, error } = await q.maybeSingle();
-      if (error) console.log("[v0] tracking query error:", error.message);
+      const data = await loadBooking();
       setBooking(data);
       prevStatusRef.current = data?.status ?? null;
       if (data) {
@@ -144,6 +150,9 @@ export default function TrackingScreen() {
             [{ text: "حسناً" }]
           );
         }
+        if (newStatus === "accepted" && !booking.provider_id) {
+          loadBooking().then((d) => { if (d) setBooking(d); });
+        }
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "booking_status_log", filter: `booking_id=eq.${booking.id}` }, (payload: any) => {
         setLogs((prev) => [...prev, payload.new]);
@@ -151,6 +160,25 @@ export default function TrackingScreen() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [booking?.id, booking?.provider_id, isProvider]);
+
+  useEffect(() => {
+    if (!isProvider || !booking || !session?.user) return;
+    const activeStatuses = ["accepted", "on_the_way", "in_progress"];
+    if (!activeStatuses.includes(booking.status)) return;
+    let cancelled = false;
+    const uid = session.user.id;
+    const tick = async () => {
+      try {
+        const r = await getCurrentResolved();
+        if (cancelled || !r) return;
+        await supabase.from("providers").update({ current_lat: r.lat, current_lng: r.lng }).eq("id", uid);
+        setMyLoc(r);
+      } catch {}
+    };
+    tick();
+    const id = setInterval(tick, 5000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [isProvider, booking?.id, booking?.status, session?.user?.id]);
 
   const dest = useMemo(() => {
     if (booking?.addresses?.lat && booking?.addresses?.lng) return { lat: booking.addresses.lat, lng: booking.addresses.lng };
@@ -162,26 +190,30 @@ export default function TrackingScreen() {
   const eta = dKm != null ? Math.max(3, Math.round((dKm / 25) * 60)) : null;
 
   const region = useMemo(() => {
-    const c = providerLoc || dest || { lat: 24.7136, lng: 46.6753 };
-    return { latitude: c.lat, longitude: c.lng, latitudeDelta: 0.04, longitudeDelta: 0.04 };
-  }, [providerLoc, dest]);
-
-  const updateStatus = async (s: string) => {
-    if (!booking) return;
-    const [, logRes] = await Promise.all([
-      supabase.from("bookings").update({ status: s }).eq("id", booking.id),
-      supabase.from("booking_status_log").insert({ booking_id: booking.id, status: s, created_at: new Date().toISOString() }),
-    ]);
-    // Optimistically update local state
-    setBooking((b: any) => ({ ...b, status: s }));
-    if (!logRes.error) {
-      setLogs((prev) => [...prev, { id: `opt-${Date.now()}`, status: s, created_at: new Date().toISOString() }]);
-    }
-  };
+    const c = providerLoc || dest || myLoc || { lat: 24.7136, lng: 46.6753 };
+    return { latitude: (c as any).lat, longitude: (c as any).lng, latitudeDelta: 0.04, longitudeDelta: 0.04 };
+  }, [providerLoc, dest, myLoc]);
 
   const updateMyLocation = async () => {
     const r = await getCurrentResolved();
     if (r && session) await supabase.from("providers").update({ current_lat: r.lat, current_lng: r.lng }).eq("id", session.user.id);
+  };
+
+  const callOtherParty = () => {
+    const phone = isProvider ? booking?.client?.phone : booking?.provider?.phone;
+    if (!phone) return Alert.alert("لا يوجد رقم هاتف متاح");
+    Linking.openURL(`tel:${phone}`);
+  };
+
+  const openChat = () => {
+    if (!booking) return;
+    const otherName = isProvider
+      ? (booking.client?.full_name ?? "العميل")
+      : (booking.provider?.full_name ?? "مزود الخدمة");
+    router.push({
+      pathname: "/chat-detail",
+      params: { bookingId: booking.id, name: otherName },
+    } as any);
   };
 
   if (!session) {
@@ -198,7 +230,7 @@ export default function TrackingScreen() {
         <MaterialCommunityIcons name="map-marker-off" size={56} color={colors.mutedForeground} />
         <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.foreground, fontSize: 18, marginTop: 12 }}>لا يوجد طلب نشط</Text>
         <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground, fontSize: 13, marginTop: 4 }}>اطلب خدمة لتظهر هنا</Text>
-        <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/home" as any)} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
           <Text style={{ color: "#FFF", fontFamily: "Tajawal_700Bold" }}>الذهاب للرئيسية</Text>
         </TouchableOpacity>
       </View>
@@ -208,6 +240,7 @@ export default function TrackingScreen() {
   const status = booking.status as StatusKey;
   const statusColor = STATUS_COLOR[status] ?? colors.primary;
   const isTerminal = status === "completed" || status === "cancelled" || status === "rejected";
+  const isPending = status === "pending";
   const stepIndex = STEPS.indexOf(status as any);
   const otherParty = isProvider ? booking.client : booking.provider;
   const otherInitials = (otherParty?.full_name || "؟").trim().split(" ").map((s: string) => s[0]).slice(0, 2).join("");
@@ -218,15 +251,20 @@ export default function TrackingScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.card }]}>
-        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]}>
+        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={callOtherParty}>
           <Feather name="phone" size={18} color={colors.primary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{STATUS_AR[status]}</Text>
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
-            {isProvider ? "متابعة طلب العميل" : eta != null ? `وصول خلال ~${eta} دقيقة` : "متابعة الطلب"}
+            {isProvider
+              ? "متابعة طلب العميل"
+              : isPending
+                ? "جاري البحث عن مزود قريب…"
+                : eta != null
+                  ? `وصول خلال ~${eta} دقيقة`
+                  : "متابعة الطلب"}
           </Text>
         </View>
         <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={() => router.back()}>
@@ -234,7 +272,6 @@ export default function TrackingScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Progress bar */}
       {!isTerminal && (
         <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
           <View style={[styles.progressFill, { backgroundColor: statusColor, width: `${((stepIndex + 1) / STEPS.length) * 100}%` }]} />
@@ -242,7 +279,15 @@ export default function TrackingScreen() {
       )}
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {/* ETA cards */}
+        {isPending && !isProvider && (
+          <View style={[styles.pendingBanner, { backgroundColor: "#FFF8E7", borderColor: "#F59E0B" }]}>
+            <ActivityIndicator color="#F59E0B" size="small" />
+            <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#92600A", marginRight: 10 }}>
+              يتم الآن البحث عن أقرب مزود خدمة… سيتم إشعارك فور القبول
+            </Text>
+          </View>
+        )}
+
         <View style={styles.etaRow}>
           <View style={[styles.etaHalf, { backgroundColor: colors.accentLight }]}>
             <MaterialCommunityIcons name="map-marker-distance" size={18} color={colors.accent} />
@@ -261,7 +306,6 @@ export default function TrackingScreen() {
           </View>
         </View>
 
-        {/* Map */}
         <View style={styles.mapSection}>
           <View style={styles.mapContainer}>
             <AppMap
@@ -280,27 +324,29 @@ export default function TrackingScreen() {
           </View>
         </View>
 
-        {/* Other party card */}
         <View style={[styles.partyCard, { backgroundColor: colors.card }]}>
           <View style={[styles.avatar, { backgroundColor: colors.primaryLight }]}>
-            <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{otherInitials}</Text>
+            <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{otherInitials || "؟"}</Text>
           </View>
           <View style={{ flex: 1, marginRight: 12, alignItems: "flex-end" }}>
-            <Text style={[styles.pName, { color: colors.foreground }]}>{otherParty?.full_name || (isProvider ? "العميل" : "مزود الخدمة")}</Text>
+            <Text style={[styles.pName, { color: colors.foreground }]}>
+              {otherParty?.full_name || (isProvider ? "العميل" : isPending ? "جاري البحث عن مزود…" : "مزود الخدمة")}
+            </Text>
             <Text style={[styles.pSub, { color: colors.mutedForeground }]}>
               {isProvider ? otherParty?.phone || "" : booking.provider_data?.vehicle ? `${booking.provider_data.vehicle} • ${booking.provider_data.plate || ""}` : ""}
             </Text>
           </View>
-          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight }]}>
+          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginLeft: 8 }]} onPress={openChat}>
             <Feather name="message-circle" size={18} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.successLight }]} onPress={callOtherParty}>
+            <Feather name="phone" size={18} color={colors.success} />
           </TouchableOpacity>
         </View>
 
-        {/* Timeline */}
         <View style={[styles.timelineCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.timelineTitle, { color: colors.foreground }]}>المخطط الزمني للطلب</Text>
 
-          {/* Steps progress */}
           <View style={styles.stepsRow}>
             {STEPS.map((step, i) => {
               const done = stepIndex >= i;
@@ -328,7 +374,6 @@ export default function TrackingScreen() {
             })}
           </View>
 
-          {/* Log entries */}
           {logs.length > 0 && (
             <View style={{ marginTop: 16 }}>
               <Text style={[styles.logTitle, { color: colors.mutedForeground }]}>سجل التحديثات</Text>
@@ -349,42 +394,6 @@ export default function TrackingScreen() {
             </View>
           )}
         </View>
-
-        {/* Provider action buttons */}
-        {isProvider && status !== "completed" && status !== "cancelled" && status !== "rejected" && (
-          <View style={styles.actionsRow}>
-            {status === "pending" && (
-              <>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: colors.primary }]} onPress={() => updateStatus("accepted")}>
-                  <Feather name="check" size={16} color="#FFF" />
-                  <Text style={styles.actionT}>قبول الطلب</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#EF4444", flex: 0.45 }]} onPress={() => updateStatus("rejected")}>
-                  <Feather name="x" size={16} color="#FFF" />
-                  <Text style={styles.actionT}>رفض</Text>
-                </TouchableOpacity>
-              </>
-            )}
-            {status === "accepted" && (
-              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#8B5CF6" }]} onPress={() => updateStatus("on_the_way")}>
-                <MaterialCommunityIcons name="car" size={18} color="#FFF" />
-                <Text style={styles.actionT}>بدأت الرحلة</Text>
-              </TouchableOpacity>
-            )}
-            {status === "on_the_way" && (
-              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#10B981" }]} onPress={() => updateStatus("in_progress")}>
-                <MaterialCommunityIcons name="broom" size={18} color="#FFF" />
-                <Text style={styles.actionT}>وصلت وبدأت العمل</Text>
-              </TouchableOpacity>
-            )}
-            {status === "in_progress" && (
-              <TouchableOpacity style={[styles.actionBtn, { backgroundColor: "#10B981" }]} onPress={() => updateStatus("completed")}>
-                <MaterialCommunityIcons name="check-all" size={18} color="#FFF" />
-                <Text style={styles.actionT}>إنهاء الخدمة</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
 
         {!isProvider && status === "completed" && (
           <TouchableOpacity
@@ -410,6 +419,7 @@ const styles = StyleSheet.create({
   iconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   progressBar: { height: 4 },
   progressFill: { height: 4, borderRadius: 2 },
+  pendingBanner: { flexDirection: "row-reverse", alignItems: "center", margin: 12, padding: 12, borderRadius: 14, borderWidth: 1 },
   etaRow: { flexDirection: "row", paddingHorizontal: 12, gap: 8, marginTop: 12, marginBottom: 12 },
   etaHalf: { flex: 1, padding: 12, borderRadius: 16, alignItems: "center", gap: 3 },
   etaSmall: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
@@ -418,7 +428,7 @@ const styles = StyleSheet.create({
   mapSection: { paddingHorizontal: 14, marginBottom: 12 },
   mapContainer: { height: 220, borderRadius: 20, overflow: "hidden" },
   gpsBtn: { position: "absolute", bottom: 12, left: 12, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  partyCard: { flexDirection: "row-reverse", alignItems: "center", marginHorizontal: 14, padding: 14, borderRadius: 18, marginBottom: 12, gap: 10 },
+  partyCard: { flexDirection: "row-reverse", alignItems: "center", marginHorizontal: 14, padding: 14, borderRadius: 18, marginBottom: 12, gap: 8 },
   avatar: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
   pName: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   pSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
@@ -436,7 +446,6 @@ const styles = StyleSheet.create({
   tlLine: { width: 2, flex: 1, marginTop: 2 },
   tlStatus: { fontFamily: "Tajawal_700Bold", fontSize: 12, textAlign: "right" },
   tlTime: { fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right", marginTop: 1 },
-  actionsRow: { flexDirection: "row", paddingHorizontal: 14, gap: 10, marginTop: 8 },
-  actionBtn: { flex: 1, height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
+  actionBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   actionT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });

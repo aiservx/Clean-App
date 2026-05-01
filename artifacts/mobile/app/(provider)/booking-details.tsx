@@ -11,6 +11,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/location";
+import { sendPushNotification } from "@/lib/notifications";
 
 const STATUS_FLOW: Record<string, { next: string; label: string; icon: string } | null> = {
   pending: { next: "accepted", label: "قبول الطلب", icon: "check-circle" },
@@ -30,6 +31,14 @@ const STATUS_AR: Record<string, string> = {
   completed: "مكتمل",
   cancelled: "ملغي",
   rejected: "مرفوض",
+};
+
+const NOTIF_MESSAGES: Record<string, { title: string; body: string }> = {
+  accepted: { title: "✅ تم قبول طلبك!", body: "المزود تأكد على طلبك وسيتوجه إليك قريباً" },
+  on_the_way: { title: "🚗 المزود في الطريق إليك", body: "استعد! مزود الخدمة متجه نحوك الآن" },
+  in_progress: { title: "🧹 بدأت الخدمة", body: "مزود الخدمة وصل وبدأ العمل لديك" },
+  completed: { title: "✨ اكتملت الخدمة!", body: "تم إنجاز الخدمة بنجاح. نتمنى أن تكون راضياً!" },
+  cancelled: { title: "❌ تم إلغاء طلبك", body: "قام المزود بإلغاء هذا الطلب. يمكنك طلب مزود آخر" },
 };
 
 const STATUS_COLOR = (s: string, c: any) =>
@@ -82,6 +91,25 @@ export default function ProviderBookingDetails() {
     return () => { supabase.removeChannel(ch); };
   }, [params.id, load]);
 
+  useEffect(() => {
+    if (!session?.user || !booking) return;
+    const activeStatuses = ["accepted", "on_the_way", "in_progress"];
+    if (!activeStatuses.includes(booking.status)) return;
+    let cancelled = false;
+    const uid = session.user.id;
+    const tick = async () => {
+      try {
+        const r = await getCurrentResolved();
+        if (cancelled || !r) return;
+        await supabase.from("providers").update({ current_lat: r.lat, current_lng: r.lng }).eq("id", uid);
+        setMyLoc(r);
+      } catch {}
+    };
+    tick();
+    const id = setInterval(tick, 5000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [session?.user?.id, booking?.id, booking?.status]);
+
   const advance = async () => {
     if (!booking || !session?.user) return;
     const flow = STATUS_FLOW[booking.status];
@@ -91,9 +119,23 @@ export default function ProviderBookingDetails() {
 
     const update: any = { status: flow.next };
     if (booking.status === "pending") update.provider_id = session.user.id;
+
     const { error } = await supabase.from("bookings").update(update).eq("id", booking.id);
     if (error) { setBusy(false); return Alert.alert("خطأ", error.message); }
+
     await supabase.from("booking_status_log").insert({ booking_id: booking.id, status: flow.next, note: flow.label });
+
+    if (flow.next === "accepted") {
+      await supabase.from("providers").update({ available: false }).eq("id", session.user.id);
+    }
+    if (flow.next === "completed") {
+      await supabase.from("providers").update({ available: true }).eq("id", session.user.id);
+    }
+
+    const notif = NOTIF_MESSAGES[flow.next];
+    if (notif && booking.user_id) {
+      sendPushNotification(booking.user_id, notif.title, notif.body, { bookingId: booking.id });
+    }
 
     setBusy(false);
     if (flow.next === "completed") {
@@ -115,6 +157,11 @@ export default function ProviderBookingDetails() {
           onPress: async () => {
             await supabase.from("bookings").update({ status: "cancelled" }).eq("id", booking.id);
             await supabase.from("booking_status_log").insert({ booking_id: booking.id, status: "cancelled", note: "ألغي بواسطة المزود" });
+            await supabase.from("providers").update({ available: true }).eq("id", session.user.id);
+            const notif = NOTIF_MESSAGES["cancelled"];
+            if (notif && booking.user_id) {
+              sendPushNotification(booking.user_id, notif.title, notif.body, { bookingId: booking.id });
+            }
             router.back();
           },
         },
@@ -126,6 +173,15 @@ export default function ProviderBookingDetails() {
     const ph = booking?.profiles?.phone;
     if (!ph) return Alert.alert("لا يوجد رقم هاتف");
     Linking.openURL(`tel:${ph}`);
+  };
+
+  const openChat = () => {
+    if (!booking) return;
+    const clientName = booking.profiles?.full_name ?? "العميل";
+    router.push({
+      pathname: "/chat-detail",
+      params: { bookingId: booking.id, name: clientName },
+    } as any);
   };
 
   const navigateOnMaps = () => {
@@ -192,7 +248,6 @@ export default function ProviderBookingDetails() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 140, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
-        {/* Status hero */}
         <LinearGradient colors={[stColor, stColor + "DD"]} style={styles.statusHero}>
           <View style={{ flex: 1, alignItems: "flex-end" }}>
             <Text style={styles.statusHeroLabel}>الحالة الحالية</Text>
@@ -208,7 +263,6 @@ export default function ProviderBookingDetails() {
           </View>
         </LinearGradient>
 
-        {/* Map with client location */}
         {addr?.lat && addr?.lng && (
           <View style={[styles.mapBox, { backgroundColor: colors.card }]}>
             <AppMap style={StyleSheet.absoluteFill} region={region} markers={markers} />
@@ -234,7 +288,6 @@ export default function ProviderBookingDetails() {
           </View>
         )}
 
-        {/* Client info card */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>بيانات العميل</Text>
           <View style={styles.row}>
@@ -249,13 +302,15 @@ export default function ProviderBookingDetails() {
                 <Text style={[styles.rowSub, { color: colors.mutedForeground }]}>{booking.profiles.phone}</Text>
               )}
             </View>
+            <TouchableOpacity onPress={openChat} style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginLeft: 6 }]}>
+              <Feather name="message-circle" size={16} color={colors.primary} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={callClient} style={[styles.iconCircle, { backgroundColor: colors.successLight }]}>
               <Feather name="phone" size={16} color={colors.success} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Service details */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>تفاصيل الخدمة</Text>
           {[
@@ -273,7 +328,6 @@ export default function ProviderBookingDetails() {
           ))}
         </View>
 
-        {/* Earnings */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>الأرباح</Text>
           <View style={styles.dRow}>
@@ -287,7 +341,6 @@ export default function ProviderBookingDetails() {
         </View>
       </ScrollView>
 
-      {/* Bottom action bar */}
       <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 12 }]}>
         {flow ? (
           <>

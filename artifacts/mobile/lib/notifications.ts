@@ -3,7 +3,6 @@ import * as Device from "expo-device";
 import { Platform } from "react-native";
 import { supabase } from "./supabase";
 
-// Safely configure notification handler without triggering remote push errors
 if (Platform.OS !== "web") {
   try {
     Notifications.setNotificationHandler({
@@ -38,5 +37,40 @@ export async function registerForPush(userId: string) {
     return token;
   } catch {
     return null;
+  }
+}
+
+export async function sendPushNotification(
+  userId: string,
+  title: string,
+  body: string,
+  data?: Record<string, any>
+) {
+  try {
+    const { data: tokens } = await supabase
+      .from("push_tokens")
+      .select("token")
+      .eq("user_id", userId);
+    if (!tokens?.length) return;
+    const messages = tokens.map((t: any) => ({
+      to: t.token,
+      title,
+      body,
+      data: data ?? {},
+      sound: "default",
+      priority: "high",
+      channelId: "default",
+    }));
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Accept-Encoding": "gzip, deflate",
+      },
+      body: JSON.stringify(messages),
+    });
+  } catch (e) {
+    console.log("[v0] Push send failed:", (e as Error).message);
   }
 }

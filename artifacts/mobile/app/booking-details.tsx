@@ -211,7 +211,7 @@ export default function BookingDetails() {
         )}
         <TouchableOpacity
           style={[styles.trackBtn, { backgroundColor: colors.primary }]}
-          onPress={() => isActive ? router.push(`/tracking?bookingId=${booking.id}` as any) : router.back()}
+          onPress={() => isActive ? router.push({ pathname: "/tracking", params: { id: booking.id } } as any) : router.back()}
         >
           {isActive && <Feather name="map-pin" size={16} color="#FFF" />}
           <Text style={styles.trackT}>{isActive ? "تتبع مباشر" : "رجوع"}</Text>
