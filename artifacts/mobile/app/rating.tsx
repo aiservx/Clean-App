@@ -18,7 +18,7 @@ try {
 }
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
-import { sendPushNotification } from "@/lib/notifications";
+import { sendPushNotification, createNotification } from "@/lib/notifications";
 
 const TAGS = [
   { label: "الاهتمام بالتفاصيل", icon: "checkbox-marked-outline" },
@@ -107,12 +107,10 @@ export default function RatingScreen() {
       await supabase.from("providers").update({ rating: Math.round(avg * 10) / 10 }).eq("id", providerId);
     }
 
-    sendPushNotification(
-      providerId,
-      "⭐ تقييم جديد!",
-      `حصلت على تقييم ${rating} نجوم${comment.trim() ? ` — "${comment.trim().slice(0, 60)}"` : ""}`,
-      { bookingId }
-    );
+    const notifTitle = "⭐ تقييم جديد!";
+    const notifBody = `حصلت على تقييم ${rating} نجوم${comment.trim() ? ` — "${comment.trim().slice(0, 60)}"` : ""}`;
+    sendPushNotification(providerId, notifTitle, notifBody, { bookingId });
+    createNotification(providerId, "review_received", notifTitle, notifBody, { bookingId });
 
     setSubmitting(false);
     showSuccess();

@@ -251,6 +251,14 @@ export default function BookingsScreen() {
                         <Feather name="navigation" size={13} color="#FFF" />
                         <Text style={[styles.actionBtnText, { color: "#FFF" }]}>تتبع الطلب</Text>
                       </TouchableOpacity>
+                    ) : item.status === "completed" ? (
+                      <TouchableOpacity
+                        style={[styles.actionBtn, { backgroundColor: "#F59E0B" }]}
+                        onPress={() => router.push({ pathname: "/rating", params: { bookingId: item.id } } as any)}
+                      >
+                        <Feather name="star" size={13} color="#FFF" />
+                        <Text style={[styles.actionBtnText, { color: "#FFF" }]}>تقييم الخدمة</Text>
+                      </TouchableOpacity>
                     ) : (
                       <TouchableOpacity
                         style={[styles.actionBtn, { backgroundColor: colors.secondary }]}

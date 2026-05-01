@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useBooking, DEFAULT_SERVICE } from "@/store/booking";
+import { createNotification } from "@/lib/notifications";
 
 type Method = {
   id: string;
@@ -278,8 +279,16 @@ export default function PaymentScreen() {
               };
               const { data: row, error } = await supabase.from("bookings").insert(insertData).select("id").maybeSingle();
               if (error) console.log("[v0] booking insert error:", error.message);
-              if (row?.id) router.replace({ pathname: "/tracking", params: { id: row.id } } as any);
-              else router.replace("/tracking");
+              if (row?.id) {
+                createNotification(
+                  user.id,
+                  "booking_created",
+                  "✅ تم استلام طلبك!",
+                  "طلبك في طور البحث عن أفضل مزود قريب منك. يمكنك تتبع الحالة من هنا",
+                  { bookingId: row.id }
+                );
+                router.replace({ pathname: "/tracking", params: { id: row.id } } as any);
+              } else router.replace("/tracking");
             } catch (e) {
               console.log("[v0] payment confirm failed:", (e as Error).message);
               router.replace("/tracking");

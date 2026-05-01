@@ -11,7 +11,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/location";
-import { sendPushNotification } from "@/lib/notifications";
+import { sendPushNotification, createNotification } from "@/lib/notifications";
 
 const STATUS_FLOW: Record<string, { next: string; label: string; icon: string } | null> = {
   pending: { next: "accepted", label: "قبول الطلب", icon: "check-circle" },
@@ -134,7 +134,13 @@ export default function ProviderBookingDetails() {
 
     const notif = NOTIF_MESSAGES[flow.next];
     if (notif && booking.user_id) {
+      const notifType = flow.next === "accepted" ? "booking_accepted"
+        : flow.next === "on_the_way" ? "booking_on_way"
+        : flow.next === "in_progress" ? "booking_started"
+        : flow.next === "completed" ? "booking_completed"
+        : "booking_accepted";
       sendPushNotification(booking.user_id, notif.title, notif.body, { bookingId: booking.id });
+      createNotification(booking.user_id, notifType, notif.title, notif.body, { bookingId: booking.id });
     }
 
     setBusy(false);
@@ -161,6 +167,7 @@ export default function ProviderBookingDetails() {
             const notif = NOTIF_MESSAGES["cancelled"];
             if (notif && booking.user_id) {
               sendPushNotification(booking.user_id, notif.title, notif.body, { bookingId: booking.id });
+              createNotification(booking.user_id, "booking_cancelled", notif.title, notif.body, { bookingId: booking.id });
             }
             router.back();
           },

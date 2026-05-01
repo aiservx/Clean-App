@@ -74,3 +74,24 @@ export async function sendPushNotification(
     console.log("[v0] Push send failed:", (e as Error).message);
   }
 }
+
+export async function createNotification(
+  userId: string,
+  type: string,
+  title: string,
+  body: string,
+  data?: Record<string, any>
+) {
+  try {
+    await supabase.from("notifications").insert({
+      user_id: userId,
+      type,
+      title,
+      body,
+      data: data ?? {},
+      read: false,
+    });
+  } catch (e) {
+    console.log("[v0] createNotification failed:", (e as Error).message);
+  }
+}

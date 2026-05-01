@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { getCurrentResolved, distanceKm, type ResolvedAddress } from "@/lib/location";
 import { registerForPush } from "@/lib/notifications";
+import { useNotifBadge } from "@/lib/notifBadge";
 import { FALLBACK_CATEGORIES } from "@/lib/serviceImages";
 import { useI18n } from "@/lib/i18n";
 import { iconForService, colorForService, imageForService } from "../../lib/serviceIcons";
@@ -129,6 +130,7 @@ export default function HomeScreen() {
   const knownNearbyIds = useRef<Set<string>>(new Set());
   const hasInitialLoad = useRef(false);
   const providerScrollRef = useRef<any>(null);
+  const { unreadCount: notifUnread } = useNotifBadge();
 
   const loadProviders = async () => {
     try {
@@ -391,6 +393,11 @@ export default function HomeScreen() {
           <TouchableOpacity onPress={() => requireAuth("/notifications")} style={styles.headerIconBtn}>
             <BlurView intensity={Platform.OS === "ios" ? 60 : 100} tint="light" style={styles.iconBlur}>
               <Feather name="bell" size={18} color="#0F172A" />
+              {notifUnread > 0 && (
+                <View style={styles.notifBadge}>
+                  <Text style={styles.notifBadgeT}>{notifUnread > 9 ? "9+" : notifUnread}</Text>
+                </View>
+              )}
             </BlurView>
           </TouchableOpacity>
         </View>
@@ -621,6 +628,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(255,255,255,0.5)",
   },
   notifDot: { position: "absolute", top: 9, right: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: "#EF4444", borderWidth: 1, borderColor: "#fff" },
+  notifBadge: { position: "absolute", top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 8, backgroundColor: "#EF4444", alignItems: "center", justifyContent: "center", paddingHorizontal: 3, borderWidth: 1.5, borderColor: "#FFF" },
+  notifBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 9, color: "#FFF", lineHeight: 13 },
 
   greetingBlur: {
     flex: 1, height: 44, borderRadius: 14, paddingHorizontal: 14, justifyContent: "center",
