@@ -80,91 +80,147 @@ export default function TrackingScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const { session, profile } = useAuth();
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; bookingId?: string }>();
+
+  const bookingId = params.id || params.bookingId;
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [logs, setLogs] = useState<LogRow[]>([]);
   const [providerLoc, setProviderLoc] = useState<{ lat: number; lng: number } | null>(null);
   const [myLoc, setMyLoc] = useState<ResolvedAddress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const prevStatusRef = useRef<string | null>(null);
 
   const isProvider = profile?.role === "provider";
 
-  const loadBooking = async () => {
-    if (!session) return;
-    const sel = `*, services(title_ar, base_price), addresses(*), provider:profiles!bookings_provider_id_fkey(full_name, phone, avatar_url), client:profiles!bookings_user_id_fkey(full_name, phone, avatar_url), provider_data:providers!bookings_provider_id_fkey(current_lat, current_lng, vehicle, plate, rating)`;
-    let q;
-    if (params.id) {
-      q = supabase.from("bookings").select(sel).eq("id", params.id).limit(1);
+  const loadBooking = async (): Promise<Booking | null> => {
+    if (!session?.user) return null;
+
+    // Simple select - no cross-table FK joins that might not exist
+    const sel = `
+      id, status, total, scheduled_at, created_at, user_id, provider_id, notes, payment_method,
+      services:service_id(title_ar, base_price),
+      addresses:address_id(street, district, city, lat, lng),
+      provider:profiles!bookings_provider_id_fkey(id, full_name, phone, avatar_url),
+      client:profiles!bookings_user_id_fkey(full_name, phone, avatar_url)
+    `;
+
+    let q = supabase.from("bookings").select(sel);
+
+    if (bookingId) {
+      q = q.eq("id", bookingId) as any;
     } else {
-      q = supabase.from("bookings").select(sel).in("status", ["pending", "accepted", "on_the_way", "in_progress"]).order("created_at", { ascending: false }).limit(1);
+      // No specific booking → fetch the latest active one
+      q = q.in("status", ["pending", "accepted", "on_the_way", "in_progress"]).order("created_at", { ascending: false }) as any;
     }
-    if (isProvider) q = q.eq("provider_id", session.user.id);
-    else q = q.eq("user_id", session.user.id);
-    const { data, error } = await q.maybeSingle();
-    if (error) console.log("[v0] tracking query error:", error.message);
+
+    if (isProvider) {
+      q = q.eq("provider_id", session.user.id) as any;
+    } else {
+      q = q.eq("user_id", session.user.id) as any;
+    }
+
+    const { data, error } = await (q as any).limit(1).maybeSingle();
+
+    if (error) {
+      console.log("[v0] tracking query error:", error.message);
+      return null;
+    }
+
+    if (!data) return null;
+
+    // Fetch provider location separately (no FK needed, just by id)
+    if (data.provider_id) {
+      try {
+        const { data: pd } = await supabase
+          .from("providers")
+          .select("current_lat, current_lng, vehicle, plate, rating")
+          .eq("id", data.provider_id)
+          .maybeSingle();
+        if (pd) (data as any).provider_data = pd;
+      } catch {}
+    }
+
     return data;
   };
 
   useEffect(() => {
-    if (!session) return;
+    if (!session) { setLoading(false); return; }
     (async () => {
-      const data = await loadBooking();
-      setBooking(data);
-      prevStatusRef.current = data?.status ?? null;
-      if (data) {
-        const { data: l } = await supabase
-          .from("booking_status_log")
-          .select("*")
-          .eq("booking_id", data.id)
-          .order("created_at");
-        setLogs((l as any) || []);
-        if (data.provider_data?.current_lat && data.provider_data?.current_lng) {
-          setProviderLoc({ lat: data.provider_data.current_lat, lng: data.provider_data.current_lng });
+      try {
+        const data = await loadBooking();
+        setBooking(data);
+        prevStatusRef.current = data?.status ?? null;
+        if (data) {
+          try {
+            const { data: l } = await supabase
+              .from("booking_status_log")
+              .select("id, status, created_at, note")
+              .eq("booking_id", data.id)
+              .order("created_at");
+            setLogs((l as any) || []);
+          } catch {}
+          if (data.provider_data?.current_lat && data.provider_data?.current_lng) {
+            setProviderLoc({ lat: data.provider_data.current_lat, lng: data.provider_data.current_lng });
+          }
         }
+      } catch (e) {
+        console.log("[v0] tracking load failed:", (e as Error).message);
+        setLoadError("تعذّر تحميل بيانات الطلب");
+      } finally {
+        try {
+          const me = await getCurrentResolved();
+          if (me) setMyLoc(me);
+        } catch {}
+        setLoading(false);
       }
-      const me = await getCurrentResolved();
-      if (me) setMyLoc(me);
-      setLoading(false);
     })();
-  }, [session, params.id, isProvider]);
+  }, [session?.user?.id, bookingId, isProvider]);
 
   useEffect(() => {
-    if (!booking) return;
-    const topic = `tracking-${booking.id}-${Math.random().toString(36).slice(2, 8)}`;
+    if (!booking?.id) return;
+    const topic = `tracking-bk-${booking.id}-${Math.random().toString(36).slice(2, 8)}`;
     const ch = supabase
       .channel(topic)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "providers", filter: `id=eq.${booking.provider_id}` }, (payload: any) => {
-        const r = payload.new;
-        if (r?.current_lat && r?.current_lng) setProviderLoc({ lat: r.current_lat, lng: r.current_lng });
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "bookings", filter: `id=eq.${booking.id}` }, (payload: any) => {
-        const newStatus = payload.new?.status;
-        setBooking((b: any) => ({ ...b, ...payload.new }));
-        if (newStatus && newStatus !== prevStatusRef.current && !isProvider) {
-          prevStatusRef.current = newStatus;
-          Alert.alert(
-            "📦 تحديث الطلب",
-            `حالة طلبك الآن: ${STATUS_AR[newStatus] ?? newStatus}`,
-            [{ text: "حسناً" }]
-          );
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "providers", filter: `id=eq.${booking.provider_id}` },
+        (payload: any) => {
+          try {
+            const r = payload.new;
+            if (r?.current_lat && r?.current_lng) setProviderLoc({ lat: r.current_lat, lng: r.current_lng });
+          } catch {}
         }
-        if (newStatus === "accepted" && !booking.provider_id) {
-          loadBooking().then((d) => { if (d) setBooking(d); });
+      )
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "bookings", filter: `id=eq.${booking.id}` },
+        (payload: any) => {
+          try {
+            const newStatus = payload.new?.status;
+            setBooking((b: any) => b ? { ...b, ...payload.new } : b);
+            if (newStatus && newStatus !== prevStatusRef.current && !isProvider) {
+              prevStatusRef.current = newStatus;
+              Alert.alert("📦 تحديث الطلب", `حالة طلبك الآن: ${STATUS_AR[newStatus] ?? newStatus}`, [{ text: "حسناً" }]);
+            }
+            if (newStatus === "accepted") {
+              loadBooking().then((d) => { if (d) setBooking(d); }).catch(() => {});
+            }
+          } catch {}
         }
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "booking_status_log", filter: `booking_id=eq.${booking.id}` }, (payload: any) => {
-        setLogs((prev) => [...prev, payload.new]);
-      })
+      )
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "booking_status_log", filter: `booking_id=eq.${booking.id}` },
+        (payload: any) => {
+          try { setLogs((prev) => [...prev, payload.new]); } catch {}
+        }
+      )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [booking?.id, booking?.provider_id, isProvider]);
 
   useEffect(() => {
     if (!isProvider || !booking || !session?.user) return;
-    const activeStatuses = ["accepted", "on_the_way", "in_progress"];
-    if (!activeStatuses.includes(booking.status)) return;
+    if (!["accepted", "on_the_way", "in_progress"].includes(booking.status)) return;
     let cancelled = false;
     const uid = session.user.id;
     const tick = async () => {
@@ -194,25 +250,19 @@ export default function TrackingScreen() {
     return { latitude: (c as any).lat, longitude: (c as any).lng, latitudeDelta: 0.04, longitudeDelta: 0.04 };
   }, [providerLoc, dest, myLoc]);
 
-  const updateMyLocation = async () => {
-    const r = await getCurrentResolved();
-    if (r && session) await supabase.from("providers").update({ current_lat: r.lat, current_lng: r.lng }).eq("id", session.user.id);
-  };
-
   const callOtherParty = () => {
-    const phone = isProvider ? booking?.client?.phone : booking?.provider?.phone;
-    if (!phone) return Alert.alert("لا يوجد رقم هاتف متاح");
-    Linking.openURL(`tel:${phone}`);
+    try {
+      const phone = isProvider ? booking?.client?.phone : booking?.provider?.phone;
+      if (!phone) { Alert.alert("لا يوجد رقم هاتف متاح"); return; }
+      Linking.openURL(`tel:${phone}`);
+    } catch {}
   };
 
   const openChat = () => {
     if (!booking) return;
-    const otherName = isProvider
-      ? (booking.client?.full_name ?? "العميل")
-      : (booking.provider?.full_name ?? "مزود الخدمة");
     router.push({
       pathname: "/chat-detail",
-      params: { bookingId: booking.id, name: otherName },
+      params: { bookingId: booking.id, name: isProvider ? (booking.client?.full_name ?? "العميل") : (booking.provider?.full_name ?? "مزود الخدمة") },
     } as any);
   };
 
@@ -221,23 +271,56 @@ export default function TrackingScreen() {
   }
 
   if (loading) {
-    return <View style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator color={colors.primary} /></View>;
+    return (
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator color={colors.primary} size="large" />
+        <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground, marginTop: 12, fontSize: 13 }}>جاري التحميل…</Text>
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={[styles.center, { backgroundColor: colors.background, padding: 32 }]}>
+        <MaterialCommunityIcons name="wifi-off" size={56} color={colors.mutedForeground} />
+        <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.foreground, fontSize: 16, marginTop: 16, textAlign: "center" }}>{loadError}</Text>
+        <TouchableOpacity onPress={() => { setLoadError(null); setLoading(true); }} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
+          <Text style={{ color: "#FFF", fontFamily: "Tajawal_700Bold" }}>إعادة المحاولة</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 12 }}>
+          <Text style={{ color: colors.mutedForeground, fontFamily: "Tajawal_500Medium" }}>رجوع</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   if (!booking) {
+    if (bookingId) {
+      // Had a specific ID but didn't find it → show error
+      return (
+        <View style={[styles.center, { backgroundColor: colors.background, paddingTop: insets.top + 60 }]}>
+          <MaterialCommunityIcons name="file-search-outline" size={56} color={colors.mutedForeground} />
+          <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.foreground, fontSize: 16, marginTop: 12, textAlign: "center" }}>تعذّر تحميل الطلب</Text>
+          <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground, fontSize: 13, marginTop: 6, textAlign: "center" }}>قد يكون الطلب قد انتهى أو تغيرت بياناتك</Text>
+          <TouchableOpacity onPress={() => router.replace("/(tabs)/bookings" as any)} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
+            <Text style={{ color: "#FFF", fontFamily: "Tajawal_700Bold" }}>عرض الحجوزات</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
     return (
       <View style={[styles.center, { backgroundColor: colors.background, paddingTop: insets.top + 60 }]}>
         <MaterialCommunityIcons name="map-marker-off" size={56} color={colors.mutedForeground} />
         <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.foreground, fontSize: 18, marginTop: 12 }}>لا يوجد طلب نشط</Text>
         <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground, fontSize: 13, marginTop: 4 }}>اطلب خدمة لتظهر هنا</Text>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/home" as any)} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
+        <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={{ marginTop: 18, backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 }}>
           <Text style={{ color: "#FFF", fontFamily: "Tajawal_700Bold" }}>الذهاب للرئيسية</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  const status = booking.status as StatusKey;
+  const status = (booking.status ?? "pending") as StatusKey;
   const statusColor = STATUS_COLOR[status] ?? colors.primary;
   const isTerminal = status === "completed" || status === "cancelled" || status === "rejected";
   const isPending = status === "pending";
@@ -251,6 +334,7 @@ export default function TrackingScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.card }]}>
         <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={callOtherParty}>
           <Feather name="phone" size={18} color={colors.primary} />
@@ -258,13 +342,11 @@ export default function TrackingScreen() {
         <View style={styles.headerCenter}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{STATUS_AR[status]}</Text>
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
-            {isProvider
-              ? "متابعة طلب العميل"
-              : isPending
-                ? "جاري البحث عن مزود قريب…"
-                : eta != null
-                  ? `وصول خلال ~${eta} دقيقة`
-                  : "متابعة الطلب"}
+            {isPending && !isProvider
+              ? "جاري البحث عن مزود قريب…"
+              : eta != null
+                ? `وصول خلال ~${eta} دقيقة`
+                : isProvider ? "متابعة طلب العميل" : "متابعة الطلب"}
           </Text>
         </View>
         <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={() => router.back()}>
@@ -272,9 +354,10 @@ export default function TrackingScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Progress bar */}
       {!isTerminal && (
         <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
-          <View style={[styles.progressFill, { backgroundColor: statusColor, width: `${((stepIndex + 1) / STEPS.length) * 100}%` }]} />
+          <View style={[styles.progressFill, { backgroundColor: statusColor, width: `${((stepIndex + 1) / STEPS.length) * 100}%` as any }]} />
         </View>
       )}
 
@@ -288,6 +371,7 @@ export default function TrackingScreen() {
           </View>
         )}
 
+        {/* ETA cards */}
         <View style={styles.etaRow}>
           <View style={[styles.etaHalf, { backgroundColor: colors.accentLight }]}>
             <MaterialCommunityIcons name="map-marker-distance" size={18} color={colors.accent} />
@@ -302,10 +386,11 @@ export default function TrackingScreen() {
           <View style={[styles.etaHalf, { backgroundColor: statusColor + "20" }]}>
             <MaterialCommunityIcons name={(STATUS_ICON[status] || "circle-outline") as any} size={18} color={statusColor} />
             <Text style={[styles.etaSmall, { color: statusColor }]}>الحالة</Text>
-            <Text style={[styles.etaStatus, { color: statusColor }]} numberOfLines={1}>{STATUS_AR[status]}</Text>
+            <Text style={[styles.etaStatus, { color: statusColor }]} numberOfLines={2}>{STATUS_AR[status]}</Text>
           </View>
         </View>
 
+        {/* Map */}
         <View style={styles.mapSection}>
           <View style={styles.mapContainer}>
             <AppMap
@@ -317,15 +402,24 @@ export default function TrackingScreen() {
                 : undefined}
             />
             {isProvider && (
-              <TouchableOpacity onPress={updateMyLocation} style={[styles.gpsBtn, { backgroundColor: colors.card }]}>
+              <TouchableOpacity
+                onPress={async () => {
+                  try {
+                    const r = await getCurrentResolved();
+                    if (r && session) await supabase.from("providers").update({ current_lat: r.lat, current_lng: r.lng }).eq("id", session.user.id);
+                  } catch {}
+                }}
+                style={[styles.gpsBtn, { backgroundColor: colors.card }]}
+              >
                 <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
+        {/* Other party card */}
         <View style={[styles.partyCard, { backgroundColor: colors.card }]}>
-          <View style={[styles.avatar, { backgroundColor: colors.primaryLight }]}>
+          <View style={[styles.avatarBox, { backgroundColor: colors.primaryLight }]}>
             <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{otherInitials || "؟"}</Text>
           </View>
           <View style={{ flex: 1, marginRight: 12, alignItems: "flex-end" }}>
@@ -333,7 +427,9 @@ export default function TrackingScreen() {
               {otherParty?.full_name || (isProvider ? "العميل" : isPending ? "جاري البحث عن مزود…" : "مزود الخدمة")}
             </Text>
             <Text style={[styles.pSub, { color: colors.mutedForeground }]}>
-              {isProvider ? otherParty?.phone || "" : booking.provider_data?.vehicle ? `${booking.provider_data.vehicle} • ${booking.provider_data.plate || ""}` : ""}
+              {isProvider
+                ? (otherParty?.phone || "")
+                : (booking.provider_data?.vehicle ? `${booking.provider_data.vehicle} • ${booking.provider_data.plate || ""}` : "")}
             </Text>
           </View>
           <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginLeft: 8 }]} onPress={openChat}>
@@ -344,6 +440,7 @@ export default function TrackingScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Timeline card */}
         <View style={[styles.timelineCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.timelineTitle, { color: colors.foreground }]}>المخطط الزمني للطلب</Text>
 
@@ -378,7 +475,7 @@ export default function TrackingScreen() {
             <View style={{ marginTop: 16 }}>
               <Text style={[styles.logTitle, { color: colors.mutedForeground }]}>سجل التحديثات</Text>
               {logs.map((l, i) => (
-                <View key={l.id} style={styles.tlRow}>
+                <View key={l.id || i} style={styles.tlRow}>
                   <View style={styles.tlLeftCol}>
                     <View style={[styles.tlDot, { backgroundColor: i === logs.length - 1 ? (STATUS_COLOR[l.status] ?? colors.primary) : colors.border }]}>
                       <MaterialCommunityIcons name={(STATUS_ICON[l.status] || "circle") as any} size={11} color="#FFF" />
@@ -395,10 +492,11 @@ export default function TrackingScreen() {
           )}
         </View>
 
+        {/* Rating button for completed bookings */}
         {!isProvider && status === "completed" && (
           <TouchableOpacity
             onPress={() => router.push({ pathname: "/rating", params: { bookingId: booking.id } } as any)}
-            style={[styles.actionBtn, { backgroundColor: colors.primary, marginHorizontal: 16, marginTop: 12 }]}
+            style={[styles.actionBtn, { backgroundColor: "#F59E0B", marginHorizontal: 16, marginTop: 4, marginBottom: 12 }]}
           >
             <MaterialCommunityIcons name="star" size={18} color="#FFF" />
             <Text style={styles.actionT}>تقييم الخدمة</Text>
@@ -412,7 +510,11 @@ export default function TrackingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 0.5, borderBottomColor: "rgba(0,0,0,0.06)" },
+  header: {
+    flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingBottom: 12,
+    borderBottomWidth: 0.5, borderBottomColor: "rgba(0,0,0,0.06)",
+  },
   headerCenter: { alignItems: "center" },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginTop: 1 },
@@ -429,7 +531,7 @@ const styles = StyleSheet.create({
   mapContainer: { height: 220, borderRadius: 20, overflow: "hidden" },
   gpsBtn: { position: "absolute", bottom: 12, left: 12, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   partyCard: { flexDirection: "row-reverse", alignItems: "center", marginHorizontal: 14, padding: 14, borderRadius: 18, marginBottom: 12, gap: 8 },
-  avatar: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
+  avatarBox: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
   pName: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   pSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
   timelineCard: { marginHorizontal: 14, padding: 16, borderRadius: 18, marginBottom: 12 },

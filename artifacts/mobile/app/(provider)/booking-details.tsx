@@ -254,7 +254,7 @@ export default function ProviderBookingDetails() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 140, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 220, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={[stColor, stColor + "DD"]} style={styles.statusHero}>
           <View style={{ flex: 1, alignItems: "flex-end" }}>
             <Text style={styles.statusHeroLabel}>الحالة الحالية</Text>
@@ -348,7 +348,7 @@ export default function ProviderBookingDetails() {
         </View>
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 12 }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom, 20) + 16 }]}>
         {flow ? (
           <>
             <TouchableOpacity onPress={advance} disabled={busy} style={[styles.cta, { backgroundColor: colors.primary }]}>
