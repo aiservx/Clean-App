@@ -397,7 +397,7 @@ export default function TrackingScreen() {
 
         {!isProvider && status === "completed" && (
           <TouchableOpacity
-            onPress={() => router.push({ pathname: "/rating", params: { id: booking.id } } as any)}
+            onPress={() => router.push({ pathname: "/rating", params: { bookingId: booking.id } } as any)}
             style={[styles.actionBtn, { backgroundColor: colors.primary, marginHorizontal: 16, marginTop: 12 }]}
           >
             <MaterialCommunityIcons name="star" size={18} color="#FFF" />
