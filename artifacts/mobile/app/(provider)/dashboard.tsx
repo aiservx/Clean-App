@@ -326,12 +326,7 @@ export default function ProviderHome() {
             <View style={[styles.dot, { backgroundColor: orders.length > 0 ? colors.success : colors.mutedForeground }]} />
             <Text style={[styles.mapBadgeT, { color: colors.foreground }]}>{orders.length} طلبات قريبة</Text>
           </View>
-          {myLoc && (
-            <View style={styles.userPin} pointerEvents="none">
-              <View style={[styles.userPinPulse, { backgroundColor: colors.primary + "33" }]} />
-              <View style={[styles.userPinInner, { backgroundColor: colors.primary }]} />
-            </View>
-          )}
+
           {/* Manual GPS refresh button */}
           <TouchableOpacity
             onPress={async () => {
@@ -462,9 +457,7 @@ const styles = StyleSheet.create({
   mapBadge: { position: "absolute", top: 10, right: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100, flexDirection: "row", alignItems: "center", gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
   mapBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
-  userPin: { position: "absolute", left: "50%", top: "50%", marginLeft: -12, marginTop: -12, alignItems: "center", justifyContent: "center" },
-  userPinPulse: { position: "absolute", width: 36, height: 36, borderRadius: 18 },
-  userPinInner: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#FFF" },
+
   sectionH: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 10 },
   sectionT: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },

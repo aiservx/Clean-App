@@ -186,6 +186,13 @@ export default function HomeScreen() {
     };
   }, []);
 
+  // Polling fallback: refresh provider locations every 10s in case Realtime
+  // is unavailable or silently disconnected.
+  useEffect(() => {
+    const id = setInterval(loadProviders, 10_000);
+    return () => clearInterval(id);
+  }, []);
+
   const requestLocation = async () => {
     setLocating(true);
     const r = await getCurrentResolved();
@@ -253,11 +260,13 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: "#F8FAFC" }]}>
-      {/* FULLSCREEN MAP BACKGROUND (dark color sits behind the map only) */}
+      {/* INTERACTIVE MAP — sits at the top and receives touch events for drag / zoom */}
       <View style={[styles.mapBg, { height: mapHeight, backgroundColor: "#0F172A" }]}>
         <AppMap
           style={StyleSheet.absoluteFill}
           region={region}
+          scrollEnabled={true}
+          zoomEnabled={true}
           markers={nearbyProviders
             .filter((p) => p.current_lat && p.current_lng)
             .map((p) => ({ id: p.id, coordinate: { latitude: p.current_lat!, longitude: p.current_lng! }, color: colors.primary }))}
@@ -275,6 +284,13 @@ export default function HomeScreen() {
           style={[styles.topFade, { height: insets.top + 130 }]}
           pointerEvents="none"
         />
+
+        {/* GPS button — inside the map area */}
+        <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { position: "absolute", bottom: 40, right: 16 }]}>
+          <BlurView intensity={Platform.OS === "ios" ? 70 : 100} tint="light" style={styles.gpsBlur}>
+            {locating ? <ActivityIndicator size="small" color={colors.primary} /> : <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />}
+          </BlurView>
+        </TouchableOpacity>
       </View>
 
       {/* FLOATING HEADER */}
@@ -311,13 +327,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* GPS button — inside the map, not above the scroll sheet */}
-      <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { top: mapHeight - 100, zIndex: 4 }]}>
-        <BlurView intensity={Platform.OS === "ios" ? 70 : 100} tint="light" style={styles.gpsBlur}>
-          {locating ? <ActivityIndicator size="small" color={colors.primary} /> : <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />}
-        </BlurView>
-      </TouchableOpacity>
-
       {/* Nearby provider toast notification */}
       <NearbyProviderToast
         provider={nearbyToast}
@@ -325,11 +334,11 @@ export default function HomeScreen() {
         onPress={() => providerScrollRef.current?.scrollTo({ y: 99999, animated: true })}
       />
 
-      {/* SCROLLABLE SHEET on top */}
+      {/* SCROLLABLE SHEET below the map */}
       <ScrollView
         ref={providerScrollRef}
-        style={StyleSheet.absoluteFill}
-        contentContainerStyle={{ paddingTop: mapHeight - 28, paddingBottom: 120 }}
+        style={{ flex: 1, marginTop: -28 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
         {/* SHEET */}
@@ -524,7 +533,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  mapBg: { position: "absolute", left: 0, right: 0, top: 0 },
+  mapBg: { left: 0, right: 0, top: 0 },
   topFade: { position: "absolute", top: 0, left: 0, right: 0 },
 
   floatHeader: { position: "absolute", left: 0, right: 0, paddingHorizontal: 14, gap: 12, zIndex: 5 },
