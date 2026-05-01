@@ -13,62 +13,95 @@ export type ResolvedAddress = {
 };
 
 export async function ensurePermission(): Promise<boolean> {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  return status === "granted";
+  try {
+    const { status: existing } = await Location.getForegroundPermissionsAsync();
+    if (existing === "granted") return true;
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    return status === "granted";
+  } catch {
+    return false;
+  }
 }
 
-export async function getCurrentResolved(): Promise<ResolvedAddress | null> {
+async function reverseGeocode(latitude: number, longitude: number) {
+  let street: string | null = null;
+  let district: string | null = null;
+  let city: string | null = null;
+  let region: string | null = null;
+  let country: string | null = null;
+
+  if (Platform.OS !== "web") {
+    try {
+      const places = await Location.reverseGeocodeAsync({ latitude, longitude });
+      const p = places[0];
+      if (p) {
+        street = p.street || (p as any).name || null;
+        district = (p as any).district || p.subregion || null;
+        city = p.city || null;
+        region = p.region || null;
+        country = p.country || null;
+      }
+    } catch {}
+  } else {
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=ar`,
+        { headers: { "User-Agent": "NazafahApp/1.0" } }
+      );
+      const j: any = await r.json();
+      const a = j.address || {};
+      street = a.road || a.pedestrian || null;
+      district = a.suburb || a.neighbourhood || a.quarter || null;
+      city = a.city || a.town || a.village || null;
+      region = a.state || null;
+      country = a.country || null;
+    } catch {}
+  }
+
+  return { street, district, city, region, country };
+}
+
+function buildResult(latitude: number, longitude: number, geo: { street: string | null; district: string | null; city: string | null; region: string | null; country: string | null }): ResolvedAddress {
+  const parts = [geo.street, geo.district, geo.city, geo.region].filter(Boolean);
+  return {
+    lat: latitude,
+    lng: longitude,
+    ...geo,
+    formatted: parts.join("، ") || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+  };
+}
+
+export async function getCurrentResolved(
+  onQuickResult?: (r: ResolvedAddress) => void
+): Promise<ResolvedAddress | null> {
   const ok = await ensurePermission();
   if (!ok) return null;
-  try {
-    const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-    const { latitude, longitude } = pos.coords;
-    let street: string | null = null,
-      district: string | null = null,
-      city: string | null = null,
-      region: string | null = null,
-      country: string | null = null;
 
-    if (Platform.OS !== "web") {
-      try {
-        const places = await Location.reverseGeocodeAsync({ latitude, longitude });
-        const p = places[0];
-        if (p) {
-          street = p.street || (p as any).name || null;
-          district = (p as any).district || p.subregion || null;
-          city = p.city || null;
-          region = p.region || null;
-          country = p.country || null;
-        }
-      } catch {}
-    } else {
-      // Web: use OSM Nominatim
-      try {
-        const r = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=ar`
-        );
-        const j: any = await r.json();
-        const a = j.address || {};
-        street = a.road || a.pedestrian || null;
-        district = a.suburb || a.neighbourhood || a.quarter || null;
-        city = a.city || a.town || a.village || null;
-        region = a.state || null;
-        country = a.country || null;
-      } catch {}
+  try {
+    if (onQuickResult) {
+      Location.getLastKnownPositionAsync().then(async (last) => {
+        if (!last) return;
+        const { latitude, longitude } = last.coords;
+        const geo = await reverseGeocode(latitude, longitude);
+        onQuickResult(buildResult(latitude, longitude, geo));
+      }).catch(() => {});
     }
 
-    const parts = [street, district, city, region].filter(Boolean);
-    return {
-      lat: latitude,
-      lng: longitude,
-      street,
-      district,
-      city,
-      region,
-      country,
-      formatted: parts.join("، ") || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-    };
+    const pos = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+    const { latitude, longitude } = pos.coords;
+    const geo = await reverseGeocode(latitude, longitude);
+    return buildResult(latitude, longitude, geo);
   } catch {
+    try {
+      const last = await Location.getLastKnownPositionAsync();
+      if (last) {
+        const { latitude, longitude } = last.coords;
+        const geo = await reverseGeocode(latitude, longitude);
+        return buildResult(latitude, longitude, geo);
+      }
+    } catch {}
     return null;
   }
 }

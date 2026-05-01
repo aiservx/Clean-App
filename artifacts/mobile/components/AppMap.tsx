@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Image, StyleSheet, Platform } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 
 export type LatLng = { latitude: number; longitude: number };
 
@@ -23,7 +23,6 @@ function deltaToZoom(delta: number) {
   return 10;
 }
 
-// Convert lat/lng to fractional tile coords
 function latLngToTile(lat: number, lng: number, zoom: number) {
   const n = Math.pow(2, zoom);
   const x = ((lng + 180) / 360) * n;
@@ -32,14 +31,25 @@ function latLngToTile(lat: number, lng: number, zoom: number) {
   return { x, y };
 }
 
+function tileToLatLng(tx: number, ty: number, zoom: number) {
+  const n = Math.pow(2, zoom);
+  const lng = (tx / n) * 360 - 180;
+  const latRad = Math.atan(Math.sinh(Math.PI * (1 - (2 * ty) / n)));
+  const lat = (latRad * 180) / Math.PI;
+  return { lat, lng };
+}
+
 const TILE_SIZE = 256;
 const c = React.createElement as any;
 
 type WebMapProps = Props;
 
-function WebMap({ region, style, markers, polyline }: WebMapProps) {
+function WebMap({ region, style, markers, polyline, scrollEnabled = true, zoomEnabled = true }: WebMapProps) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [size, setSize] = React.useState<{ w: number; h: number } | null>(null);
+  const [zoom, setZoom] = React.useState(() => deltaToZoom(region.latitudeDelta));
+  const [center, setCenter] = React.useState(() => ({ lat: region.latitude, lng: region.longitude }));
+  const dragState = React.useRef<{ active: boolean; startX: number; startY: number; startLat: number; startLng: number } | null>(null);
 
   React.useEffect(() => {
     const el = containerRef.current;
@@ -54,6 +64,11 @@ function WebMap({ region, style, markers, polyline }: WebMapProps) {
     return () => ro.disconnect();
   }, []);
 
+  React.useEffect(() => {
+    setCenter({ lat: region.latitude, lng: region.longitude });
+    setZoom(deltaToZoom(region.latitudeDelta));
+  }, [region.latitude, region.longitude, region.latitudeDelta]);
+
   const flatten = (s: any): any => {
     if (!s) return {};
     if (Array.isArray(s)) return s.reduce((acc, cur) => ({ ...acc, ...flatten(cur) }), {});
@@ -61,22 +76,15 @@ function WebMap({ region, style, markers, polyline }: WebMapProps) {
   };
   const flatStyle = flatten(style);
 
-  const zoom = deltaToZoom(region.latitudeDelta);
-  const center = latLngToTile(region.latitude, region.longitude, zoom);
-
-  // Determine tile range to cover container size
+  const centerTile = latLngToTile(center.lat, center.lng, zoom);
   const tilesX = size ? Math.ceil(size.w / TILE_SIZE) + 2 : 4;
   const tilesY = size ? Math.ceil(size.h / TILE_SIZE) + 2 : 3;
   const halfX = Math.floor(tilesX / 2);
   const halfY = Math.floor(tilesY / 2);
-
-  const centerTileX = Math.floor(center.x);
-  const centerTileY = Math.floor(center.y);
-
-  // Pixel offset of viewport center from center-tile top-left
-  const offsetXInCenterTile = (center.x - centerTileX) * TILE_SIZE;
-  const offsetYInCenterTile = (center.y - centerTileY) * TILE_SIZE;
-
+  const centerTileX = Math.floor(centerTile.x);
+  const centerTileY = Math.floor(centerTile.y);
+  const offsetXInCenterTile = (centerTile.x - centerTileX) * TILE_SIZE;
+  const offsetYInCenterTile = (centerTile.y - centerTileY) * TILE_SIZE;
   const containerW = size?.w ?? 0;
   const containerH = size?.h ?? 0;
 
@@ -105,6 +113,7 @@ function WebMap({ region, style, markers, polyline }: WebMapProps) {
               height: TILE_SIZE,
               userSelect: "none",
               pointerEvents: "none",
+              draggable: false,
             },
           }),
         );
@@ -112,11 +121,10 @@ function WebMap({ region, style, markers, polyline }: WebMapProps) {
     }
   }
 
-  // Convert lat/lng to pixel position within container
   const llToPixel = (coord: LatLng) => {
     const t = latLngToTile(coord.latitude, coord.longitude, zoom);
-    const px = containerW / 2 + (t.x - center.x) * TILE_SIZE;
-    const py = containerH / 2 + (t.y - center.y) * TILE_SIZE;
+    const px = containerW / 2 + (t.x - centerTile.x) * TILE_SIZE;
+    const py = containerH / 2 + (t.y - centerTile.y) * TILE_SIZE;
     return { px, py };
   };
 
@@ -171,14 +179,61 @@ function WebMap({ region, style, markers, polyline }: WebMapProps) {
     });
   });
 
+  const getClientXY = (e: any) => {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  };
+
+  const onPointerDown = scrollEnabled ? (e: any) => {
+    const { x, y } = getClientXY(e);
+    dragState.current = { active: true, startX: x, startY: y, startLat: center.lat, startLng: center.lng };
+    e.preventDefault?.();
+  } : undefined;
+
+  const onPointerMove = scrollEnabled ? (e: any) => {
+    if (!dragState.current?.active || !size) return;
+    const { x, y } = getClientXY(e);
+    const dx = x - dragState.current.startX;
+    const dy = y - dragState.current.startY;
+    const startTile = latLngToTile(dragState.current.startLat, dragState.current.startLng, zoom);
+    const newTileX = startTile.x - dx / TILE_SIZE;
+    const newTileY = startTile.y - dy / TILE_SIZE;
+    const { lat, lng } = tileToLatLng(newTileX, newTileY, zoom);
+    setCenter({ lat: Math.max(-85, Math.min(85, lat)), lng });
+    e.preventDefault?.();
+  } : undefined;
+
+  const onPointerUp = scrollEnabled ? () => {
+    if (dragState.current) dragState.current.active = false;
+  } : undefined;
+
+  const onWheel = zoomEnabled ? (e: any) => {
+    e.preventDefault?.();
+    setZoom((z) => {
+      const delta = e.deltaY > 0 ? -1 : 1;
+      return Math.max(2, Math.min(19, z + delta));
+    });
+  } : undefined;
+
   return c(
     "div",
     {
       ref: containerRef,
+      onMouseDown: onPointerDown,
+      onMouseMove: onPointerMove,
+      onMouseUp: onPointerUp,
+      onMouseLeave: onPointerUp,
+      onTouchStart: onPointerDown,
+      onTouchMove: onPointerMove,
+      onTouchEnd: onPointerUp,
+      onWheel,
       style: {
         position: "relative",
         overflow: "hidden",
         backgroundColor: "#E8F0F5",
+        cursor: scrollEnabled ? "grab" : "default",
         ...flatStyle,
       },
     },
