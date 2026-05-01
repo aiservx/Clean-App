@@ -325,13 +325,7 @@ export default function BookingScreen() {
                       <Feather name="check" size={12} color="#FFFFFF" />
                     </View>
                   )}
-                  {p.avatar_url ? (
-                    <Image source={{ uri: p.avatar_url }} style={styles.cleanerAvatar} />
-                  ) : (
-                    <View style={[styles.cleanerAvatar, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-                      <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{initials}</Text>
-                    </View>
-                  )}
+                  <Image source={p.avatar_url ? { uri: p.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.cleanerAvatar} />
                   <Text style={[styles.cleanerName, { color: colors.foreground }]} numberOfLines={1}>{p.full_name || "فني"}</Text>
                   <View style={styles.ratingRow}>
                     <Text style={[styles.ratingText, { color: colors.foreground }]}>{p.rating.toFixed(1)}</Text>

@@ -15,6 +15,8 @@ import { useChatBadge } from "@/lib/chatBadge";
 import GuestEmpty from "@/components/GuestEmpty";
 import FloatingTabBar from "@/components/FloatingTabBar";
 
+const AI_AVATAR = require("@/assets/images/ai-avatar-light.png");
+
 type Conversation = {
   room_id: string;
   booking_id: string;
@@ -179,9 +181,7 @@ export default function ChatInboxScreen() {
         >
           <LinearGradient colors={["#7C3AED", "#4F46E5"]} style={s.aiCardBg} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
             <View style={s.aiCardRow}>
-              <View style={s.aiAvatar}>
-                <MaterialCommunityIcons name="robot-happy" size={28} color="#7C3AED" />
-              </View>
+              <Image source={AI_AVATAR} style={s.aiAvatar} />
               <View style={s.aiInfo}>
                 <Text style={s.aiTitle}>{t("ai_chat")} ✨</Text>
                 <Text style={s.aiSub}>{t("ai_chat_sub")}</Text>
@@ -229,13 +229,7 @@ export default function ChatInboxScreen() {
                 } as any)}
               >
                 <View style={s.convRow}>
-                  {conv.other_avatar ? (
-                    <Image source={{ uri: conv.other_avatar }} style={s.convAvatar} />
-                  ) : (
-                    <View style={[s.convAvatar, { backgroundColor: colors.primary + "22", alignItems: "center", justifyContent: "center" }]}>
-                      <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{initials}</Text>
-                    </View>
-                  )}
+                  <Image source={conv.other_avatar ? { uri: conv.other_avatar } : require("@/assets/images/default-avatar.png")} style={s.convAvatar} />
                   <View style={s.convInfo}>
                     <View style={s.convNameRow}>
                       <Text style={[s.convTime, { color: colors.mutedForeground }]}>{fmtTime(conv.last_at)}</Text>
@@ -280,7 +274,7 @@ const s = StyleSheet.create({
   aiCard: { borderRadius: 20, overflow: "hidden", marginBottom: 20, marginTop: 8 },
   aiCardBg: { padding: 18 },
   aiCardRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  aiAvatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center" },
+  aiAvatar: { width: 50, height: 50, borderRadius: 25 },
   aiInfo: { flex: 1 },
   aiTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
   aiSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "rgba(255,255,255,0.85)", marginTop: 2 },

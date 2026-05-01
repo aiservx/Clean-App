@@ -169,15 +169,7 @@ export default function ProviderEdit() {
 
         {/* Avatar */}
         <TouchableOpacity style={s.avW} onPress={pickAvatar} activeOpacity={0.85}>
-          {avatarSrc ? (
-            <Image source={avatarSrc} style={s.av} />
-          ) : (
-            <View style={[s.av, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-              <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 32, color: colors.primary }}>
-                {name.charAt(0) || "م"}
-              </Text>
-            </View>
-          )}
+          <Image source={avatarUri ? { uri: avatarUri } : require("@/assets/images/default-avatar.png")} style={s.av} />
           <View style={[s.camBadge, { backgroundColor: colors.primary }]}>
             <Feather name="camera" size={14} color="#FFF" />
           </View>

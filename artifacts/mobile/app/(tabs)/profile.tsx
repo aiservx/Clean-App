@@ -86,13 +86,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={s.avatarWrap} onPress={() => router.push("/edit-profile")}>
-            {profile?.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={s.avatar} />
-            ) : (
-              <View style={[s.avatar, { backgroundColor: colors.primary + "22", alignItems: "center", justifyContent: "center" }]}>
-                <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 32 }}>{userName.charAt(0)}</Text>
-              </View>
-            )}
+            <Image source={profile?.avatar_url ? { uri: profile.avatar_url } : require("@/assets/images/default-avatar.png")} style={s.avatar} />
             <View style={s.cameraBadge}>
               <Feather name="camera" size={12} color="#FFF" />
             </View>

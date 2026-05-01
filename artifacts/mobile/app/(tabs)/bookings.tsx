@@ -233,13 +233,7 @@ export default function BookingsScreen() {
                           <Text style={[styles.bookingDate, { color: colors.mutedForeground }]} numberOfLines={1}>{item.addr_text}</Text>
                         </View>
                       </View>
-                      {item.provider_avatar ? (
-                        <Image source={{ uri: item.provider_avatar }} style={styles.cleanerAvatar} />
-                      ) : (
-                        <View style={[styles.cleanerAvatar, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-                          <Feather name="user" size={20} color={colors.primary} />
-                        </View>
-                      )}
+                      <Image source={item.provider_avatar ? { uri: item.provider_avatar } : require("@/assets/images/default-avatar.png")} style={styles.cleanerAvatar} />
                     </View>
 
                     <View style={styles.priceWrap}>

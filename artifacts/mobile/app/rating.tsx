@@ -79,13 +79,7 @@ export default function RatingScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 160 }} showsVerticalScrollIndicator={false}>
           {/* Profile Card */}
           <LinearGradient colors={["#EDE9FE", "#F0F4FF"]} style={s.profileCard}>
-            {providerAvatar ? (
-              <Image source={{ uri: providerAvatar }} style={s.avatar} />
-            ) : (
-              <View style={[s.avatar, { backgroundColor: "#7C3AED22", alignItems: "center", justifyContent: "center" }]}>
-                <Text style={{ fontFamily: "Tajawal_700Bold", color: "#7C3AED", fontSize: 28 }}>{(providerName || "م").charAt(0)}</Text>
-              </View>
-            )}
+            <Image source={providerAvatar ? { uri: providerAvatar } : require("@/assets/images/default-avatar.png")} style={s.avatar} />
             <Text style={s.name}>{providerName || "مزود الخدمة"}</Text>
             <Text style={s.role}>مزود خدمة</Text>
           </LinearGradient>
