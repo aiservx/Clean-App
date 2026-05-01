@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
@@ -10,6 +10,7 @@ const BlurView = Platform.OS === "android"
   : ExpoBlurView;
 import { router } from "expo-router";
 import AppMap from "@/components/AppMap";
+import NearbyProviderToast, { type ToastProvider } from "@/components/NearbyProviderToast";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -123,6 +124,10 @@ export default function HomeScreen() {
   const [cats, setCats] = useState<Cat[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [nearbyToast, setNearbyToast] = useState<ToastProvider | null>(null);
+  const knownNearbyIds = useRef<Set<string>>(new Set());
+  const hasInitialLoad = useRef(false);
+  const providerScrollRef = useRef<any>(null);
 
   const loadProviders = async () => {
     try {
@@ -210,6 +215,35 @@ export default function HomeScreen() {
       .sort((a: any, b: any) => (a.d ?? 99) - (b.d ?? 99));
   }, [providers, loc]);
 
+  // Detect new providers entering within 5km and trigger toast notification
+  useEffect(() => {
+    if (!loc) return;
+    const within5km = nearbyProviders.filter((p: any) => p.d != null && p.d <= 5);
+
+    if (!hasInitialLoad.current) {
+      // First load — seed the known set without showing any toast
+      hasInitialLoad.current = true;
+      within5km.forEach((p) => knownNearbyIds.current.add(p.id));
+      return;
+    }
+
+    // Check for providers that just entered 5km radius
+    for (const p of within5km) {
+      if (!knownNearbyIds.current.has(p.id)) {
+        setNearbyToast({
+          id: p.id,
+          name: p.profiles?.full_name || "مزود",
+          distanceKm: (p as any).d,
+        });
+        break; // show one toast at a time
+      }
+    }
+
+    // Update known set
+    const newSet = new Set<string>(within5km.map((p) => p.id));
+    knownNearbyIds.current = newSet;
+  }, [nearbyProviders, loc]);
+
   const requireAuth = (path: string) => {
     if (!session) router.push("/login");
     else router.push(path as any);
@@ -285,8 +319,16 @@ export default function HomeScreen() {
         </BlurView>
       </TouchableOpacity>
 
+      {/* Nearby provider toast notification */}
+      <NearbyProviderToast
+        provider={nearbyToast}
+        onDismiss={() => setNearbyToast(null)}
+        onPress={() => providerScrollRef.current?.scrollTo({ y: 99999, animated: true })}
+      />
+
       {/* SCROLLABLE SHEET on top */}
       <ScrollView
+        ref={providerScrollRef}
         style={StyleSheet.absoluteFill}
         contentContainerStyle={{ paddingTop: mapHeight - 28, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
