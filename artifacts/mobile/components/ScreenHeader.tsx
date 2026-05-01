@@ -55,7 +55,7 @@ export default function ScreenHeader({
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
