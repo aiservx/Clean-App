@@ -3,14 +3,23 @@ import { View, StyleSheet, Platform } from "react-native";
 
 export type LatLng = { latitude: number; longitude: number };
 
+export type MapMarker = {
+  id: string;
+  coordinate: LatLng;
+  color?: string;
+  title?: string;
+  avatarUrl?: string | null;
+};
+
 type Props = {
   region: { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number };
   style?: any;
-  markers?: Array<{ id: string; coordinate: LatLng; color?: string; title?: string }>;
+  markers?: MapMarker[];
   polyline?: { coordinates: LatLng[]; color?: string; width?: number };
   scrollEnabled?: boolean;
   zoomEnabled?: boolean;
   pointerEvents?: any;
+  onMarkerPress?: (id: string) => void;
 };
 
 function deltaToZoom(delta: number) {
@@ -44,7 +53,7 @@ const c = React.createElement as any;
 
 type WebMapProps = Props;
 
-function WebMap({ region, style, markers, polyline, scrollEnabled = true, zoomEnabled = true }: WebMapProps) {
+function WebMap({ region, style, markers, polyline, scrollEnabled = true, zoomEnabled = true, onMarkerPress }: WebMapProps) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [size, setSize] = React.useState<{ w: number; h: number } | null>(null);
   const [zoom, setZoom] = React.useState(() => deltaToZoom(region.latitudeDelta));
@@ -162,21 +171,30 @@ function WebMap({ region, style, markers, polyline, scrollEnabled = true, zoomEn
     if (!size) return null;
     const p = llToPixel(m.coordinate);
     const color = m.color ?? "#3B82F6";
+    const hasAvatar = !!m.avatarUrl;
+    const sz = hasAvatar ? 36 : 18;
+    const half = sz / 2;
     return c("div", {
       key: m.id,
+      onClick: onMarkerPress ? (e: any) => { e.stopPropagation(); onMarkerPress(m.id); } : undefined,
       style: {
         position: "absolute",
-        left: p.px - 9,
-        top: p.py - 9,
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        background: color,
-        border: "3px solid #fff",
+        left: p.px - half,
+        top: p.py - half,
+        width: sz,
+        height: sz,
+        borderRadius: half,
+        background: hasAvatar ? "transparent" : color,
+        border: `3px solid ${color}`,
         boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        pointerEvents: "none",
+        overflow: "hidden",
+        cursor: onMarkerPress ? "pointer" : "default",
+        pointerEvents: onMarkerPress ? "auto" : "none",
       },
-    });
+    }, hasAvatar
+      ? c("img", { src: m.avatarUrl, alt: "", style: { width: "100%", height: "100%", objectFit: "cover", borderRadius: half } })
+      : null,
+    );
   });
 
   const getClientXY = (e: any) => {

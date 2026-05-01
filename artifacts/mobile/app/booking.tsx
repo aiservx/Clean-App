@@ -85,8 +85,9 @@ export default function BookingScreen() {
         const { data } = await supabase
           .from("providers")
           .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, profiles(full_name, avatar_url)")
-          .eq("status", "approved")
           .eq("available", true)
+          .not("current_lat", "is", null)
+          .not("current_lng", "is", null)
           .limit(15);
         if (cancelled) return;
         const mapped: Provider[] = (data ?? []).map((p: any) => {

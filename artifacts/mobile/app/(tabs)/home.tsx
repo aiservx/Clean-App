@@ -125,6 +125,7 @@ export default function HomeScreen() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [nearbyToast, setNearbyToast] = useState<ToastProvider | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const knownNearbyIds = useRef<Set<string>>(new Set());
   const hasInitialLoad = useRef(false);
   const providerScrollRef = useRef<any>(null);
@@ -169,15 +170,18 @@ export default function HomeScreen() {
   }, [session]);
 
   // T021 — Realtime subscription: refetch nearby providers whenever any provider row updates.
-  // Use a unique topic per mount so a lingering channel from a previous mount (e.g. when the tab
-  // is offscreened and reconnected by React) cannot collide and cause `.on()` to be called on an
-  // already-subscribed channel ("cannot add postgres_changes callbacks after subscribe()").
   useEffect(() => {
     let cancelled = false;
     const topic = `home-providers-live-${Math.random().toString(36).slice(2, 10)}`;
     const ch = supabase.channel(topic);
-    ch.on("postgres_changes", { event: "*", schema: "public", table: "providers" }, () => {
-      if (!cancelled) loadProviders();
+    ch.on("postgres_changes", { event: "*", schema: "public", table: "providers" }, (payload: any) => {
+      if (cancelled) return;
+      // Immediately drop providers that went offline or cleared their location
+      const row = payload.new;
+      if (row && (!row.available || row.current_lat == null || row.current_lng == null)) {
+        setProviders((prev) => prev.filter((p) => p.id !== row.id));
+      }
+      loadProviders();
     });
     ch.subscribe();
     return () => {
@@ -186,10 +190,10 @@ export default function HomeScreen() {
     };
   }, []);
 
-  // Polling fallback: refresh provider locations every 10s in case Realtime
+  // Polling fallback: refresh provider locations every 5s in case Realtime
   // is unavailable or silently disconnected.
   useEffect(() => {
-    const id = setInterval(loadProviders, 10_000);
+    const id = setInterval(loadProviders, 5_000);
     return () => clearInterval(id);
   }, []);
 
@@ -269,7 +273,17 @@ export default function HomeScreen() {
           zoomEnabled={true}
           markers={nearbyProviders
             .filter((p) => p.current_lat && p.current_lng)
-            .map((p) => ({ id: p.id, coordinate: { latitude: p.current_lat!, longitude: p.current_lng! }, color: colors.primary }))}
+            .map((p) => ({
+              id: p.id,
+              coordinate: { latitude: p.current_lat!, longitude: p.current_lng! },
+              color: colors.primary,
+              avatarUrl: p.profiles?.avatar_url ?? null,
+              title: p.profiles?.full_name ?? undefined,
+            }))}
+          onMarkerPress={(id) => {
+            const prov = nearbyProviders.find((p) => p.id === id) ?? null;
+            setSelectedProvider(prov);
+          }}
         />
         {/* User location dot */}
         {loc && (
@@ -284,6 +298,62 @@ export default function HomeScreen() {
           style={[styles.topFade, { height: insets.top + 130 }]}
           pointerEvents="none"
         />
+
+        {/* Provider info card — shown when a marker is tapped */}
+        {selectedProvider && (
+          <View style={styles.provInfoCard}>
+            <TouchableOpacity onPress={() => setSelectedProvider(null)} style={styles.provInfoClose} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+              <Feather name="x" size={14} color="#64748B" />
+            </TouchableOpacity>
+            <View style={styles.provInfoRow}>
+              {selectedProvider.profiles?.avatar_url ? (
+                <Image source={{ uri: selectedProvider.profiles.avatar_url }} style={styles.provInfoAvatar} />
+              ) : (
+                <View style={[styles.provInfoAvatar, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>
+                    {(selectedProvider.profiles?.full_name || "؟").charAt(0)}
+                  </Text>
+                </View>
+              )}
+              <View style={{ flex: 1, alignItems: "flex-end" }}>
+                <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
+                  <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
+                  <Text style={styles.provInfoMeta}>{(selectedProvider.rating || 0).toFixed(1)}</Text>
+                  <Text style={styles.provInfoMeta}>•</Text>
+                  <Text style={styles.provInfoMeta}>{selectedProvider.experience_years || 0} سنة</Text>
+                </View>
+                {loc && selectedProvider.current_lat && selectedProvider.current_lng && (() => {
+                  const d = distanceKm({ lat: loc.lat, lng: loc.lng }, { lat: selectedProvider.current_lat, lng: selectedProvider.current_lng });
+                  const eta = Math.max(3, Math.round((d / 25) * 60));
+                  return (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                        <MaterialCommunityIcons name="map-marker-distance" size={12} color={colors.primary} />
+                        <Text style={[styles.provInfoMeta, { color: colors.primary }]}>{d < 1 ? `${Math.round(d * 1000)} م` : `${d.toFixed(1)} كم`}</Text>
+                      </View>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                        <MaterialCommunityIcons name="clock-outline" size={12} color="#8B5CF6" />
+                        <Text style={[styles.provInfoMeta, { color: "#8B5CF6" }]}>~ {eta} دقيقة</Text>
+                      </View>
+                    </View>
+                  );
+                })()}
+              </View>
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                setSelectedProvider(null);
+                router.push({ pathname: "/provider/[id]", params: { id: selectedProvider.id } } as any);
+              }}
+              style={[styles.provInfoBookBtn, { backgroundColor: colors.primary }]}
+            >
+              <Feather name="calendar" size={14} color="#FFF" />
+              <Text style={styles.provInfoBookText}>طلب حجز</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* GPS button — inside the map area */}
         <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { position: "absolute", bottom: 40, right: 16 }]}>
@@ -572,6 +642,37 @@ const styles = StyleSheet.create({
   userLocationDot: { position: "absolute", top: "45%", left: "50%", marginLeft: -12, marginTop: -12, alignItems: "center", justifyContent: "center", width: 24, height: 24 },
   userLocationInner: { width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: "#fff" },
   userLocationPulse: { position: "absolute", width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(22,196,127,0.25)" },
+
+  provInfoCard: {
+    position: "absolute",
+    bottom: 90,
+    left: 12,
+    right: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 14,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 14,
+    elevation: 8,
+    zIndex: 10,
+  },
+  provInfoClose: { position: "absolute", top: 10, left: 10, zIndex: 10 },
+  provInfoRow: { flexDirection: "row-reverse", alignItems: "center", gap: 12 },
+  provInfoAvatar: { width: 52, height: 52, borderRadius: 26 },
+  provInfoName: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#0F172A", textAlign: "right" },
+  provInfoMeta: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "#64748B" },
+  provInfoBookBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+  provInfoBookText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#FFF" },
 
   gpsBtn: { position: "absolute", right: 16, borderRadius: 16, overflow: "hidden", zIndex: 6, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 3 },
   gpsBlur: { width: 46, height: 46, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.92)", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)" },
