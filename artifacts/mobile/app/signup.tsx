@@ -14,18 +14,21 @@ export default function SignupScreen() {
   const { t } = useI18n();
   const { signUp } = useAuth();
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [pwd, setPwd] = useState("");
+  const [gender, setGender] = useState<"male" | "female">("male");
   const [role, setRole] = useState<Role>("user");
   const [busy, setBusy] = useState(false);
 
   const onSubmit = async () => {
-    if (!name || !email || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
+    if (!name || !username || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
     if (pwd.length < 6) return Alert.alert(t("error"), "Password must be at least 6 characters");
+    const loginEmail = username.includes("@") ? username.trim() : `${username.trim()}@clean-app.local`;
     setBusy(true);
     try {
-      const { error } = await signUp({ email: email.trim(), password: pwd, full_name: name, phone, role });
+      const { error } = await signUp({ email: loginEmail, password: pwd, full_name: name, phone, role, username: username.trim(), gender });
       if (error) {
         setBusy(false);
         return Alert.alert(t("error"), error);
@@ -67,10 +70,29 @@ export default function SignupScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Gender selection */}
+        <Text style={[styles.genderLabel, { color: colors.foreground }]}>{t("gender") || "الجنس"}</Text>
+        <View style={styles.genderRow}>
+          <TouchableOpacity
+            onPress={() => setGender("male")}
+            style={[styles.genderBtn, { borderColor: gender === "male" ? colors.primary : colors.border, backgroundColor: gender === "male" ? colors.primaryLight : colors.card }]}
+          >
+            <MaterialCommunityIcons name="gender-male" size={20} color={gender === "male" ? colors.primary : colors.mutedForeground} />
+            <Text style={[styles.genderT, { color: gender === "male" ? colors.primary : colors.foreground }]}>{t("male") || "ذكر"}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setGender("female")}
+            style={[styles.genderBtn, { borderColor: gender === "female" ? "#EC4899" : colors.border, backgroundColor: gender === "female" ? "#FCE7F3" : colors.card }]}
+          >
+            <MaterialCommunityIcons name="gender-female" size={20} color={gender === "female" ? "#EC4899" : colors.mutedForeground} />
+            <Text style={[styles.genderT, { color: gender === "female" ? "#EC4899" : colors.foreground }]}>{t("female") || "أنثى"}</Text>
+          </TouchableOpacity>
+        </View>
+
         {[
           { i: "user", p: t("full_name"), v: name, s: setName, k: "default" as const },
+          { i: "at-sign" as any, p: t("username") || "اسم المستخدم", v: username, s: setUsername, k: "default" as const },
           { i: "phone", p: t("phone"), v: phone, s: setPhone, k: "phone-pad" as const },
-          { i: "mail", p: t("email"), v: email, s: setEmail, k: "email-address" as const },
           { i: "lock", p: t("password"), v: pwd, s: setPwd, k: "default" as const, sec: true },
         ].map((f) => (
           <View key={f.p} style={[styles.field, { backgroundColor: colors.card }]}>
@@ -116,6 +138,10 @@ const styles = StyleSheet.create({
   roleT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   field: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, height: 54, borderRadius: 16, marginBottom: 10, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14 },
+  genderLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginBottom: 8 },
+  genderRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
+  genderBtn: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 16, borderWidth: 1.5 },
+  genderT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   btn: { height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   btnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
 });

@@ -62,6 +62,16 @@ const DICT: Dict = {
   account_type: { ar: "نوع الحساب", en: "Account type" },
   customer: { ar: "عميل", en: "Customer" },
   provider: { ar: "مزود خدمة", en: "Service provider" },
+  username: { ar: "اسم المستخدم", en: "Username" },
+  gender: { ar: "الجنس", en: "Gender" },
+  male: { ar: "ذكر", en: "Male" },
+  female: { ar: "أنثى", en: "Female" },
+  messages: { ar: "الرسائل", en: "Messages" },
+  messages_sub: { ar: "محادثاتك مع مزودي الخدمة", en: "Your conversations with providers" },
+  ai_chat: { ar: "المساعد الذكي", en: "AI Assistant" },
+  ai_chat_sub: { ar: "اسألني أي سؤال عن الخدمات", en: "Ask me anything about services" },
+  no_conversations: { ar: "لا توجد محادثات بعد", en: "No conversations yet" },
+  no_conversations_sub: { ar: "ستظهر محادثاتك مع المزودين هنا بعد إنشاء حجز", en: "Your conversations with providers will appear here after booking" },
 
   // ====== home ======
   hi_user: { ar: "مرحباً", en: "Hello" },

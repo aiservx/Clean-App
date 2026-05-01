@@ -13,16 +13,17 @@ export default function LoginScreen() {
   const colors = useColors();
   const { t } = useI18n();
   const { signIn, signOut } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
   const [busy, setBusy] = useState(false);
 
   const onSubmit = async () => {
-    if (!email || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
+    if (!username || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
+    const loginEmail = username.includes("@") ? username.trim() : `${username.trim()}@clean-app.local`;
     setBusy(true);
 
     try {
-      const res = await signIn(email.trim(), pwd);
+      const res = await signIn(loginEmail, pwd);
 
       if (res.error) {
         setBusy(false);
@@ -64,15 +65,14 @@ export default function LoginScreen() {
         </View>
 
         <View style={[styles.field, { backgroundColor: colors.card }]}>
-          <Feather name="mail" size={18} color={colors.mutedForeground} />
+          <Feather name="at-sign" size={18} color={colors.mutedForeground} />
           <TextInput
             style={[styles.input, { color: colors.foreground }]}
-            placeholder={t("email")}
+            placeholder={t("username") || "اسم المستخدم"}
             placeholderTextColor={colors.mutedForeground}
-            keyboardType="email-address"
             autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
+            value={username}
+            onChangeText={setUsername}
             textAlign="right"
           />
         </View>

@@ -94,13 +94,17 @@ export default function TrackingScreen() {
   useEffect(() => {
     if (!session) return;
     (async () => {
-      const sel = `*, services(title_ar, base_price), addresses(*), provider:profiles!bookings_provider_id_fkey(full_name, phone), client:profiles!bookings_user_id_fkey(full_name, phone), provider_data:providers!bookings_provider_id_fkey(current_lat, current_lng, vehicle, plate, rating)`;
-      let q = supabase.from("bookings").select(sel).order("created_at", { ascending: false }).limit(1);
-      if (params.id) q = supabase.from("bookings").select(sel).eq("id", params.id).limit(1);
-      else q = q.in("status", ["pending", "accepted", "on_the_way", "in_progress"]);
+      const sel = `*, services(title_ar, base_price), addresses(*), provider:profiles!bookings_provider_id_fkey(full_name, phone, avatar_url), client:profiles!bookings_user_id_fkey(full_name, phone, avatar_url), provider_data:providers!bookings_provider_id_fkey(current_lat, current_lng, vehicle, plate, rating)`;
+      let q;
+      if (params.id) {
+        q = supabase.from("bookings").select(sel).eq("id", params.id).limit(1);
+      } else {
+        q = supabase.from("bookings").select(sel).in("status", ["pending", "accepted", "on_the_way", "in_progress"]).order("created_at", { ascending: false }).limit(1);
+      }
       if (isProvider) q = q.eq("provider_id", session.user.id);
       else q = q.eq("user_id", session.user.id);
-      const { data } = await q.maybeSingle();
+      const { data, error } = await q.maybeSingle();
+      if (error) console.log("[v0] tracking query error:", error.message);
       setBooking(data);
       prevStatusRef.current = data?.status ?? null;
       if (data) {
