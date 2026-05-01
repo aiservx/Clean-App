@@ -11,6 +11,7 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { useChatBadge } from "@/lib/chatBadge";
 import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/location";
 import { iconForService, colorForService } from "../../lib/serviceIcons";
 import GuestEmpty from "@/components/GuestEmpty";
@@ -130,7 +131,10 @@ export default function ChatScreen() {
   const { session, profile } = useAuth();
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { markRead } = useChatBadge();
   const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => { markRead(); }, []);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [typing, setTyping] = useState(false);

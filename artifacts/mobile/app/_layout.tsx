@@ -26,6 +26,7 @@ import { BookingProvider } from "@/store/booking";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
+import { ChatBadgeProvider } from "@/lib/chatBadge";
 
 // ── RTL: default to Arabic RTL at module scope ──
 // On first install isRTL is false; we set forceRTL(true) so the *next* launch
@@ -137,9 +138,11 @@ export default function RootLayout() {
               <ThemeProvider>
                 <I18nProvider>
                   <AuthProvider>
-                    <BookingProvider>
-                      <RootLayoutNav />
-                    </BookingProvider>
+                    <ChatBadgeProvider>
+                      <BookingProvider>
+                        <RootLayoutNav />
+                      </BookingProvider>
+                    </ChatBadgeProvider>
                   </AuthProvider>
                 </I18nProvider>
               </ThemeProvider>

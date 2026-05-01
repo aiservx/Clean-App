@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { useChatBadge } from "@/lib/chatBadge";
 
 type Room = {
   id: string;
@@ -39,9 +40,12 @@ export default function ProviderChat() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const { session } = useAuth();
+  const { markRead } = useChatBadge();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => { markRead(); }, []);
 
   const load = useCallback(async () => {
     if (!session?.user) { setLoading(false); return; }
