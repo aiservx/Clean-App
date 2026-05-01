@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, ScrollView, ImageBackground, TouchableOpacity, Platform } from "react-native";
+import React, { useRef, useState, useEffect } from "react";
+import { View, Text, StyleSheet, Dimensions, ScrollView, ImageBackground, TouchableOpacity, Platform, I18nManager } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
@@ -8,6 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useI18n } from "@/lib/i18n";
+import { FlatList } from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -22,7 +23,7 @@ export default function OnboardingScreen() {
   const colors = useColors();
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(0);
-  const scrollRef = useRef<ScrollView>(null);
+  const flatRef = useRef<FlatList>(null);
   const ONBOARDING_DATA = SLIDE_KEYS.map((s) => ({
     id: s.id,
     smallTitle: t(s.small),
@@ -32,14 +33,10 @@ export default function OnboardingScreen() {
     icon: s.icon,
   }));
 
-  const handleScroll = (e: any) => {
-    setActiveIndex(Math.round(e.nativeEvent.contentOffset.x / width));
-  };
-
   const handleNext = () => {
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (activeIndex < ONBOARDING_DATA.length - 1) {
-      scrollRef.current?.scrollTo({ x: (activeIndex + 1) * width, animated: true });
+      flatRef.current?.scrollToIndex({ index: activeIndex + 1, animated: true });
     } else {
       AsyncStorage.setItem("onboarded", "1").then(() => router.replace("/login"));
     }
@@ -61,9 +58,22 @@ export default function OnboardingScreen() {
         </View>
       </View>
 
-      <ScrollView ref={scrollRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16} style={styles.scrollView}>
-        {ONBOARDING_DATA.map((item) => (
-          <View key={item.id} style={styles.slide}>
+      <FlatList
+        ref={flatRef}
+        data={ONBOARDING_DATA}
+        horizontal
+        pagingEnabled
+        inverted={I18nManager.isRTL}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => {
+          const idx = Math.round(e.nativeEvent.contentOffset.x / width);
+          setActiveIndex(idx);
+        }}
+        keyExtractor={(item) => item.id}
+        getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
+        style={styles.scrollView}
+        renderItem={({ item }) => (
+          <View style={styles.slide}>
             <View style={[styles.card, { backgroundColor: colors.card }]}>
               <ImageBackground source={{ uri: item.image }} style={styles.imageArea} imageStyle={styles.imageStyle} resizeMode="cover">
                 <LinearGradient
@@ -101,8 +111,8 @@ export default function OnboardingScreen() {
               </View>
             </View>
           </View>
-        ))}
-      </ScrollView>
+        )}
+      />
     </View>
   );
 }
@@ -124,7 +134,7 @@ const styles = StyleSheet.create({
   titleRow: { alignItems: "flex-end", marginBottom: 16 },
   smallTitle: { fontFamily: "Tajawal_600SemiBold", fontSize: 16, marginBottom: -4 },
   largeTitle: { fontFamily: "Tajawal_700Bold", fontSize: 32 },
-  descriptionRow: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 12 },
+  descriptionRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
   iconCircle: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", marginTop: 4 },
   subtitle: { flex: 1, fontFamily: "Tajawal_400Regular", fontSize: 15, textAlign: "right", lineHeight: 24 },
   pagination: { flex: 1, flexDirection: "row", justifyContent: "center", alignItems: "flex-end", gap: 8, marginBottom: 14 },

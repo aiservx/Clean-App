@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   heroBadge: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
     paddingHorizontal: 9,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   heroCta: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 12,
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
 
   // "عرض الكل" toggle pill
   seeAllChip: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
     paddingHorizontal: 8,
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   featuredCta: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 12,
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
 
   // Stats row
   statsRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     paddingHorizontal: 16,
     gap: 8,
     marginBottom: 22,
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
 
   // Coupons
   couponCard: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "stretch",
     borderRadius: 20,
     padding: 16,
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   },
   couponContent: { flex: 1, alignItems: "flex-end", justifyContent: "center", gap: 6 },
   couponTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
-  couponMetaRow: { flexDirection: "row-reverse", alignItems: "center", gap: 5 },
+  couponMetaRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   couponMeta: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   couponCodeColumn: {
     alignItems: "center",
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
     marginTop: 22,
     borderRadius: 24,
     padding: 16,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     overflow: "hidden",
     minHeight: 130,
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginBottom: 12,
   },
-  inviteActionRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+  inviteActionRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   inviteBtn: {
     backgroundColor: "#F59E0B",
     paddingHorizontal: 22,

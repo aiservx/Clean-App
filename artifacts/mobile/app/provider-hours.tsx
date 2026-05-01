@@ -48,7 +48,7 @@ export default function ProviderHours() {
                   trackColor={{ true: colors.primary, false: "#E5E7EB" }}
                   thumbColor="#FFF"
                 />
-                <View style={{ flex: 1, alignItems: "center", flexDirection: "row-reverse", justifyContent: "center", gap: 8 }}>
+                <View style={{ flex: 1, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 8 }}>
                   {s.active ? (
                     <>
                       <View style={[styles.timeBox, { backgroundColor: colors.muted }]}>
@@ -92,7 +92,7 @@ export default function ProviderHours() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  tipBox: { padding: 12, borderRadius: 12, flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 14 },
+  tipBox: { padding: 12, borderRadius: 12, flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14 },
   tipT: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1, textAlign: "right" },
   dayRow: { padding: 12, borderRadius: 14, flexDirection: "row", alignItems: "center", gap: 10 },
   dayL: { fontFamily: "Tajawal_700Bold", fontSize: 13, width: 70, textAlign: "right" },

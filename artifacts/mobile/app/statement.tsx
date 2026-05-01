@@ -123,7 +123,7 @@ export default function Statement() {
                   </Text>
                   <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 10 }}>
                     <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={1}>{r.title}</Text>
-                    <View style={{ flexDirection: "row-reverse", gap: 6, alignItems: "center", marginTop: 3 }}>
+                    <View style={{ flexDirection: "row", gap: 6, alignItems: "center", marginTop: 3 }}>
                       <View style={[styles.statusPill, { backgroundColor: stBg }]}>
                         <Text style={[styles.statusT, { color: stColor }]}>{r.status}</Text>
                       </View>
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   summary: { padding: 18, borderRadius: 18, marginBottom: 14 },
   sLabel: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "right" },
   sValue: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 30, textAlign: "right", marginTop: 4 },
-  sRow: { flexDirection: "row-reverse", marginTop: 12, gap: 12 },
+  sRow: { flexDirection: "row", marginTop: 12, gap: 12 },
   sCol: { flex: 1 },
   sCL: { color: "rgba(255,255,255,0.7)", fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right" },
   sCV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginTop: 2 },

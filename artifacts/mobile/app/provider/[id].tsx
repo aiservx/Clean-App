@@ -106,13 +106,13 @@ export default function ProviderDetail() {
         </View>
 
         <View style={styles.section}>
-          <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <Text style={[styles.sT, { color: colors.foreground, marginBottom: 0 }]}>التقييمات</Text>
             <TouchableOpacity><Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 12 }}>عرض الكل</Text></TouchableOpacity>
           </View>
           {REVIEWS.map((rv, i) => (
             <View key={i} style={[styles.review, { backgroundColor: colors.card }]}>
-              <View style={{ flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <Text style={[styles.rN, { color: colors.foreground }]}>{rv.n}</Text>
                 <View style={{ flexDirection: "row" }}>
                   {[1, 2, 3, 4, 5].map((s) => (
@@ -149,34 +149,34 @@ export default function ProviderDetail() {
 const styles = StyleSheet.create({
   c: { flex: 1 },
   heroBg: { paddingHorizontal: 16, paddingBottom: 18 },
-  topRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 10 },
+  topRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
   icon: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   heroContent: { alignItems: "center", marginTop: 6 },
   avatar: { width: 110, height: 110, borderRadius: 55, borderWidth: 4, borderColor: "#FFFFFF" },
   verifyBadge: { position: "absolute", bottom: 70, right: "33%", backgroundColor: "#16C47F", borderRadius: 12, padding: 2 },
   n: { fontFamily: "Tajawal_700Bold", fontSize: 20, marginTop: 10 },
   title: { fontFamily: "Tajawal_500Medium", fontSize: 12, marginTop: 2 },
-  statsRow: { flexDirection: "row-reverse", alignItems: "center", gap: 14, marginTop: 12, backgroundColor: "#FFF", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 18 },
+  statsRow: { flexDirection: "row", alignItems: "center", gap: 14, marginTop: 12, backgroundColor: "#FFF", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 18 },
   statBox: { alignItems: "center" },
   statV: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   statL: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 1 },
   statSep: { width: 1, height: 22 },
-  row: { flexDirection: "row-reverse" },
-  actBtn: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", padding: 11, borderRadius: 14, gap: 6 },
+  row: { flexDirection: "row" },
+  actBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", padding: 11, borderRadius: 14, gap: 6 },
   actT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   section: { paddingHorizontal: 16, marginTop: 16 },
   sT: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 8 },
   about: { fontFamily: "Tajawal_400Regular", fontSize: 12, textAlign: "right", lineHeight: 18 },
-  skills: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 6 },
+  skills: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   skill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100 },
   skillT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   review: { padding: 12, borderRadius: 14, marginBottom: 8 },
   rN: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   rT: { fontFamily: "Tajawal_400Regular", fontSize: 11, textAlign: "right", marginTop: 6, lineHeight: 16 },
-  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 10 },
+  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, flexDirection: "row", alignItems: "center", gap: 12, shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 10 },
   priceWrap: { alignItems: "flex-end" },
   priceL: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   priceV: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
-  bookBtn: { flex: 1, height: 50, borderRadius: 16, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
+  bookBtn: { flex: 1, height: 50, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   bookBtnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });

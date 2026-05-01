@@ -332,7 +332,31 @@ export default function ProviderHome() {
               <View style={[styles.userPinInner, { backgroundColor: colors.primary }]} />
             </View>
           )}
+          {/* Manual GPS refresh button */}
+          <TouchableOpacity
+            onPress={async () => {
+              if (!session?.user) return;
+              const loc = await getCurrentResolved();
+              if (loc) {
+                setMyLoc(loc);
+                await supabase.from("providers").update({ current_lat: loc.lat, current_lng: loc.lng }).eq("id", session.user.id);
+                Alert.alert("تم", "تم تحديث موقعك بنجاح");
+              } else {
+                Alert.alert("خطأ", "تعذر الحصول على الموقع — تأكد من تفعيل GPS");
+              }
+            }}
+            style={styles.gpsRefreshBtn}
+          >
+            <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />
+          </TouchableOpacity>
         </View>
+        {/* Location info under map */}
+        {myLoc && (
+          <View style={[styles.locInfo, { backgroundColor: colors.card }]}>
+            <Feather name="map-pin" size={14} color={colors.primary} />
+            <Text style={[styles.locText, { color: colors.foreground }]} numberOfLines={1}>{myLoc.formatted}</Text>
+          </View>
+        )}
 
         <View style={styles.sectionH}>
           <TouchableOpacity onPress={() => router.push("/(provider)/bookings" as any)}>
@@ -426,38 +450,66 @@ const styles = StyleSheet.create({
   greet: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
   name: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   avatar: { width: 40, height: 40, borderRadius: 20 },
-  statusBox: { marginHorizontal: 16, padding: 16, borderRadius: 18, flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
+  statusBox: { marginHorizontal: 16, padding: 16, borderRadius: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
   statusL: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
   statusS: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
-  statsRow: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
+  statsRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
   statC: { flex: 1, padding: 12, borderRadius: 14, alignItems: "center" },
   statI: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   statV: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   statL: { fontFamily: "Tajawal_500Medium", fontSize: 9, marginTop: 1, textAlign: "center" },
   mapWrap: { marginHorizontal: 16, height: 200, borderRadius: 18, overflow: "hidden", marginBottom: 14, position: "relative" },
-  mapBadge: { position: "absolute", top: 10, right: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100, flexDirection: "row-reverse", alignItems: "center", gap: 6 },
+  mapBadge: { position: "absolute", top: 10, right: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100, flexDirection: "row", alignItems: "center", gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
   mapBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   userPin: { position: "absolute", left: "50%", top: "50%", marginLeft: -12, marginTop: -12, alignItems: "center", justifyContent: "center" },
   userPinPulse: { position: "absolute", width: 36, height: 36, borderRadius: 18 },
   userPinInner: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#FFF" },
-  sectionH: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 10 },
+  sectionH: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 10 },
   sectionT: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   order: { padding: 12, borderRadius: 16, gap: 10 },
-  oTop: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" },
+  oTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   oTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  distBadge: { flexDirection: "row-reverse", alignItems: "center", gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100 },
+  distBadge: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100 },
   distT: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
-  infoRow: { flexDirection: "row-reverse", alignItems: "center", gap: 6 },
+  infoRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   oS: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
-  oBot: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginTop: 4 },
+  oBot: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 },
   priceV: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
-  acceptBtn: { flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
+  acceptBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
   acceptT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   rejectBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1 },
   rejectT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   emptyCard: { padding: 32, borderRadius: 16, alignItems: "center", gap: 8 },
   emptyT: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginTop: 8 },
   emptyS: { fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "center" },
+  gpsRefreshBtn: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFF",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  locInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 14,
+    marginTop: -6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  locText: { fontFamily: "Tajawal_500Medium", fontSize: 12, flex: 1 },
 });

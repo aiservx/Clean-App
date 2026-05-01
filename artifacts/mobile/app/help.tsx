@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 
 import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
@@ -29,6 +30,28 @@ export default function Help() {
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="المساعدة والدعم" subtitle="نحن هنا لمساعدتك" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+
+        {/* AI Assistant Card */}
+        <TouchableOpacity activeOpacity={0.92} onPress={() => router.push("/(tabs)/chat")} style={{ marginBottom: 18 }}>
+          <LinearGradient
+            colors={["#7C3AED", "#6D28D9"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.aiCard}
+          >
+            <View style={styles.aiIconWrap}>
+              <MaterialCommunityIcons name="robot-happy-outline" size={32} color="#FFF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.aiTitle}>المساعد الذكي</Text>
+              <Text style={styles.aiSub}>اسأل أي سؤال عن الخدمات والحجوزات والأسعار واحصل على إجابة فورية</Text>
+            </View>
+            <View style={styles.aiArrow}>
+              <Feather name="arrow-left" size={18} color="#FFF" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
         <Text style={[styles.label, { color: colors.foreground }]}>تواصل معنا</Text>
         <View style={styles.grid}>
           {CONTACT.map((co) => (
@@ -46,7 +69,7 @@ export default function Help() {
         <View style={{ gap: 8 }}>
           {FAQ.map((f, i) => (
             <TouchableOpacity key={i} style={[styles.faq, { backgroundColor: colors.card }]} onPress={() => setOpen(open === i ? null : i)}>
-              <View style={{ flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <Text style={[styles.faqQ, { color: colors.foreground, flex: 1, textAlign: "right" }]}>{f.q}</Text>
                 <Feather name={open === i ? "chevron-up" : "chevron-down"} size={18} color={colors.mutedForeground} />
               </View>
@@ -62,7 +85,7 @@ export default function Help() {
 const styles = StyleSheet.create({
   c: { flex: 1 },
   label: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 10 },
-  grid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   cBtn: { width: "48%", padding: 14, borderRadius: 16, alignItems: "center" },
   cIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 8 },
   cT: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2 },
@@ -70,4 +93,34 @@ const styles = StyleSheet.create({
   faq: { padding: 14, borderRadius: 14 },
   faqQ: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   faqA: { fontFamily: "Tajawal_400Regular", fontSize: 12, textAlign: "right", lineHeight: 18, marginTop: 8 },
+  aiCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 18,
+    borderRadius: 20,
+    gap: 14,
+    shadowColor: "#7C3AED",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  aiIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  aiTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF", marginBottom: 4 },
+  aiSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "rgba(255,255,255,0.85)", lineHeight: 18 },
+  aiArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
