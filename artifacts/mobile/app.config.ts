@@ -65,14 +65,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ],
     experiments: {
       typedRoutes: true,
-      // reactCompiler off for Expo Go — it occasionally causes runtime hangs
-      // on the JS bundle on real Android devices.
       reactCompiler: false,
     },
     extra: {
       ...(config.extra ?? {}),
       eas: {
         projectId: "dd03c810-2182-47e7-9a0a-823fdcc351b8",
+      },
+      router: {
+        origin,
+        headOrigin: origin,
       },
     },
     owner: "clean-beaton",
