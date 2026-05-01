@@ -20,16 +20,17 @@ import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 
-// ── RTL: force Arabic RTL synchronously BEFORE first render ──
-// I18nManager.forceRTL persists across launches. On the very first launch
-// isRTL is still false; we call forceRTL(true) and the flag takes effect on
-// the next JS bundle load.  For all subsequent launches isRTL will be true
-// and the entire layout renders right-to-left automatically.
-// IMPORTANT: all flexDirection:"row" will be right-to-left when isRTL is true.
+// ── RTL: default to Arabic RTL at module scope ──
+// On first install isRTL is false; we set forceRTL(true) so the *next* launch
+// renders RTL.  The I18nProvider (i18n.tsx) reconciles this on mount: it reads
+// the stored language from AsyncStorage and calls forceRTL(lang==="ar") — which
+// overwrites whatever we set here.  Because forceRTL only affects the *next*
+// launch and the I18nProvider runs *after* this module-scope code, the provider
+// always has the last word on what gets persisted.
 I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
 
-// Web: I18nManager is a no-op — apply direction via DOM
+// Web: direction is handled by I18nProvider via DOM
 if (typeof document !== "undefined") {
   document.documentElement.dir = "rtl";
   document.documentElement.lang = "ar";
