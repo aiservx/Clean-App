@@ -268,13 +268,7 @@ export default function ProviderHome() {
           <Text style={[styles.greet, { color: colors.mutedForeground }]}>أهلاً 👋</Text>
           <Text style={[styles.name, { color: colors.foreground }]}>{firstName}</Text>
         </View>
-        {profile?.avatar_url ? (
-          <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-            <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{firstName?.charAt(0) || "م"}</Text>
-          </View>
-        )}
+        <Image source={profile?.avatar_url ? { uri: profile.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.avatar} />
       </View>
 
       <ScrollView

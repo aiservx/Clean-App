@@ -92,13 +92,7 @@ export default function ProviderProfile() {
         </View>
 
         <LinearGradient colors={[colors.primary, colors.primaryDark]} style={styles.profileCard}>
-          {profile?.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, { backgroundColor: "rgba(255,255,255,0.25)", alignItems: "center", justifyContent: "center" }]}>
-              <Text style={{ fontFamily: "Tajawal_700Bold", color: "#FFF", fontSize: 32 }}>{firstName.charAt(0)}</Text>
-            </View>
-          )}
+          <Image source={profile?.avatar_url ? { uri: profile.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.avatar} />
           <Text style={styles.name}>{firstName}</Text>
           {profile?.phone && <Text style={styles.phone}>{profile.phone}</Text>}
           <View style={styles.verifyRow}>

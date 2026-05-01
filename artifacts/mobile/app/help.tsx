@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -39,9 +39,7 @@ export default function Help() {
             end={{ x: 1, y: 1 }}
             style={styles.aiCard}
           >
-            <View style={styles.aiIconWrap}>
-              <MaterialCommunityIcons name="robot-happy-outline" size={32} color="#FFF" />
-            </View>
+            <Image source={require("@/assets/images/ai-avatar-light.png")} style={styles.aiIconWrap} />
             <View style={{ flex: 1 }}>
               <Text style={styles.aiTitle}>المساعد الذكي</Text>
               <Text style={styles.aiSub}>اسأل أي سؤال عن الخدمات والحجوزات والأسعار واحصل على إجابة فورية</Text>
@@ -108,10 +106,7 @@ const styles = StyleSheet.create({
   aiIconWrap: {
     width: 56,
     height: 56,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
+    borderRadius: 28,
   },
   aiTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF", marginBottom: 4 },
   aiSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "rgba(255,255,255,0.85)", lineHeight: 18 },

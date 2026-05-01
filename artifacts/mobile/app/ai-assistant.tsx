@@ -1,11 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
-  Animated, Platform, KeyboardAvoidingView, ActivityIndicator, Alert,
+  Animated, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+
+const AI_AVATAR_LIGHT = require("@/assets/images/ai-avatar-light.png");
+const AI_AVATAR_DARK = require("@/assets/images/ai-avatar-dark.png");
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
@@ -674,9 +677,7 @@ export default function ChatScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 6 }}>
             <Feather name="chevron-right" size={22} color="#FFF" />
           </TouchableOpacity>
-          <View style={s.botAvatarHeader}>
-            <MaterialCommunityIcons name="robot-happy" size={24} color="#FFF" />
-          </View>
+          <Image source={AI_AVATAR_LIGHT} style={{ width: 44, height: 44, borderRadius: 22 }} />
           <View style={s.headerInfo}>
             <Text style={s.headerTitle}>المساعد الذكي ✨</Text>
             <Text style={s.headerSub}>متصل الآن • يفهم العربية والإنجليزية</Text>
@@ -697,9 +698,7 @@ export default function ChatScreen() {
             {messages.map((msg) => (
               <View key={msg.id} style={msg.role === "bot" ? s.botMsgWrap : s.userMsgWrap}>
                 {msg.role === "bot" && (
-                  <View style={s.botAvatarSmall}>
-                    <MaterialCommunityIcons name="robot-happy" size={16} color="#7C3AED" />
-                  </View>
+                  <Image source={AI_AVATAR_LIGHT} style={s.botAvatarSmall} />
                 )}
                 <View style={{ flex: 1, maxWidth: "92%" }}>
                   <View style={msg.role === "bot" ? s.botBubble : s.userBubble}>
@@ -718,9 +717,7 @@ export default function ChatScreen() {
 
             {typing && (
               <View style={s.botMsgWrap}>
-                <View style={s.botAvatarSmall}>
-                  <MaterialCommunityIcons name="robot-happy" size={16} color="#7C3AED" />
-                </View>
+                <Image source={AI_AVATAR_LIGHT} style={s.botAvatarSmall} />
                 <View style={s.typingBubble}>
                   <Animated.View style={[s.typingDot, { opacity: typingAnim }]} />
                   <Animated.View style={[s.typingDot, { opacity: typingAnim, marginLeft: 6 }]} />
@@ -784,7 +781,7 @@ const s = StyleSheet.create({
   messagesContent: { padding: 16, paddingBottom: 20, gap: 12 },
   botMsgWrap: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 8 },
   userMsgWrap: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 8 },
-  botAvatarSmall: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#EDE9FE", alignItems: "center", justifyContent: "center", marginTop: 4 },
+  botAvatarSmall: { width: 28, height: 28, borderRadius: 14, marginTop: 4 },
   botBubble: { backgroundColor: "#F1F5F9", borderRadius: 18, borderTopRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 },
   userBubble: { backgroundColor: "#7C3AED", borderRadius: 18, borderTopLeftRadius: 4, paddingHorizontal: 14, paddingVertical: 10, alignSelf: "flex-end" },
   botText: { fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#0F172A", textAlign: "right", lineHeight: 22 },

@@ -6,16 +6,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: "نظافة - Cleaning Services",
+    name: "SERVX - Home Services",
     slug: "mobile",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/icon.png",
+    icon: "./assets/images/icon-light.png",
     scheme: "mobile",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
-      image: "./assets/images/icon.png",
+      image: "./assets/images/icon-light.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
@@ -33,8 +33,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       package: "com.cleanbeaton.nathafa",
       versionCode: 1,
       adaptiveIcon: {
-        foregroundImage: "./assets/images/icon.png",
-        backgroundColor: "#16C47F",
+        foregroundImage: "./assets/images/icon-light.png",
+        backgroundColor: "#7C3AED",
       },
       permissions: [
         "ACCESS_COARSE_LOCATION",
@@ -45,7 +45,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
     },
     web: {
-      favicon: "./assets/images/icon.png",
+      favicon: "./assets/images/icon-light.png",
     },
     plugins: [
       ["expo-router", { origin }],
@@ -60,7 +60,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       [
         "expo-notifications",
-        { icon: "./assets/images/icon.png", color: "#16C47F" },
+        { icon: "./assets/images/icon-light.png", color: "#7C3AED" },
       ],
     ],
     experiments: {

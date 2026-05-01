@@ -136,12 +136,7 @@ export default function BookingDetails() {
         {booking.provider && (
           <View style={[styles.box, { backgroundColor: colors.card }]}>
             <View style={styles.row}>
-              {booking.provider.avatar_url
-                ? <Image source={{ uri: booking.provider.avatar_url }} style={styles.av} />
-                : <View style={[styles.av, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-                    <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 18, color: colors.primary }}>{booking.provider.full_name?.charAt(0) ?? "م"}</Text>
-                  </View>
-              }
+              <Image source={booking.provider.avatar_url ? { uri: booking.provider.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.av} />
               <View style={{ flex: 1, marginHorizontal: 10, alignItems: "flex-end" }}>
                 <Text style={[styles.n, { color: colors.foreground }]}>{booking.provider.full_name ?? "مزود الخدمة"}</Text>
                 <Text style={[styles.s, { color: colors.mutedForeground }]}>مزود خدمة معتمد</Text>

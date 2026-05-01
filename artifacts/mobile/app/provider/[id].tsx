@@ -134,13 +134,7 @@ export default function ProviderDetail() {
           </View>
 
           <View style={styles.heroContent}>
-            {p.avatar_url ? (
-              <Image source={{ uri: p.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-                <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 36 }}>{initials}</Text>
-              </View>
-            )}
+            <Image source={p.avatar_url ? { uri: p.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.avatar} />
             <View style={styles.verifyBadge}>
               <MaterialCommunityIcons name="check-decagram" size={20} color="#FFF" />
             </View>

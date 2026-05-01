@@ -86,13 +86,7 @@ export default function EditProfile() {
       <ScreenHeader title="تعديل الملف الشخصي" subtitle="تحديث بياناتك" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <View style={styles.avatarWrap}>
-          {photo ? (
-            <Image source={{ uri: photo }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, { backgroundColor: colors.primary + "22", alignItems: "center", justifyContent: "center" }]}>
-              <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 32 }}>{(name || "م").charAt(0)}</Text>
-            </View>
-          )}
+          <Image source={photo ? { uri: photo } : require("@/assets/images/default-avatar.png")} style={styles.avatar} />
           <TouchableOpacity style={[styles.cameraBtn, { backgroundColor: colors.primary }]} onPress={pickImage}>
             <Feather name="camera" size={14} color="#FFF" />
           </TouchableOpacity>

@@ -306,15 +306,7 @@ export default function HomeScreen() {
               <Feather name="x" size={14} color="#64748B" />
             </TouchableOpacity>
             <View style={styles.provInfoRow}>
-              {selectedProvider.profiles?.avatar_url ? (
-                <Image source={{ uri: selectedProvider.profiles.avatar_url }} style={styles.provInfoAvatar} />
-              ) : (
-                <View style={[styles.provInfoAvatar, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-                  <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>
-                    {(selectedProvider.profiles?.full_name || "؟").charAt(0)}
-                  </Text>
-                </View>
-              )}
+              <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
               <View style={{ flex: 1, alignItems: "flex-end" }}>
                 <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
@@ -556,7 +548,7 @@ export default function HomeScreen() {
                     onPress={() => router.push({ pathname: "/provider/[id]", params: { id: p.id } } as any)}
                   >
                     <View style={styles.provAvatar}>
-                      <Text style={styles.provInitials}>{initials}</Text>
+                      <Image source={p.profiles?.avatar_url ? { uri: p.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={{ width: 54, height: 54, borderRadius: 27 }} />
                       {p.available && <View style={styles.provDot} />}
                     </View>
                     <Text style={styles.provName} numberOfLines={1}>{p.profiles?.full_name || "فني"}</Text>
