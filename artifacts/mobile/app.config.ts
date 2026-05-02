@@ -7,7 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: "SERVX - Home Services",
+    name: "نظافة",
     slug: "mobile",
     version: "1.0.0",
     orientation: "portrait",
