@@ -30,6 +30,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 import { ChatBadgeProvider } from "@/lib/chatBadge";
 import { NotifBadgeProvider } from "@/lib/notifBadge";
+import { ProviderOrderBadgeProvider } from "@/lib/providerOrderBadge";
 import { registerForPush } from "@/lib/notifications";
 
 function PushRegistrar() {
@@ -175,13 +176,15 @@ export default function RootLayout() {
                 <I18nProvider>
                   <AuthProvider>
                     <PushRegistrar />
-                    <ChatBadgeProvider>
-                      <NotifBadgeProvider>
-                        <BookingProvider>
-                          <RootLayoutNav />
-                        </BookingProvider>
-                      </NotifBadgeProvider>
-                    </ChatBadgeProvider>
+                    <ProviderOrderBadgeProvider>
+                      <ChatBadgeProvider>
+                        <NotifBadgeProvider>
+                          <BookingProvider>
+                            <RootLayoutNav />
+                          </BookingProvider>
+                        </NotifBadgeProvider>
+                      </ChatBadgeProvider>
+                    </ProviderOrderBadgeProvider>
                   </AuthProvider>
                 </I18nProvider>
               </ThemeProvider>

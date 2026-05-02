@@ -7,6 +7,7 @@ import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
 import { useChatBadge } from "@/lib/chatBadge";
+import { useProviderOrderBadge } from "@/lib/providerOrderBadge";
 
 type ActiveKey = "home" | "offers" | "bookings" | "chat" | "profile" | "services" | "wallet" | null;
 
@@ -19,6 +20,7 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { unreadCount } = useChatBadge();
+  const { pendingCount } = useProviderOrderBadge();
 
   const goto = (path: string) => {
     if (Platform.OS !== "web") Haptics.selectionAsync();
@@ -48,7 +50,13 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
       {items.map((it) => {
         const isActive = active === it.key;
         const color = isActive ? colors.primary : colors.mutedForeground;
-        const showBadge = it.key === "chat" && unreadCount > 0 && !isActive;
+
+        const showChatBadge = it.key === "chat" && unreadCount > 0 && !isActive;
+        const showOrderBadge =
+          it.key === "bookings" && variant === "provider" && pendingCount > 0 && !isActive;
+        const badgeNum = showChatBadge ? unreadCount : showOrderBadge ? pendingCount : 0;
+        const showBadge = showChatBadge || showOrderBadge;
+
         return (
           <TouchableOpacity key={it.key} style={s.tab} onPress={() => goto(it.path)} activeOpacity={0.7}>
             <View style={[s.iconWrap, isActive && { backgroundColor: colors.primary + "14" }]}>
@@ -60,7 +68,7 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
               {showBadge && (
                 <View style={[s.badge, { backgroundColor: colors.destructive ?? "#EF4444" }]}>
                   <Text style={s.badgeText}>
-                    {unreadCount > 99 ? "99+" : String(unreadCount)}
+                    {badgeNum > 99 ? "99+" : String(badgeNum)}
                   </Text>
                 </View>
               )}
