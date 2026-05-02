@@ -2,7 +2,8 @@ import type { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const replitDomain = process.env.REPLIT_DEV_DOMAIN;
-  const origin = replitDomain ? `https://${replitDomain}` : "https://replit.com/";
+  // Replit proxies port 18115 as :3002 externally, so we must allow both
+  const origin = replitDomain ? `https://${replitDomain}:3002` : "https://replit.com/";
 
   return {
     ...config,
@@ -78,5 +79,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     },
     owner: "clean-beaton",
+    _replit: {
+      allowedOrigins: replitDomain
+        ? [
+            `https://${replitDomain}`,
+            `https://${replitDomain}:3002`,
+            `https://${replitDomain}:3003`,
+          ]
+        : [],
+    },
   };
 };
