@@ -3,7 +3,7 @@ import {
   Tajawal_500Medium,
   Tajawal_700Bold,
 } from "@expo-google-fonts/tajawal";
-import { useFonts } from "expo-font";
+import { useFonts, loadAsync as loadFontAsync } from "expo-font";
 import { Feather, MaterialCommunityIcons, Ionicons, MaterialIcons, FontAwesome, FontAwesome5, AntDesign, Entypo } from "@expo/vector-icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, router } from "expo-router";
@@ -159,19 +159,23 @@ export default function RootLayout() {
     Tajawal_500Medium,
     Tajawal_700Bold,
     Tajawal_600SemiBold: Tajawal_500Medium,
-    // Explicitly load icon fonts so Expo Go on real devices renders glyphs (not squares)
-    ...Feather.font,
-    ...MaterialCommunityIcons.font,
-    ...Ionicons.font,
-    ...MaterialIcons.font,
-    ...FontAwesome.font,
-    ...FontAwesome5.font,
-    ...AntDesign.font,
-    ...Entypo.font,
   });
 
-  // Force-render after 3.5s even if fonts are still pending so the app doesn't hang
-  // on Expo Go. Icon glyphs may briefly show as boxes but will swap in once loaded.
+  // Load icon fonts separately and non-blocking so they never delay the splash
+  // or cause squares on Expo Go. Expo Go pre-bundles these; this is a safety net.
+  useEffect(() => {
+    loadFontAsync({
+      ...Feather.font,
+      ...MaterialCommunityIcons.font,
+      ...Ionicons.font,
+      ...MaterialIcons.font,
+      ...FontAwesome.font,
+      ...FontAwesome5.font,
+      ...AntDesign.font,
+      ...Entypo.font,
+    }).catch(() => {});
+  }, []);
+
   const [forceReady, setForceReady] = React.useState(false);
   useEffect(() => {
     const t = setTimeout(() => setForceReady(true), 3500);

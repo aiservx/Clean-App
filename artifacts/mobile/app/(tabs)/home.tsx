@@ -15,7 +15,6 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { getCurrentResolved, distanceKm, type ResolvedAddress } from "@/lib/location";
-import { registerForPush } from "@/lib/notifications";
 import { useNotifBadge } from "@/lib/notifBadge";
 import { FALLBACK_CATEGORIES } from "@/lib/serviceImages";
 import { useI18n } from "@/lib/i18n";
@@ -161,13 +160,6 @@ export default function HomeScreen() {
       }
       await loadProviders();
       requestLocation();
-      if (session?.user) {
-        try {
-          await registerForPush(session.user.id);
-        } catch (e) {
-          console.log("[v0] Push registration failed:", (e as Error).message);
-        }
-      }
     })();
   }, [session]);
 

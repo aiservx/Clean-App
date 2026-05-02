@@ -440,54 +440,76 @@ export default function TrackingScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Timeline card */}
+        {/* Unified Vertical Timeline */}
         <View style={[styles.timelineCard, { backgroundColor: colors.card }]}>
-          <Text style={[styles.timelineTitle, { color: colors.foreground }]}>المخطط الزمني للطلب</Text>
-
-          <View style={styles.stepsRow}>
-            {STEPS.map((step, i) => {
-              const done = stepIndex >= i;
-              const isCurrent = stepIndex === i && !isTerminal;
-              const sc = STATUS_COLOR[step] ?? colors.primary;
-              return (
-                <React.Fragment key={step}>
-                  <View style={styles.stepCol}>
-                    {isCurrent ? (
-                      <PulseDot color={sc} />
-                    ) : (
-                      <View style={[styles.stepDot, { backgroundColor: done ? sc : colors.muted }]}>
-                        {done && <Feather name="check" size={10} color="#FFF" />}
-                      </View>
-                    )}
-                    <Text style={[styles.stepLabel, { color: done ? sc : colors.mutedForeground }]} numberOfLines={2}>
-                      {STATUS_AR[step]}
-                    </Text>
-                  </View>
-                  {i < STEPS.length - 1 && (
-                    <View style={[styles.stepLine, { backgroundColor: stepIndex > i ? STATUS_COLOR[step] : colors.border }]} />
-                  )}
-                </React.Fragment>
-              );
-            })}
+          <View style={{ flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <Text style={[styles.timelineTitle, { color: colors.foreground, marginBottom: 0 }]}>المخطط الزمني</Text>
+            {isTerminal && (
+              <View style={[styles.termBadge, { backgroundColor: (statusColor + "20") }]}>
+                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 10, color: statusColor }}>{STATUS_AR[status]}</Text>
+              </View>
+            )}
           </View>
 
-          {logs.length > 0 && (
-            <View style={{ marginTop: 16 }}>
-              <Text style={[styles.logTitle, { color: colors.mutedForeground }]}>سجل التحديثات</Text>
-              {logs.map((l, i) => (
-                <View key={l.id || i} style={styles.tlRow}>
-                  <View style={styles.tlLeftCol}>
-                    <View style={[styles.tlDot, { backgroundColor: i === logs.length - 1 ? (STATUS_COLOR[l.status] ?? colors.primary) : colors.border }]}>
-                      <MaterialCommunityIcons name={(STATUS_ICON[l.status] || "circle") as any} size={11} color="#FFF" />
+          {STEPS.map((step, i) => {
+            const done = stepIndex >= i;
+            const isCurrent = stepIndex === i && !isTerminal;
+            const sc = STATUS_COLOR[step] ?? colors.primary;
+            const logEntry = logs.find((l) => l.status === step);
+            const isLast = i === STEPS.length - 1;
+            return (
+              <View key={step} style={styles.vtRow}>
+                {/* Left: connector line */}
+                <View style={{ alignItems: "center", width: 32 }}>
+                  {isCurrent ? (
+                    <PulseDot color={sc} />
+                  ) : (
+                    <View style={[
+                      styles.vtDot,
+                      { backgroundColor: done ? sc : colors.muted, borderColor: done ? sc : colors.border }
+                    ]}>
+                      {done && <Feather name="check" size={11} color="#FFF" />}
                     </View>
-                    {i < logs.length - 1 && <View style={[styles.tlLine, { backgroundColor: colors.border }]} />}
-                  </View>
-                  <View style={{ flex: 1, paddingBottom: 12 }}>
-                    <Text style={[styles.tlStatus, { color: STATUS_COLOR[l.status] ?? colors.foreground }]}>{STATUS_AR[l.status] ?? l.status}</Text>
-                    <Text style={[styles.tlTime, { color: colors.mutedForeground }]}>{new Date(l.created_at).toLocaleString("ar-SA")}</Text>
-                  </View>
+                  )}
+                  {!isLast && (
+                    <View style={[styles.vtConnector, { backgroundColor: done && stepIndex > i ? sc : colors.border }]} />
+                  )}
                 </View>
-              ))}
+                {/* Right: content */}
+                <View style={[styles.vtContent, !isLast && { paddingBottom: 20 }]}>
+                  <Text style={[styles.vtLabel, { color: done ? (isCurrent ? sc : colors.foreground) : colors.mutedForeground }]}>
+                    {STATUS_AR[step]}
+                  </Text>
+                  {logEntry ? (
+                    <Text style={[styles.vtTime, { color: colors.mutedForeground }]}>
+                      {new Date(logEntry.created_at).toLocaleString("ar-SA", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
+                    </Text>
+                  ) : isCurrent ? (
+                    <Text style={[styles.vtTime, { color: sc }]}>الآن</Text>
+                  ) : !done ? (
+                    <Text style={[styles.vtTime, { color: colors.border }]}>قيد الانتظار</Text>
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
+
+          {/* Cancelled / rejected state */}
+          {(status === "cancelled" || status === "rejected") && (
+            <View style={styles.vtRow}>
+              <View style={{ alignItems: "center", width: 32 }}>
+                <View style={[styles.vtDot, { backgroundColor: STATUS_COLOR[status], borderColor: STATUS_COLOR[status] }]}>
+                  <MaterialCommunityIcons name={status === "cancelled" ? "close" : "alert" as any} size={11} color="#FFF" />
+                </View>
+              </View>
+              <View style={styles.vtContent}>
+                <Text style={[styles.vtLabel, { color: STATUS_COLOR[status] }]}>{STATUS_AR[status]}</Text>
+                {logs.find((l) => l.status === status) && (
+                  <Text style={[styles.vtTime, { color: colors.mutedForeground }]}>
+                    {new Date(logs.find((l) => l.status === status)!.created_at).toLocaleString("ar-SA", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
+                  </Text>
+                )}
+              </View>
             </View>
           )}
         </View>
@@ -536,18 +558,13 @@ const styles = StyleSheet.create({
   pSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
   timelineCard: { marginHorizontal: 14, padding: 16, borderRadius: 18, marginBottom: 12 },
   timelineTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, textAlign: "right", marginBottom: 16 },
-  stepsRow: { flexDirection: "row-reverse", alignItems: "flex-start" },
-  stepCol: { alignItems: "center", flex: 1 },
-  stepDot: { width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  stepLabel: { fontFamily: "Tajawal_500Medium", fontSize: 9, marginTop: 5, textAlign: "center" },
-  stepLine: { flex: 1, height: 2, marginTop: 11 },
-  logTitle: { fontFamily: "Tajawal_700Bold", fontSize: 11, textAlign: "right", marginBottom: 10 },
-  tlRow: { flexDirection: "row-reverse", gap: 10 },
-  tlLeftCol: { alignItems: "center", width: 22 },
-  tlDot: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
-  tlLine: { width: 2, flex: 1, marginTop: 2 },
-  tlStatus: { fontFamily: "Tajawal_700Bold", fontSize: 12, textAlign: "right" },
-  tlTime: { fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right", marginTop: 1 },
+  termBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  vtRow: { flexDirection: "row-reverse", gap: 12 },
+  vtDot: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 2 },
+  vtConnector: { width: 2, flex: 1, minHeight: 16, marginTop: 2, borderRadius: 1 },
+  vtContent: { flex: 1, paddingTop: 2 },
+  vtLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
+  vtTime: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "right", marginTop: 2 },
   actionBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   actionT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });
