@@ -11,6 +11,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/location";
+import { useRealtimeEvents } from "@/lib/realtimeStore";
 
 type NearbyOrder = {
   id: string;
@@ -127,15 +128,18 @@ export default function ProviderHome() {
 
   useEffect(() => {
     loadAll();
-    const topic = `provider-pending-bookings-${Math.random().toString(36).slice(2, 8)}`;
-    const ch = supabase
-      .channel(topic)
-      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => loadAll())
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
   }, [loadAll]);
+
+  // ── Live refresh via global event dispatcher (no extra channel needed) ──
+  useRealtimeEvents(
+    (event) => {
+      if (event.type === "provider_order_updated" || event.type === "new_booking") {
+        console.log("[provider-dashboard] realtime event:", event.type, (event as any).bookingId);
+        loadAll();
+      }
+    },
+    [loadAll],
+  );
 
   // T020 — Live location broadcast every 5s while provider is online.
   // Customer map + tracking page subscribe via Supabase Realtime to providers table.

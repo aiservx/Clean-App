@@ -357,18 +357,77 @@ export default function TrackingScreen() {
   }, [isProvider, booking?.id, booking?.status, session?.user?.id]);
 
   const dest = useMemo(() => {
-    if (booking?.addresses?.lat && booking?.addresses?.lng) return { lat: booking.addresses.lat, lng: booking.addresses.lng };
+    if (booking?.addresses?.lat && booking?.addresses?.lng)
+      return { lat: booking.addresses.lat, lng: booking.addresses.lng };
     if (myLoc) return { lat: myLoc.lat, lng: myLoc.lng };
     return null;
   }, [booking, myLoc]);
 
-  const dKm = useMemo(() => (providerLoc && dest ? distanceKm(providerLoc, dest) : null), [providerLoc, dest]);
+  // Live distance from provider to customer destination
+  const dKm = useMemo(
+    () => (providerLoc && dest ? distanceKm(providerLoc, dest) : null),
+    [providerLoc, dest],
+  );
+
+  // ETA: 25 km/h average urban speed in Saudi Arabia
   const eta = dKm != null ? Math.max(3, Math.round((dKm / 25) * 60)) : null;
 
+  // Format distance for display
+  const dStr = useMemo(() => {
+    if (dKm == null) return null;
+    return dKm < 1 ? `${Math.round(dKm * 1000)} م` : `${dKm.toFixed(1)} كم`;
+  }, [dKm]);
+
+  // Map region: fit both provider and destination
   const region = useMemo(() => {
+    if (providerLoc && dest) {
+      const midLat = (providerLoc.lat + dest.lat) / 2;
+      const midLng = (providerLoc.lng + dest.lng) / 2;
+      const latDelta = Math.max(0.03, Math.abs(providerLoc.lat - dest.lat) * 1.6);
+      const lngDelta = Math.max(0.03, Math.abs(providerLoc.lng - dest.lng) * 1.6);
+      return { latitude: midLat, longitude: midLng, latitudeDelta: latDelta, longitudeDelta: lngDelta };
+    }
     const c = providerLoc || dest || myLoc || { lat: 24.7136, lng: 46.6753 };
     return { latitude: (c as any).lat, longitude: (c as any).lng, latitudeDelta: 0.04, longitudeDelta: 0.04 };
   }, [providerLoc, dest, myLoc]);
+
+  // Map markers: animated provider + static customer destination
+  const mapMarkers = useMemo(() => {
+    const markers: any[] = [];
+    if (providerLoc) {
+      markers.push({
+        id: "provider",
+        coordinate: { latitude: providerLoc.lat, longitude: providerLoc.lng },
+        color: "#10B981",
+        title: "موقع المزود",
+        avatarUrl: booking?.provider?.avatar_url ?? null,
+        animated: true,
+      });
+    }
+    if (dest) {
+      markers.push({
+        id: "destination",
+        coordinate: { latitude: dest.lat, longitude: dest.lng },
+        color: "#3B82F6",
+        title: "موقعك",
+        animated: false,
+      });
+    }
+    return markers;
+  }, [providerLoc, dest, booking?.provider?.avatar_url]);
+
+  // Route polyline between provider and destination
+  const polyline = useMemo(() => {
+    if (!providerLoc || !dest) return undefined;
+    return {
+      coordinates: [
+        { latitude: providerLoc.lat, longitude: providerLoc.lng },
+        { latitude: dest.lat, longitude: dest.lng },
+      ],
+      color: "#10B981",
+      width: 4,
+    };
+  }, [providerLoc, dest]);
 
   const callOtherParty = () => {
     try {
@@ -448,9 +507,7 @@ export default function TrackingScreen() {
   const otherParty = isProvider ? booking.client : booking.provider;
   const otherInitials = (otherParty?.full_name || "؟").trim().split(" ").map((s: string) => s[0]).slice(0, 2).join("");
 
-  const markers: any[] = [];
-  if (providerLoc) markers.push({ id: "p", coordinate: { latitude: providerLoc.lat, longitude: providerLoc.lng }, color: colors.primary });
-  if (dest) markers.push({ id: "d", coordinate: { latitude: dest.lat, longitude: dest.lng }, color: "#EF4444" });
+  // mapMarkers and polyline are computed above via useMemo (animated provider + static dest)
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -506,7 +563,7 @@ export default function TrackingScreen() {
           <View style={[styles.etaHalf, { backgroundColor: colors.accentLight }]}>
             <MaterialCommunityIcons name="map-marker-distance" size={18} color={colors.accent} />
             <Text style={[styles.etaSmall, { color: colors.accent }]}>المسافة</Text>
-            <Text style={[styles.etaLarge, { color: colors.accent }]}>{dKm != null ? `${dKm.toFixed(1)} كم` : "—"}</Text>
+            <Text style={[styles.etaLarge, { color: colors.accent }]}>{dStr ?? "—"}</Text>
           </View>
           <View style={[styles.etaHalf, { backgroundColor: colors.successLight }]}>
             <MaterialCommunityIcons name="clock-fast" size={18} color={colors.success} />
@@ -520,16 +577,14 @@ export default function TrackingScreen() {
           </View>
         </View>
 
-        {/* Map */}
+        {/* Map — uses animated provider marker + polyline route */}
         <View style={styles.mapSection}>
           <View style={styles.mapContainer}>
             <AppMap
               style={StyleSheet.absoluteFill}
               region={region}
-              markers={markers}
-              polyline={providerLoc && dest
-                ? { coordinates: [{ latitude: providerLoc.lat, longitude: providerLoc.lng }, { latitude: dest.lat, longitude: dest.lng }], color: statusColor, width: 4 }
-                : undefined}
+              markers={mapMarkers}
+              polyline={polyline}
             />
             {isProvider && (
               <TouchableOpacity

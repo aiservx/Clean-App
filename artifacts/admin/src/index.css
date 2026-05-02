@@ -1,15 +1,100 @@
 @import "tailwindcss";
 
+/* ── Design tokens matching mobile app ────────────────────────────────────── */
+:root {
+  --color-primary: #16C47F;
+  --color-primary-dark: #0FA868;
+  --color-primary-light: #DCFCE7;
+  --color-accent: #2F80ED;
+  --color-accent-light: #EFF6FF;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-success: #22C55E;
+  --color-purple: #8B5CF6;
+
+  /* Status chip colors — match mobile STATUS_COLOR */
+  --status-pending:     #F59E0B;
+  --status-accepted:    #3B82F6;
+  --status-on_the_way:  #8B5CF6;
+  --status-in_progress: #2F80ED;
+  --status-completed:   #16C47F;
+  --status-cancelled:   #EF4444;
+  --status-rejected:    #EF4444;
+
+  /* Shadows matching mobile card elevation */
+  --shadow-card: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-modal: 0 8px 40px rgba(0,0,0,0.14);
+
+  /* Spacing */
+  --radius-card: 16px;
+  --radius-chip: 100px;
+}
+
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; padding: 0; }
+
 body {
   font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
   background: #F6F8FB;
-  color: #0F1B2D;
+  color: #0F172A;
   direction: rtl;
+  -webkit-font-smoothing: antialiased;
 }
-button { font-family: inherit; }
-input, textarea, select { font-family: inherit; }
 
+button, input, textarea, select { font-family: inherit; }
+
+/* ── Status chips — unified with mobile ────────────────────────────────────── */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-chip);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status-chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status-pending     { color: var(--status-pending);     background: #FEF3C7; }
+.status-accepted    { color: var(--status-accepted);    background: #EFF6FF; }
+.status-on_the_way  { color: var(--status-on_the_way);  background: #F5F3FF; }
+.status-in_progress { color: var(--status-in_progress); background: #EFF6FF; }
+.status-completed   { color: var(--status-completed);   background: #DCFCE7; }
+.status-cancelled   { color: var(--status-cancelled);   background: #FEE2E2; }
+.status-rejected    { color: var(--status-rejected);    background: #FEE2E2; }
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+.nazafa-card {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
 .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
 .scroll-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+.scroll-thin::-webkit-scrollbar-track { background: transparent; }
+
+/* ── RTL table ────────────────────────────────────────────────────────────── */
+table { direction: rtl; }
+th, td { text-align: right; }
+
+/* ── Realtime pulse dot ────────────────────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.live-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}

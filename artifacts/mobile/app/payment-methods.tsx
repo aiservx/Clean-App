@@ -12,8 +12,8 @@ const CARDS = [
 ];
 
 const OTHER = [
-  { id: "apple", t: "Apple Pay", i: "apple" as const, c: "#000" },
-  { id: "stc", t: "STC Pay", i: "wallet" as const, c: "#4F008C" },
+  { id: "apple", t: "Apple Pay", i: null as null, c: "#000" },
+  { id: "stc", t: "STC Pay", i: "smartphone" as const, c: "#4F008C" },
   { id: "mada", t: "مدى", i: "credit-card" as const, c: "#16C47F" },
 ];
 
@@ -60,7 +60,7 @@ export default function PaymentMethods() {
               <Feather name="chevron-left" size={18} color={colors.mutedForeground} />
               <Text style={[styles.rowT, { color: colors.foreground, flex: 1, textAlign: "right", marginHorizontal: 12 }]}>{o.t}</Text>
               <View style={[styles.icon, { backgroundColor: o.c + "22" }]}>
-                {o.id === "apple" ? <FontAwesome name="apple" size={18} color={o.c} /> : <Feather name={o.i} size={18} color={o.c} />}
+                {o.id === "apple" ? <FontAwesome name="apple" size={18} color={o.c} /> : <Feather name={o.i as any} size={18} color={o.c} />}
               </View>
             </TouchableOpacity>
           ))}

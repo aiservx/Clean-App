@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactNode } from "react";
-import { Card, PageHeader } from "./Layout";
+import { Card, PageHeader, StatusChip } from "./Layout";
 import { supabase } from "@/lib/supabase";
 
 export type Field = {
@@ -45,7 +45,7 @@ export function CRUDPage({
 
   async function load() {
     setLoading(true);
-    let q = supabase.from(table).select(selectQuery ?? "*").order(orderBy, { ascending });
+    const q = supabase.from(table).select(selectQuery ?? "*").order(orderBy, { ascending });
     const { data, error } = await q;
     if (error) setErr(error.message);
     else setRows(data ?? []);
@@ -101,52 +101,85 @@ export function CRUDPage({
       )
     : rows;
 
+  const inputCls =
+    "w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 outline-none text-sm"
+  ;
+  const focusColor = "focus:ring-green-400";
+
   return (
-    <div className="p-8">
+    <div className="p-6">
       <PageHeader
         title={title}
         subtitle={subtitle}
         action={
-          <button onClick={startNew} className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-sm hover:opacity-90">
+          <button
+            onClick={startNew}
+            className="px-5 py-2.5 rounded-xl text-white font-bold text-sm transition-opacity hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #16C47F, #0FA868)", fontFamily: "Tajawal, sans-serif" }}
+          >
             + إضافة جديد
           </button>
         }
       />
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
+
+      <Card className="overflow-hidden p-0">
+        {/* Search bar */}
+        <div className="flex items-center justify-between p-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="بحث..."
-            className="w-72 px-4 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+            className={`w-72 px-4 py-2 rounded-xl border border-gray-200 text-sm outline-none ${focusColor} focus:ring-2`}
+            style={{ fontFamily: "Tajawal, sans-serif" }}
           />
-          <span className="text-xs text-gray-500">{filtered.length} عنصر</span>
+          <span style={{ fontSize: 12, color: "#94A3B8" }}>{filtered.length} عنصر</span>
         </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full" style={{ fontSize: 13 }}>
             <thead>
-              <tr className="text-right text-xs text-gray-500 border-b border-gray-100">
+              <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                 {visibleFields.map((f) => (
-                  <th key={f.key} className="py-3 px-2 font-medium">{f.label}</th>
+                  <th key={f.key} className="py-3 px-4 font-bold" style={{ color: "#94A3B8", fontSize: 11, fontFamily: "Tajawal, sans-serif" }}>
+                    {f.label}
+                  </th>
                 ))}
-                <th className="py-3 px-2 w-24">الإجراءات</th>
+                <th className="py-3 px-4 font-bold w-28" style={{ color: "#94A3B8", fontSize: 11 }}>الإجراءات</th>
               </tr>
             </thead>
             <tbody>
-              {loading && <tr><td colSpan={99} className="py-10 text-center text-gray-400">جاري التحميل…</td></tr>}
+              {loading && (
+                <tr><td colSpan={99} className="py-12 text-center" style={{ color: "#94A3B8" }}>جاري التحميل…</td></tr>
+              )}
               {!loading && filtered.length === 0 && (
-                <tr><td colSpan={99} className="py-10 text-center text-gray-400">لا توجد بيانات</td></tr>
+                <tr><td colSpan={99} className="py-12 text-center" style={{ color: "#94A3B8" }}>لا توجد بيانات</td></tr>
               )}
               {filtered.map((r) => (
-                <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50">
+                <tr key={r.id} className="hover:bg-gray-50 transition-colors" style={{ borderBottom: "1px solid rgba(0,0,0,0.04)" }}>
                   {visibleFields.map((f) => (
-                    <td key={f.key} className="py-3 px-2">
-                      {f.format ? f.format(r[f.key], r) : renderCell(r[f.key], f)}
+                    <td key={f.key} className="py-3 px-4">
+                      {f.key === "status"
+                        ? <StatusChip status={r[f.key]} />
+                        : f.format
+                        ? f.format(r[f.key], r)
+                        : renderCell(r[f.key], f)}
                     </td>
                   ))}
-                  <td className="py-3 px-2">
-                    <button onClick={() => startEdit(r)} className="text-emerald-600 hover:text-emerald-700 text-sm ml-2">تعديل</button>
-                    <button onClick={() => remove(r)} className="text-red-600 hover:text-red-700 text-sm">حذف</button>
+                  <td className="py-3 px-4">
+                    <button
+                      onClick={() => startEdit(r)}
+                      className="text-sm font-bold ml-3 transition-opacity hover:opacity-70"
+                      style={{ color: "var(--color-primary)", fontFamily: "Tajawal, sans-serif" }}
+                    >
+                      تعديل
+                    </button>
+                    <button
+                      onClick={() => remove(r)}
+                      className="text-sm font-bold transition-opacity hover:opacity-70"
+                      style={{ color: "var(--color-danger)", fontFamily: "Tajawal, sans-serif" }}
+                    >
+                      حذف
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -155,27 +188,60 @@ export function CRUDPage({
         </div>
       </Card>
 
+      {/* ── Modal ── */}
       {open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50" onClick={() => setOpen(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto scroll-thin" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="font-bold text-lg">{editing ? "تعديل" : "إضافة جديد"}</h2>
-              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4 z-50"
+          style={{ background: "rgba(15,23,42,0.55)" }}
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto scroll-thin"
+            style={{ background: "#fff", borderRadius: 24, boxShadow: "var(--shadow-modal)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+              <h2 className="font-bold" style={{ fontSize: 17, fontFamily: "Tajawal, sans-serif" }}>
+                {editing ? "تعديل" : "إضافة جديد"}
+              </h2>
+              <button
+                onClick={() => setOpen(false)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors"
+                style={{ fontSize: 18, color: "#94A3B8" }}
+              >
+                ✕
+              </button>
             </div>
+
             <div className="p-6 space-y-4">
               {fields.filter((f) => !f.hideInForm).map((f) => (
                 <div key={f.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    {f.label} {f.required && <span className="text-red-500">*</span>}
+                  <label className="block font-bold mb-1.5" style={{ fontSize: 13, color: "#374151", fontFamily: "Tajawal, sans-serif" }}>
+                    {f.label} {f.required && <span style={{ color: "var(--color-danger)" }}>*</span>}
                   </label>
-                  {renderInput(f, form, setForm)}
+                  {renderInput(f, form, setForm, inputCls + " " + focusColor)}
                 </div>
               ))}
-              {err && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{err}</div>}
+              {err && (
+                <div className="text-sm p-3 rounded-xl" style={{ color: "var(--color-danger)", background: "#FEE2E2" }}>{err}</div>
+              )}
             </div>
-            <div className="p-6 border-t border-gray-100 flex justify-end gap-2">
-              <button onClick={() => setOpen(false)} className="px-5 py-2.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">إلغاء</button>
-              <button onClick={save} className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold">حفظ</button>
+
+            <div className="flex justify-end gap-2 p-6" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+              <button
+                onClick={() => setOpen(false)}
+                className="px-5 py-2.5 rounded-xl border font-bold text-sm transition-colors hover:bg-gray-50"
+                style={{ borderColor: "#E2E8F0", color: "#374151", fontFamily: "Tajawal, sans-serif" }}
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={save}
+                className="px-6 py-2.5 rounded-xl text-white font-bold text-sm transition-opacity hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #16C47F, #0FA868)", fontFamily: "Tajawal, sans-serif" }}
+              >
+                حفظ
+              </button>
             </div>
           </div>
         </div>
@@ -185,24 +251,43 @@ export function CRUDPage({
 }
 
 function renderCell(v: any, f: Field) {
-  if (v == null || v === "") return <span className="text-gray-300">—</span>;
-  if (f.type === "boolean") return v ? <span className="text-emerald-600">✓</span> : <span className="text-gray-300">✗</span>;
+  if (v == null || v === "") return <span style={{ color: "#CBD5E1" }}>—</span>;
+  if (f.type === "boolean") return v
+    ? <span style={{ color: "var(--color-primary)", fontWeight: 700 }}>✓</span>
+    : <span style={{ color: "#CBD5E1" }}>✗</span>;
   if (f.type === "date" || f.key.endsWith("_at")) {
-    try { return <span className="text-gray-600 text-xs">{new Date(v).toLocaleString("ar-SA")}</span>; } catch { return String(v); }
+    try {
+      return <span style={{ color: "#64748B", fontSize: 12 }}>{new Date(v).toLocaleString("ar-SA")}</span>;
+    } catch { return String(v); }
   }
-  if (typeof v === "object") return <span className="text-xs text-gray-500 font-mono">{JSON.stringify(v).slice(0, 40)}</span>;
+  if (typeof v === "object") {
+    return <span style={{ fontSize: 11, color: "#94A3B8", fontFamily: "monospace" }}>{JSON.stringify(v).slice(0, 40)}</span>;
+  }
   const s = String(v);
-  return s.length > 50 ? s.slice(0, 50) + "…" : s;
+  return s.length > 60 ? s.slice(0, 60) + "…" : s;
 }
 
-function renderInput(f: Field, form: any, setForm: (v: any) => void) {
+function renderInput(f: Field, form: any, setForm: (v: any) => void, cls: string) {
   const val = form[f.key] ?? "";
-  const cls = "w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none";
   if (f.type === "textarea")
-    return <textarea rows={4} value={val} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={cls} placeholder={f.placeholder} />;
+    return (
+      <textarea
+        rows={4}
+        value={val}
+        onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+        className={cls}
+        placeholder={f.placeholder}
+        style={{ resize: "vertical", fontFamily: "Tajawal, sans-serif" }}
+      />
+    );
   if (f.type === "select")
     return (
-      <select value={val} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={cls}>
+      <select
+        value={val}
+        onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+        className={cls}
+        style={{ fontFamily: "Tajawal, sans-serif" }}
+      >
         <option value="">اختر…</option>
         {f.options?.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
       </select>
@@ -210,11 +295,17 @@ function renderInput(f: Field, form: any, setForm: (v: any) => void) {
   if (f.type === "boolean")
     return (
       <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" checked={!!val} onChange={(e) => setForm({ ...form, [f.key]: e.target.checked })} className="w-5 h-5 accent-emerald-600" />
-        <span className="text-sm text-gray-700">مفعل</span>
+        <input
+          type="checkbox"
+          checked={!!val}
+          onChange={(e) => setForm({ ...form, [f.key]: e.target.checked })}
+          className="w-5 h-5"
+          style={{ accentColor: "var(--color-primary)" }}
+        />
+        <span style={{ fontSize: 13, color: "#374151", fontFamily: "Tajawal, sans-serif" }}>مفعل</span>
       </label>
     );
   if (f.type === "number")
     return <input type="number" value={val} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={cls} placeholder={f.placeholder} />;
-  return <input type="text" value={val} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={cls} placeholder={f.placeholder} />;
+  return <input type="text" value={val} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={cls} placeholder={f.placeholder} style={{ fontFamily: "Tajawal, sans-serif" }} />;
 }

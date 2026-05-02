@@ -79,6 +79,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     },
     owner: "clean-beaton",
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore – Replit-specific extension field
     _replit: {
       allowedOrigins: replitDomain
         ? [

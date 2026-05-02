@@ -1,0 +1,138 @@
+هذا هو البرومبت القاسي والمباشر الذي يجب إرساله الآن
+
+توقف عن تضخيم نسبة الإنجاز.
+
+راجعت سجل التنفيذ بالكامل، والحقيقة هي:
+
+✅ تم إصلاح جزء من مشكلة realtime subscriptions
+✅ تم إنشاء review bottom sheet
+✅ تم تنفيذ RTL جزئي على عدد من الشاشات
+✅ تم تحسين tracking timeline جزئيًا
+
+لكن مازال الجزء الأكبر من المطلوب غير مثبت أو غير مكتمل.
+
+المطلوب الآن ممنوع الخروج عنه
+1- إثبات realtime الحقيقي
+
+لا أريد “يجب أن يعمل”.
+أريد إثبات فعلي.
+
+اختبر عمليًا:
+
+قبول طلب من جهاز
+انعكاسه فورًا على جهاز آخر
+تحديث badge مباشرة
+تحديث notifications مباشرة
+تحديث booking lists مباشرة
+تحديث provider dashboard مباشرة
+تحديث admin dashboard مباشرة
+
+وأرسل:
+
+logs
+event traces
+أسماء subscriptions
+الملفات المرتبطة
+2- بناء centralized realtime architecture
+
+أنشئ:
+
+realtime manager
+unified subscription cleanup
+global event dispatcher
+optimistic updates
+stale state prevention
+
+لأن إصلاح 4 channels فقط ليس architecture كاملة.
+
+3- الخرائط الحية مازالت ناقصة
+
+نفّذ فعليًا:
+
+customer markers
+provider live movement
+animated marker transitions
+route polylines
+ETA updates
+distance calculations
+live directions refresh
+
+داخل:
+
+tracking
+provider dashboard
+booking details
+4- إشعارات النظام تحتاج إثبات
+
+اختبر فعليًا:
+
+foreground
+background
+killed app
+deep linking
+badge sync
+action buttons
+
+وأرسل:
+
+Android notification channel config
+notification categories
+test logs
+5- توحيد الأدمن مع التطبيق
+
+مازال غير منفذ.
+
+طبّق:
+
+نفس design system
+نفس typography
+نفس spacing
+نفس shadows
+نفس cards
+نفس status chips
+
+ليصبح:
+admin + mobile
+نظام موحد بصريًا.
+
+6- RTL لم ينته بعد
+
+نفّذ مراجعة نهائية لكل:
+
+headers
+lists
+cards
+icons
+spacing
+modals
+sheets
+forms
+tabs
+
+ولا تعتبر RTL مكتملة إلا بعد visual audit شامل.
+
+7- ممنوع التشتت
+
+لا تدخل في:
+
+migration
+workflows
+replit imports
+auth discussions
+screenshots غير مطلوبة
+
+ركّز فقط على:
+
+realtime
+maps
+notifications
+RTL
+admin parity
+8- أي رد قادم يجب أن يحتوي فقط على:
+الملفات المعدلة
+ماذا تغير داخل كل ملف
+ما الذي تم اختباره
+ما الذي مازال ناقصًا
+المشاكل المكتشفة
+
+بدون كلام تسويقي أو ادعاء اكتمال غير مثبت.

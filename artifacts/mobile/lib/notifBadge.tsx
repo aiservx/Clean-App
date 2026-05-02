@@ -1,6 +1,14 @@
+/**
+ * NotifBadge — now integrated with global realtimeEvents dispatcher.
+ * Instead of maintaining its own Supabase channel, it listens to
+ * badge_updated events emitted by RealtimeProvider (the single source of truth).
+ * This eliminates duplicate subscriptions and race conditions.
+ */
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import { useAuth } from "./auth";
+import { realtimeEvents } from "./realtimeStore";
+import { syncBadge } from "./notifications";
 
 type NotifBadgeCtx = {
   unreadCount: number;
@@ -27,27 +35,32 @@ export function NotifBadgeProvider({ children }: { children: React.ReactNode }) 
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
         .eq("read", false);
-      setUnreadCount(count ?? 0);
+      const c = count ?? 0;
+      setUnreadCount(c);
+      syncBadge(c).catch(() => {});
     } catch {
       setUnreadCount(0);
     }
   }, [userId]);
 
-  const zeroOutBadge = useCallback(() => setUnreadCount(0), []);
+  const zeroOutBadge = useCallback(() => {
+    setUnreadCount(0);
+    syncBadge(0).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!userId) { setUnreadCount(0); return; }
     refresh();
-    const topic = `notif-badge-${userId}-${Math.random().toString(36).slice(2, 8)}`;
-    const ch = supabase
-      .channel(topic)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-        () => refresh()
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+
+    // Listen to global badge_updated events from RealtimeProvider
+    const unsub = realtimeEvents.subscribe((event) => {
+      if (event.type === "badge_updated") {
+        setUnreadCount(event.unreadCount);
+        syncBadge(event.unreadCount).catch(() => {});
+      }
+    });
+
+    return unsub;
   }, [userId, refresh]);
 
   return (

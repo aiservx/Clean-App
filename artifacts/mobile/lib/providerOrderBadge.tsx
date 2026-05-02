@@ -1,6 +1,12 @@
+/**
+ * ProviderOrderBadge — integrated with global realtimeEvents.
+ * Listens to provider_order_updated events from RealtimeProvider
+ * instead of maintaining a separate Supabase channel.
+ */
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import { useAuth } from "./auth";
+import { realtimeEvents } from "./realtimeStore";
 
 type ProviderOrderBadgeCtx = {
   pendingCount: number;
@@ -34,16 +40,16 @@ export function ProviderOrderBadgeProvider({ children }: { children: React.React
   useEffect(() => {
     if (!userId || !isProvider) { setPendingCount(0); return; }
     refresh();
-    const topic = `prov-order-badge-${userId}-${Math.random().toString(36).slice(2, 8)}`;
-    const ch = supabase
-      .channel(topic)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "bookings" },
-        () => refresh()
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+
+    // Listen to global provider_order_updated events from RealtimeProvider
+    const unsub = realtimeEvents.subscribe((event) => {
+      if (event.type === "provider_order_updated") {
+        // Refresh count whenever any booking changes
+        refresh();
+      }
+    });
+
+    return unsub;
   }, [userId, isProvider, refresh]);
 
   return <Ctx.Provider value={{ pendingCount, clearBadge }}>{children}</Ctx.Provider>;
