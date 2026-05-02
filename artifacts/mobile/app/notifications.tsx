@@ -113,8 +113,9 @@ export default function NotificationsScreen() {
   useEffect(() => {
     load();
     if (!session?.user) return;
+    const topic = `notif-cust-${session.user.id}-${Math.random().toString(36).slice(2, 8)}`;
     const ch = supabase
-      .channel(`notif-${session.user.id}`)
+      .channel(topic)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${session.user.id}` },
