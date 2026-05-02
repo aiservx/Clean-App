@@ -114,8 +114,9 @@ export default function BookingsScreen() {
   useEffect(() => {
     load();
     if (!session?.user) return;
+    const topic = `user-bookings-${session.user.id}-${Math.random().toString(36).slice(2, 8)}`;
     const ch = supabase
-      .channel(`user-bookings-${session.user.id}`)
+      .channel(topic)
       .on("postgres_changes",
         { event: "*", schema: "public", table: "bookings", filter: `user_id=eq.${session.user.id}` },
         () => load())

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Platform, ActivityIndicator, Animated, Alert, Linking,
+  Modal, TextInput, KeyboardAvoidingView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -12,6 +13,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/location";
 import GuestEmpty from "@/components/GuestEmpty";
+import { sendPushNotification, createNotification } from "@/lib/notifications";
+
+const RATING_TAGS = ["الاهتمام بالتفاصيل", "الالتزام بالوقت", "التعامل الراقي", "جودة التنظيف"];
+const RATING_LABELS = ["", "سيء جداً", "سيء", "متوسط", "ممتاز", "رائع جداً 🌟"];
 
 const STEPS = ["pending", "accepted", "on_the_way", "in_progress", "completed"] as const;
 type StatusKey = typeof STEPS[number] | "cancelled" | "rejected";
@@ -91,6 +96,16 @@ export default function TrackingScreen() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const prevStatusRef = useRef<string | null>(null);
+
+  // Rating modal state
+  const [showRating, setShowRating] = useState(false);
+  const [ratingStars, setRatingStars] = useState(5);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingTags, setRatingTags] = useState<number[]>([]);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [ratingDone, setRatingDone] = useState(false);
+  const ratingShownRef = useRef(false);
+  const modalSlide = useRef(new Animated.Value(400)).current;
 
   const isProvider = profile?.role === "provider";
 
@@ -177,6 +192,59 @@ export default function TrackingScreen() {
       }
     })();
   }, [session?.user?.id, bookingId, isProvider]);
+
+  // Auto-show rating modal when booking completes for customer
+  useEffect(() => {
+    if (!booking?.id || isProvider || ratingShownRef.current) return;
+    if (booking.status !== "completed") return;
+    (async () => {
+      try {
+        const { data: existing } = await supabase
+          .from("reviews")
+          .select("id")
+          .eq("booking_id", booking.id)
+          .maybeSingle();
+        if (existing) return; // already rated
+        ratingShownRef.current = true;
+        setShowRating(true);
+        Animated.spring(modalSlide, { toValue: 0, useNativeDriver: true, tension: 60, friction: 10 }).start();
+      } catch {}
+    })();
+  }, [booking?.id, booking?.status, isProvider]);
+
+  const submitRating = async () => {
+    if (!session?.user || !booking?.id || ratingSubmitting) return;
+    const providerId = booking.provider_id;
+    if (!providerId) return;
+    setRatingSubmitting(true);
+    try {
+      const tagText = ratingTags.map((i) => RATING_TAGS[i]).join("، ");
+      const fullComment = [ratingComment.trim(), tagText].filter(Boolean).join("\n") || null;
+      await supabase.from("reviews").insert({
+        booking_id: booking.id,
+        provider_id: providerId,
+        user_id: session.user.id,
+        rating: ratingStars,
+        comment: fullComment,
+      });
+      const { data: allRatings } = await supabase.from("reviews").select("rating").eq("provider_id", providerId);
+      if (allRatings?.length) {
+        const avg = allRatings.reduce((s: number, r: any) => s + Number(r.rating), 0) / allRatings.length;
+        await supabase.from("providers").update({ rating: Math.round(avg * 10) / 10 }).eq("id", providerId);
+      }
+      sendPushNotification(providerId, "⭐ تقييم جديد!", `حصلت على ${ratingStars} نجوم`, { bookingId: booking.id });
+      createNotification(providerId, "review_received", "⭐ تقييم جديد!", `حصلت على ${ratingStars} نجوم`, { bookingId: booking.id });
+      setRatingDone(true);
+    } catch (e) {
+      console.log("[rating] submit failed:", (e as Error).message);
+    } finally {
+      setRatingSubmitting(false);
+    }
+  };
+
+  const dismissRating = () => {
+    Animated.timing(modalSlide, { toValue: 400, duration: 250, useNativeDriver: true }).start(() => setShowRating(false));
+  };
 
   useEffect(() => {
     if (!booking?.id) return;
@@ -514,10 +582,10 @@ export default function TrackingScreen() {
           )}
         </View>
 
-        {/* Rating button for completed bookings */}
-        {!isProvider && status === "completed" && (
+        {/* Rating button for completed bookings (fallback if modal was dismissed) */}
+        {!isProvider && status === "completed" && !showRating && !ratingDone && (
           <TouchableOpacity
-            onPress={() => router.push({ pathname: "/rating", params: { bookingId: booking.id } } as any)}
+            onPress={() => { setShowRating(true); Animated.spring(modalSlide, { toValue: 0, useNativeDriver: true, tension: 60, friction: 10 }).start(); }}
             style={[styles.actionBtn, { backgroundColor: "#F59E0B", marginHorizontal: 16, marginTop: 4, marginBottom: 12 }]}
           >
             <MaterialCommunityIcons name="star" size={18} color="#FFF" />
@@ -525,9 +593,141 @@ export default function TrackingScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* ─── Inline Rating Bottom-Sheet Modal ─── */}
+      <Modal visible={showRating} transparent animationType="none" statusBarTranslucent onRequestClose={dismissRating}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+          <View style={rs.overlay}>
+            <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={ratingDone ? dismissRating : undefined} />
+            <Animated.View style={[rs.sheet, { transform: [{ translateY: modalSlide }] }]}>
+              {ratingDone ? (
+                /* ── Success state ── */
+                <View style={rs.successWrap}>
+                  <View style={rs.successCircle}>
+                    <MaterialCommunityIcons name="check-decagram" size={64} color="#16C47F" />
+                  </View>
+                  <Text style={rs.successTitle}>شكراً على تقييمك! 🌟</Text>
+                  <Text style={rs.successSub}>رأيك يساعدنا على تحسين الخدمة</Text>
+                  <View style={{ flexDirection: "row", gap: 6, marginTop: 10 }}>
+                    {[1,2,3,4,5].map((s) => (
+                      <MaterialCommunityIcons key={s} name={s <= ratingStars ? "star" : "star-outline"} size={32} color={s <= ratingStars ? "#F59E0B" : "#CBD5E1"} />
+                    ))}
+                  </View>
+                  <TouchableOpacity style={rs.doneBtn} onPress={dismissRating}>
+                    <Text style={rs.doneBtnT}>إغلاق</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                /* ── Rating form ── */
+                <>
+                  <View style={rs.handle} />
+                  <View style={rs.header}>
+                    <TouchableOpacity onPress={dismissRating}><Feather name="x" size={22} color="#94A3B8" /></TouchableOpacity>
+                    <Text style={rs.title}>قيّم الخدمة</Text>
+                    <View style={{ width: 22 }} />
+                  </View>
+
+                  {/* Provider info */}
+                  <View style={rs.providerRow}>
+                    <View style={rs.providerAvatar}>
+                      <Text style={rs.providerInitials}>
+                        {(booking.provider?.full_name || "م").trim().split(" ").map((s: string) => s[0]).slice(0, 2).join("")}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1, marginRight: 10 }}>
+                      <Text style={rs.providerName}>{booking.provider?.full_name || "مزود الخدمة"}</Text>
+                      <Text style={rs.providerSub}>{booking.services?.title_ar || "خدمة تنظيف"}</Text>
+                    </View>
+                  </View>
+
+                  {/* Stars */}
+                  <Text style={rs.sectionLabel}>{RATING_LABELS[ratingStars]}</Text>
+                  <View style={rs.starsRow}>
+                    {[1,2,3,4,5].map((s) => (
+                      <TouchableOpacity key={s} onPress={() => setRatingStars(s)} activeOpacity={0.7}>
+                        <MaterialCommunityIcons name={s <= ratingStars ? "star" : "star-outline"} size={42} color={s <= ratingStars ? "#F59E0B" : "#CBD5E1"} />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  {/* Quick tags */}
+                  <View style={rs.tagsRow}>
+                    {RATING_TAGS.map((tag, i) => (
+                      <TouchableOpacity
+                        key={i}
+                        onPress={() => setRatingTags((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i])}
+                        style={[rs.tag, ratingTags.includes(i) && rs.tagActive]}
+                      >
+                        <Text style={[rs.tagT, ratingTags.includes(i) && rs.tagTActive]}>{tag}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  {/* Comment */}
+                  <TextInput
+                    value={ratingComment}
+                    onChangeText={setRatingComment}
+                    placeholder="أضف تعليقاً (اختياري)..."
+                    placeholderTextColor="#94A3B8"
+                    multiline
+                    numberOfLines={3}
+                    textAlign="right"
+                    style={rs.commentInput}
+                  />
+
+                  {/* Actions */}
+                  <View style={rs.actions}>
+                    <TouchableOpacity style={rs.skipBtn} onPress={dismissRating}>
+                      <Text style={rs.skipT}>تخطي</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={rs.submitBtn} onPress={submitRating} disabled={ratingSubmitting}>
+                      {ratingSubmitting
+                        ? <ActivityIndicator color="#FFF" size="small" />
+                        : <Text style={rs.submitT}>إرسال التقييم</Text>
+                      }
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </Animated.View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
+
+const rs = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },
+  sheet: { backgroundColor: "#FFF", borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingBottom: 36 },
+  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: "#E2E8F0", alignSelf: "center", marginTop: 10, marginBottom: 4 },
+  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingVertical: 14 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A", textAlign: "center" },
+  providerRow: { flexDirection: "row-reverse", alignItems: "center", backgroundColor: "#F8FAFC", borderRadius: 16, padding: 14, marginBottom: 16 },
+  providerAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: "#DCFCE7", alignItems: "center", justifyContent: "center" },
+  providerInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
+  providerName: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#0F172A", textAlign: "right" },
+  providerSub: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B", textAlign: "right", marginTop: 2 },
+  sectionLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#F59E0B", textAlign: "center", marginBottom: 6, minHeight: 20 },
+  starsRow: { flexDirection: "row-reverse", justifyContent: "center", gap: 8, marginBottom: 18 },
+  tagsRow: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8, marginBottom: 14 },
+  tag: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: "#E2E8F0", backgroundColor: "#F8FAFC" },
+  tagActive: { borderColor: "#16C47F", backgroundColor: "#DCFCE7" },
+  tagT: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B" },
+  tagTActive: { color: "#16C47F", fontFamily: "Tajawal_700Bold" },
+  commentInput: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 14, padding: 12, fontFamily: "Tajawal_400Regular", fontSize: 13, color: "#0F172A", minHeight: 80, textAlignVertical: "top", marginBottom: 18 },
+  actions: { flexDirection: "row-reverse", gap: 10 },
+  skipBtn: { flex: 1, height: 48, borderRadius: 14, borderWidth: 1, borderColor: "#E2E8F0", alignItems: "center", justifyContent: "center" },
+  skipT: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#64748B" },
+  submitBtn: { flex: 2, height: 48, borderRadius: 14, backgroundColor: "#16C47F", alignItems: "center", justifyContent: "center" },
+  submitT: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#FFF" },
+  successWrap: { alignItems: "center", paddingVertical: 24 },
+  successCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: "#DCFCE7", alignItems: "center", justifyContent: "center", marginBottom: 14 },
+  successTitle: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#0F172A", marginBottom: 6 },
+  successSub: { fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#64748B", marginBottom: 4 },
+  doneBtn: { marginTop: 20, backgroundColor: "#16C47F", paddingHorizontal: 40, paddingVertical: 14, borderRadius: 16 },
+  doneBtnT: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#FFF" },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

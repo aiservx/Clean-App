@@ -69,7 +69,8 @@ export default function BookingDetails() {
   useEffect(() => {
     load();
     if (!id) return;
-    const ch = supabase.channel(`booking-detail-${id}`)
+    const topic = `booking-detail-${id}-${Math.random().toString(36).slice(2, 8)}`;
+    const ch = supabase.channel(topic)
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings", filter: `id=eq.${id}` }, () => load())
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "booking_status_log", filter: `booking_id=eq.${id}` }, () => load())
       .subscribe();

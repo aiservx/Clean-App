@@ -127,8 +127,9 @@ export default function ProviderHome() {
 
   useEffect(() => {
     loadAll();
+    const topic = `provider-pending-bookings-${Math.random().toString(36).slice(2, 8)}`;
     const ch = supabase
-      .channel("provider-pending-bookings")
+      .channel(topic)
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => loadAll())
       .subscribe();
     return () => {

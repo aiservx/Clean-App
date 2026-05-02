@@ -84,8 +84,9 @@ export default function ProviderBookingDetails() {
 
   useEffect(() => {
     if (!params.id) return;
+    const topic = `booking-${params.id}-${Math.random().toString(36).slice(2, 8)}`;
     const ch = supabase
-      .channel(`booking-${params.id}`)
+      .channel(topic)
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings", filter: `id=eq.${params.id}` }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
