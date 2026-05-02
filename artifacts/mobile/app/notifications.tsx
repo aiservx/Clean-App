@@ -7,6 +7,7 @@ import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
+import { useNotifBadge } from "@/lib/notifBadge";
 
 type Notif = {
   id: string;
@@ -138,15 +139,19 @@ export default function NotificationsScreen() {
 
   const unreadCount = useMemo(() => items.filter((n) => !n.read).length, [items]);
 
+  const { zeroOutBadge, refreshBadge } = useNotifBadge();
+
   const markAllRead = async () => {
     if (!session?.user || unreadCount === 0) return;
     const unreadIds = items.filter((n) => !n.read).map((n) => n.id);
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    zeroOutBadge();
     if (unreadIds.length > 0) {
       await supabase
         .from("notifications")
         .update({ read: true })
         .in("id", unreadIds);
+      refreshBadge();
     }
   };
 
@@ -154,6 +159,7 @@ export default function NotificationsScreen() {
     if (!n.read) {
       setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
       await supabase.from("notifications").update({ read: true }).eq("id", n.id);
+      refreshBadge();
     }
     const target = targetForNotif(n);
     if (target) router.push(target as any);

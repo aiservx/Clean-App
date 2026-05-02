@@ -41,6 +41,19 @@ export async function registerForPush(userId: string): Promise<string | null> {
     }
     if (final !== "granted") return null;
 
+    await Notifications.setNotificationCategoryAsync("new_booking", [
+      {
+        identifier: "accept",
+        buttonTitle: "قبول ✅",
+        options: { isDestructive: false, isAuthenticationRequired: false },
+      },
+      {
+        identifier: "reject",
+        buttonTitle: "رفض ❌",
+        options: { isDestructive: true, isAuthenticationRequired: false },
+      },
+    ]).catch(() => {});
+
     const token = (
       await Notifications.getExpoPushTokenAsync({
         projectId: "dd03c810-2182-47e7-9a0a-823fdcc351b8",
@@ -63,7 +76,8 @@ export async function sendPushNotification(
   userId: string,
   title: string,
   body: string,
-  data?: Record<string, any>
+  data?: Record<string, any>,
+  categoryIdentifier?: string
 ) {
   try {
     const { data: tokens } = await supabase
@@ -79,6 +93,7 @@ export async function sendPushNotification(
       sound: "default",
       priority: "high",
       channelId: "default",
+      ...(categoryIdentifier ? { categoryId: categoryIdentifier } : {}),
     }));
     await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
@@ -128,7 +143,7 @@ export async function notifyAvailableProviders(
       .limit(30);
     if (!provRows?.length) return;
     for (const prov of provRows) {
-      sendPushNotification(prov.id, title, body, data);
+      sendPushNotification(prov.id, title, body, data, "new_booking");
       createNotification(prov.id, "booking_created", title, body, data ?? {});
     }
   } catch (e) {

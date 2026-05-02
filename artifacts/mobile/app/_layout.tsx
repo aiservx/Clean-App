@@ -45,10 +45,36 @@ function PushRegistrar() {
 
   useEffect(() => {
     if (Platform.OS === "web") return;
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+    const sub = Notifications.addNotificationResponseReceivedListener(async (response) => {
       const data = response.notification.request.content.data as any;
       const bookingId = data?.bookingId || data?.booking_id;
       const type = data?.type || "";
+      const actionId = response.actionIdentifier;
+
+      if (bookingId && (actionId === "accept" || actionId === "reject")) {
+        try {
+          const { supabase: sb } = await import("@/lib/supabase");
+          const newStatus = actionId === "accept" ? "accepted" : "rejected";
+          await sb.from("bookings").update({ status: newStatus }).eq("id", bookingId);
+          if (actionId === "accept") {
+            const { createNotification: cn, sendPushNotification: spn } = await import("@/lib/notifications");
+            const { data: bk } = await sb
+              .from("bookings")
+              .select("user_id, services(title_ar)")
+              .eq("id", bookingId)
+              .maybeSingle();
+            if (bk?.user_id) {
+              const svcTitle = (bk.services as any)?.title_ar || "الخدمة";
+              cn(bk.user_id, "booking_accepted", "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
+              spn(bk.user_id, "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
+            }
+          }
+        } catch (e) {
+          console.log("[v0] inline action failed:", (e as Error).message);
+        }
+        return;
+      }
+
       try {
         if (bookingId) {
           if (type === "booking_created") {
