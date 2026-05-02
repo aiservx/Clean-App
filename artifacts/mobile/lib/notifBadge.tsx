@@ -2,8 +2,17 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { supabase } from "./supabase";
 import { useAuth } from "./auth";
 
-type NotifBadgeCtx = { unreadCount: number };
-const Ctx = createContext<NotifBadgeCtx>({ unreadCount: 0 });
+type NotifBadgeCtx = {
+  unreadCount: number;
+  refreshBadge: () => void;
+  zeroOutBadge: () => void;
+};
+
+const Ctx = createContext<NotifBadgeCtx>({
+  unreadCount: 0,
+  refreshBadge: () => {},
+  zeroOutBadge: () => {},
+});
 
 export function NotifBadgeProvider({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
@@ -24,6 +33,8 @@ export function NotifBadgeProvider({ children }: { children: React.ReactNode }) 
     }
   }, [userId]);
 
+  const zeroOutBadge = useCallback(() => setUnreadCount(0), []);
+
   useEffect(() => {
     if (!userId) { setUnreadCount(0); return; }
     refresh();
@@ -39,7 +50,11 @@ export function NotifBadgeProvider({ children }: { children: React.ReactNode }) 
     return () => { supabase.removeChannel(ch); };
   }, [userId, refresh]);
 
-  return <Ctx.Provider value={{ unreadCount }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ unreadCount, refreshBadge: refresh, zeroOutBadge }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useNotifBadge() {
