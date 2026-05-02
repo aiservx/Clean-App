@@ -32,7 +32,7 @@ export default function Settings() {
       {onSwitch !== undefined ? (
         <Switch value={switchVal} onValueChange={onSwitch} trackColor={{ true: colors.primary, false: "#E5E7EB" }} thumbColor="#FFF" />
       ) : (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 6 }}>
           {valueText ? <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: colors.mutedForeground }}>{valueText}</Text> : null}
           <Feather name="chevron-left" size={18} color={colors.mutedForeground} />
         </View>

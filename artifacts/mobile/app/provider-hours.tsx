@@ -48,7 +48,7 @@ export default function ProviderHours() {
                   trackColor={{ true: colors.primary, false: "#E5E7EB" }}
                   thumbColor="#FFF"
                 />
-                <View style={{ flex: 1, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 8 }}>
+                <View style={{ flex: 1, alignItems: "center", flexDirection: "row-reverse", justifyContent: "center", gap: 8 }}>
                   {s.active ? (
                     <>
                       <View style={[styles.timeBox, { backgroundColor: colors.muted }]}>

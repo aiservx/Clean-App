@@ -286,7 +286,7 @@ export default function RatingScreen() {
 const s = StyleSheet.create({
   root: { flex: 1 },
   header: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 16, paddingBottom: 12,
   },
   hIcon: {
@@ -310,8 +310,8 @@ const s = StyleSheet.create({
     fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#1E293B",
     textAlign: "center", marginBottom: 14,
   },
-  starsRow: { flexDirection: "row", justifyContent: "center", gap: 6, marginBottom: 6 },
-  starsRowSmall: { flexDirection: "row", gap: 4, marginBottom: 24, marginTop: 8 },
+  starsRow: { flexDirection: "row-reverse", justifyContent: "center", gap: 6, marginBottom: 6 },
+  starsRowSmall: { flexDirection: "row-reverse", gap: 4, marginBottom: 24, marginTop: 8 },
   ratingLabel: { fontFamily: "Tajawal_700Bold", fontSize: 18, textAlign: "center", marginBottom: 20 },
 
   commentSection: { paddingHorizontal: 20, marginBottom: 16 },
@@ -324,13 +324,13 @@ const s = StyleSheet.create({
     borderColor: "#E2E8F0", padding: 14, minHeight: 120,
   },
   input: { fontFamily: "Tajawal_400Regular", fontSize: 13, color: "#1E293B", minHeight: 80, textAlignVertical: "top" },
-  commentFooter: { flexDirection: "row", justifyContent: "flex-start", alignItems: "center", marginTop: 6 },
+  commentFooter: { flexDirection: "row-reverse", justifyContent: "flex-start", alignItems: "center", marginTop: 6 },
   charCount: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "#94A3B8" },
 
   tagsSection: { paddingHorizontal: 20, marginBottom: 16 },
-  tagsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  tagsGrid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 },
   tag: {
-    flexDirection: "row", alignItems: "center", gap: 6,
+    flexDirection: "row-reverse", alignItems: "center", gap: 6,
     paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14,
     backgroundColor: "#FFF", borderWidth: 1.5, borderColor: "#E2E8F0",
   },
@@ -357,7 +357,7 @@ const s = StyleSheet.create({
   },
   submitBtn: { height: 56, borderRadius: 16, backgroundColor: "#3B82F6", alignItems: "center", justifyContent: "center" },
   submitText: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
-  skipRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 12 },
+  skipRow: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 12 },
   skipText: { fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#94A3B8" },
 
   successCircle: {

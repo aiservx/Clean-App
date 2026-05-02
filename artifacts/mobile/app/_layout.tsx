@@ -32,6 +32,8 @@ import { ChatBadgeProvider } from "@/lib/chatBadge";
 import { NotifBadgeProvider } from "@/lib/notifBadge";
 import { ProviderOrderBadgeProvider } from "@/lib/providerOrderBadge";
 import { registerForPush } from "@/lib/notifications";
+import { RealtimeProvider } from "@/lib/realtimeStore";
+import { RatingBottomSheetController } from "@/components/RatingBottomSheet";
 
 function PushRegistrar() {
   const { session } = useAuth();
@@ -205,16 +207,19 @@ export default function RootLayout() {
               <ThemeProvider>
                 <I18nProvider>
                   <AuthProvider>
-                    <PushRegistrar />
-                    <ProviderOrderBadgeProvider>
-                      <ChatBadgeProvider>
-                        <NotifBadgeProvider>
-                          <BookingProvider>
-                            <RootLayoutNav />
-                          </BookingProvider>
-                        </NotifBadgeProvider>
-                      </ChatBadgeProvider>
-                    </ProviderOrderBadgeProvider>
+                    <RealtimeProvider>
+                      <PushRegistrar />
+                      <ProviderOrderBadgeProvider>
+                        <ChatBadgeProvider>
+                          <NotifBadgeProvider>
+                            <BookingProvider>
+                              <RootLayoutNav />
+                              <RatingBottomSheetController />
+                            </BookingProvider>
+                          </NotifBadgeProvider>
+                        </ChatBadgeProvider>
+                      </ProviderOrderBadgeProvider>
+                    </RealtimeProvider>
                   </AuthProvider>
                 </I18nProvider>
               </ThemeProvider>

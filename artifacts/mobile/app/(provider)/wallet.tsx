@@ -202,7 +202,7 @@ export default function ProviderWallet() {
                 </Text>
                 <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 10 }}>
                   <Text style={[styles.txT, { color: colors.foreground }]}>{t.title}</Text>
-                  <View style={{ flexDirection: "row", gap: 6, alignItems: "center", marginTop: 2 }}>
+                  <View style={{ flexDirection: "row-reverse", gap: 6, alignItems: "center", marginTop: 2 }}>
                     <View style={[styles.txStPill, { backgroundColor: t.inc ? colors.successLight : t.status === "تم التحويل" ? colors.successLight : t.status === "فشل" ? colors.dangerLight : colors.muted }]}>
                       <Text style={[styles.txStT, { color: t.inc ? colors.success : t.status === "تم التحويل" ? colors.success : t.status === "فشل" ? colors.danger : colors.mutedForeground }]}>{t.status}</Text>
                     </View>
@@ -228,14 +228,14 @@ const styles = StyleSheet.create({
   balCard: { marginHorizontal: 16, padding: 20, borderRadius: 22, marginBottom: 14 },
   balL: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "right" },
   balV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 32, textAlign: "right", marginTop: 4 },
-  balRow: { flexDirection: "row", marginTop: 16, gap: 12, justifyContent: "space-between" },
+  balRow: { flexDirection: "row-reverse", marginTop: 16, gap: 12, justifyContent: "space-between" },
   balItem: { flex: 1 },
   balIL: { color: "rgba(255,255,255,0.7)", fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right" },
   balIV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginTop: 2 },
-  actions: { flexDirection: "row", gap: 10, marginBottom: 14 },
-  actBtn: { flex: 1, height: 46, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  actions: { flexDirection: "row-reverse", gap: 10, marginBottom: 14 },
+  actBtn: { flex: 1, height: 46, borderRadius: 14, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
   actT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  miniRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
+  miniRow: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
   miniC: { flex: 1, padding: 12, borderRadius: 14, alignItems: "flex-end" },
   miniV: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 4 },
   miniL: { fontFamily: "Tajawal_500Medium", fontSize: 9 },

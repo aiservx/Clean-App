@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Platform, ActivityIndicator, Animated, Alert, Linking,
@@ -14,6 +14,55 @@ import { useAuth } from "@/lib/auth";
 import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/location";
 import GuestEmpty from "@/components/GuestEmpty";
 import { sendPushNotification, createNotification } from "@/lib/notifications";
+
+/* ─── In-app Status Toast ─────────────────────────────────────── */
+function StatusToast({
+  status, color, onDismiss,
+}: { status: string; color: string; onDismiss: () => void }) {
+  const insets = useSafeAreaInsets();
+  const slide = useRef(new Animated.Value(-120)).current;
+  const STATUS_ICON_MAP: Record<string, string> = {
+    accepted: "check-circle-outline", on_the_way: "car", in_progress: "broom",
+    completed: "check-all", cancelled: "close-circle-outline", rejected: "alert-circle-outline",
+  };
+  const STATUS_AR_TOAST: Record<string, string> = {
+    pending: "بانتظار التأكيد", accepted: "تم تأكيد طلبك ✓",
+    on_the_way: "المزود في الطريق إليك 🚗", in_progress: "جاري تنفيذ الخدمة 🔧",
+    completed: "اكتملت الخدمة بنجاح ✨", cancelled: "تم إلغاء الطلب", rejected: "تم رفض الطلب",
+  };
+  useEffect(() => {
+    Animated.spring(slide, { toValue: 0, useNativeDriver: true, tension: 80, friction: 12 }).start();
+    const t = setTimeout(() => {
+      Animated.timing(slide, { toValue: -120, duration: 300, useNativeDriver: true }).start(onDismiss);
+    }, 4000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <Animated.View style={[toastStyles.wrap, { top: insets.top + 8, transform: [{ translateY: slide }] }]}>
+      <View style={[toastStyles.card, { borderLeftColor: color, borderLeftWidth: 4 }]}>
+        <View style={[toastStyles.iconBox, { backgroundColor: color + "20" }]}>
+          <MaterialCommunityIcons name={(STATUS_ICON_MAP[status] || "bell-outline") as any} size={22} color={color} />
+        </View>
+        <View style={{ flex: 1, marginRight: 10 }}>
+          <Text style={toastStyles.title}>تحديث الطلب</Text>
+          <Text style={[toastStyles.body, { color }]}>{STATUS_AR_TOAST[status] ?? status}</Text>
+        </View>
+        <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+          <Feather name="x" size={16} color="#94A3B8" />
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
+const toastStyles = StyleSheet.create({
+  wrap: { position: "absolute", left: 16, right: 16, zIndex: 999 },
+  card: { backgroundColor: "#FFF", borderRadius: 18, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12,
+    shadowColor: "#0F172A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.14, shadowRadius: 16, elevation: 8,
+  },
+  iconBox: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#94A3B8", textAlign: "right" },
+  body: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 2, textAlign: "right" },
+});
 
 const RATING_TAGS = ["الاهتمام بالتفاصيل", "الالتزام بالوقت", "التعامل الراقي", "جودة التنظيف"];
 const RATING_LABELS = ["", "سيء جداً", "سيء", "متوسط", "ممتاز", "رائع جداً 🌟"];
@@ -96,6 +145,9 @@ export default function TrackingScreen() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const prevStatusRef = useRef<string | null>(null);
+
+  // In-app status toast
+  const [statusToast, setStatusToast] = useState<{ status: string; color: string } | null>(null);
 
   // Rating modal state
   const [showRating, setShowRating] = useState(false);
@@ -268,7 +320,7 @@ export default function TrackingScreen() {
             setBooking((b: any) => b ? { ...b, ...payload.new } : b);
             if (newStatus && newStatus !== prevStatusRef.current && !isProvider) {
               prevStatusRef.current = newStatus;
-              Alert.alert("📦 تحديث الطلب", `حالة طلبك الآن: ${STATUS_AR[newStatus] ?? newStatus}`, [{ text: "حسناً" }]);
+              setStatusToast({ status: newStatus, color: STATUS_COLOR[newStatus] ?? "#16C47F" });
             }
             if (newStatus === "accepted") {
               loadBooking().then((d) => { if (d) setBooking(d); }).catch(() => {});
@@ -402,6 +454,16 @@ export default function TrackingScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* In-app status toast */}
+      {statusToast && (
+        <StatusToast
+          key={statusToast.status}
+          status={statusToast.status}
+          color={statusToast.color}
+          onDismiss={() => setStatusToast(null)}
+        />
+      )}
+
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.card }]}>
         <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={callOtherParty}>
@@ -744,7 +806,7 @@ const styles = StyleSheet.create({
   progressBar: { height: 4 },
   progressFill: { height: 4, borderRadius: 2 },
   pendingBanner: { flexDirection: "row-reverse", alignItems: "center", margin: 12, padding: 12, borderRadius: 14, borderWidth: 1 },
-  etaRow: { flexDirection: "row", paddingHorizontal: 12, gap: 8, marginTop: 12, marginBottom: 12 },
+  etaRow: { flexDirection: "row-reverse", paddingHorizontal: 12, gap: 8, marginTop: 12, marginBottom: 12 },
   etaHalf: { flex: 1, padding: 12, borderRadius: 16, alignItems: "center", gap: 3 },
   etaSmall: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   etaLarge: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
@@ -765,6 +827,6 @@ const styles = StyleSheet.create({
   vtContent: { flex: 1, paddingTop: 2 },
   vtLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
   vtTime: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "right", marginTop: 2 },
-  actionBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
+  actionBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 8 },
   actionT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });

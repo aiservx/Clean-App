@@ -244,9 +244,9 @@ const styles = StyleSheet.create({
   dRow: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingVertical: 6 },
   dL: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
   dV: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24, flexDirection: "row", gap: 10 },
+  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24, flexDirection: "row-reverse", gap: 10 },
   cancelBtn: { paddingHorizontal: 16, height: 48, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   cancelT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  trackBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  trackBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
   trackT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13 },
 });

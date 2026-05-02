@@ -28,7 +28,7 @@ export default function PaymentMethods() {
         <View style={{ gap: 10 }}>
           {CARDS.map((c) => (
             <View key={c.id} style={[styles.card, { backgroundColor: c.color }]}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" }}>
                 <Text style={styles.cardBrand}>{c.brand.toUpperCase()}</Text>
                 {c.default && (
                   <View style={styles.defBadge}>
@@ -37,7 +37,7 @@ export default function PaymentMethods() {
                 )}
               </View>
               <Text style={styles.cardNum}>**** **** **** {c.last}</Text>
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row-reverse", justifyContent: "space-between" }}>
                 <View>
                   <Text style={styles.cardLabel}>اسم حامل البطاقة</Text>
                   <Text style={styles.cardName}>{c.name}</Text>
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   cardName: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13 },
   defBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100 },
   defT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 10 },
-  addBtn: { borderWidth: 1, borderStyle: "dashed", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6, marginTop: 12 },
+  addBtn: { borderWidth: 1, borderStyle: "dashed", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 6, marginTop: 12 },
   addT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   row: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14 },
   rowT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },

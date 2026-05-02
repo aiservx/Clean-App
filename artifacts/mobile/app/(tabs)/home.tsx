@@ -317,7 +317,7 @@ export default function HomeScreen() {
               <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
               <View style={{ flex: 1, alignItems: "flex-end" }}>
                 <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
+                <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
                   <Text style={styles.provInfoMeta}>{(selectedProvider.rating || 0).toFixed(1)}</Text>
                   <Text style={styles.provInfoMeta}>•</Text>
@@ -327,12 +327,12 @@ export default function HomeScreen() {
                   const d = distanceKm({ lat: loc.lat, lng: loc.lng }, { lat: selectedProvider.current_lat, lng: selectedProvider.current_lng });
                   const eta = Math.max(3, Math.round((d / 25) * 60));
                   return (
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                    <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 8, marginTop: 4 }}>
+                      <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 3 }}>
                         <MaterialCommunityIcons name="map-marker-distance" size={12} color={colors.primary} />
                         <Text style={[styles.provInfoMeta, { color: colors.primary }]}>{d < 1 ? `${Math.round(d * 1000)} م` : `${d.toFixed(1)} كم`}</Text>
                       </View>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                      <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 3 }}>
                         <MaterialCommunityIcons name="clock-outline" size={12} color="#8B5CF6" />
                         <Text style={[styles.provInfoMeta, { color: "#8B5CF6" }]}>~ {eta} دقيقة</Text>
                       </View>
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
   provInfoName: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#0F172A", textAlign: "right" },
   provInfoMeta: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "#64748B" },
   provInfoBookBtn: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
   sheetGrabber: { width: 38, height: 4, borderRadius: 2, backgroundColor: "#CBD5E1", alignSelf: "center", marginBottom: 14 },
 
   offerCard: { width: 290, height: 110, borderRadius: 20, overflow: "hidden" },
-  offerInner: { flex: 1, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
+  offerInner: { flex: 1, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12 },
   offerBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, marginBottom: 6 },
   offerBadgeText: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 10 },
   offerTitle: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 3 },
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   catGrid: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     flexWrap: "wrap",
     gap: 12,
     justifyContent: "space-between",
@@ -847,7 +847,7 @@ const styles = StyleSheet.create({
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
   provDot: { position: "absolute", bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: "#10B981", borderWidth: 2.5, borderColor: "#fff" },
   provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
-  provMeta: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 },
+  provMeta: { flexDirection: "row-reverse", alignItems: "center", gap: 4, marginBottom: 8 },
   provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
   provDivider: { color: "#CBD5E1", fontSize: 10 },
   provExp: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#64748B" },
@@ -855,10 +855,10 @@ const styles = StyleSheet.create({
   provPriceText: { color: "#16C47F", fontFamily: "Tajawal_700Bold", fontSize: 10 },
 
   botWrap: { marginHorizontal: 16, marginTop: 22, borderRadius: 22, overflow: "hidden", shadowColor: "#7C3AED", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 14, elevation: 5 },
-  botCard: { flexDirection: "row", alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
+  botCard: { flexDirection: "row-reverse", alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
   botIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" },
   botContent: { flex: 1, alignItems: "flex-end" },
-  botTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  botTitleRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
   botBadgeAi: { backgroundColor: "rgba(255,255,255,0.22)", paddingHorizontal: 7, paddingVertical: 2, borderRadius: 100 },
   botBadgeAiText: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 10, letterSpacing: 1 },
   botTitle: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },

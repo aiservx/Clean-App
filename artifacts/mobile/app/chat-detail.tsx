@@ -48,7 +48,7 @@ function TypingDots({ color }: { color: string }) {
 }
 
 const td = StyleSheet.create({
-  row: { flexDirection: "row", gap: 4, alignItems: "center", paddingVertical: 2 },
+  row: { flexDirection: "row-reverse", gap: 4, alignItems: "center", paddingVertical: 2 },
   dot: { width: 7, height: 7, borderRadius: 4 },
 });
 
@@ -287,7 +287,7 @@ const s = StyleSheet.create({
   emptyS: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 6, textAlign: "center" },
   bubble: { maxWidth: "78%", padding: 10, borderRadius: 16, gap: 4 },
   bubbleT: { fontFamily: "Tajawal_500Medium", fontSize: 13, textAlign: "right" },
-  bubbleTime: { fontFamily: "Tajawal_400Regular", fontSize: 9, textAlign: "left" },
+  bubbleTime: { fontFamily: "Tajawal_400Regular", fontSize: 9, textAlign: "right" },
   typingBubble: {
     padding: 12, paddingHorizontal: 16, borderRadius: 16,
     maxWidth: "28%", marginBottom: 4,
