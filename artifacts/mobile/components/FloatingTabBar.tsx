@@ -35,6 +35,7 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
 
   const providerItems: { key: ActiveKey; label: string; icon: string; iconLib: "feather" | "mci"; path: string }[] = [
     { key: "home", label: "لوحة التحكم", icon: "grid", iconLib: "feather", path: "/(provider)/dashboard" },
+    { key: "bookings", label: "طلباتي", icon: "calendar", iconLib: "feather", path: "/(provider)/bookings" },
     { key: "wallet", label: "المحفظة", icon: "credit-card", iconLib: "feather", path: "/(provider)/wallet" },
     { key: "chat", label: "الرسائل", icon: "message-circle", iconLib: "feather", path: "/(provider)/chat" },
     { key: "profile", label: "الملف الشخصي", icon: "user", iconLib: "feather", path: "/(provider)/profile" },

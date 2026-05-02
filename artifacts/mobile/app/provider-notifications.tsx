@@ -22,6 +22,7 @@ function metaForType(type: string): { icon: string; color: string } {
     booking_accepted:  { icon: "check-circle",  color: "#3B82F6" },
     booking_completed: { icon: "award",          color: "#16C47F" },
     payment:           { icon: "dollar-sign",    color: "#2F80ED" },
+    review_received:   { icon: "star",           color: "#F59E0B" },
     review_request:    { icon: "star",           color: "#F59E0B" },
     promo:             { icon: "gift",           color: "#EC4899" },
     referral:          { icon: "users",          color: "#8B5CF6" },
@@ -80,8 +81,11 @@ export default function ProviderNotifications() {
 
   const markAllRead = async () => {
     if (!session?.user) return;
-    await supabase.from("notifications").update({ read: true }).eq("user_id", session.user.id).eq("read", false);
+    const unreadIds = notifs.filter((n) => !n.read).map((n) => n.id);
     setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+    if (unreadIds.length > 0) {
+      await supabase.from("notifications").update({ read: true }).in("id", unreadIds);
+    }
   };
 
   const markOne = async (id: string) => {

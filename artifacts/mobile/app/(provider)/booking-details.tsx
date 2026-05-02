@@ -254,7 +254,7 @@ export default function ProviderBookingDetails() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 220, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 160, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={[stColor, stColor + "DD"]} style={styles.statusHero}>
           <View style={{ flex: 1, alignItems: "flex-end" }}>
             <Text style={styles.statusHeroLabel}>الحالة الحالية</Text>

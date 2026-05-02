@@ -6,9 +6,11 @@ import {
 import { useFonts } from "expo-font";
 import { Feather, MaterialCommunityIcons, Ionicons, MaterialIcons, FontAwesome, FontAwesome5, AntDesign, Entypo } from "@expo/vector-icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import * as Notifications from "expo-notifications";
+import React, { useEffect, useRef } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 // Safe KeyboardProvider wrapper — falls back to a plain wrapper if the native module crashes
 let KeyboardProvider: React.ComponentType<{ children: React.ReactNode }>;
@@ -23,11 +25,44 @@ import { I18nManager, Text } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BookingProvider } from "@/store/booking";
-import { AuthProvider } from "@/lib/auth";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 import { ChatBadgeProvider } from "@/lib/chatBadge";
 import { NotifBadgeProvider } from "@/lib/notifBadge";
+import { registerForPush } from "@/lib/notifications";
+
+function PushRegistrar() {
+  const { session } = useAuth();
+  const registered = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!session?.user?.id || registered.current === session.user.id) return;
+    registered.current = session.user.id;
+    registerForPush(session.user.id).catch(() => {});
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as any;
+      const bookingId = data?.bookingId || data?.booking_id;
+      const type = data?.type || "";
+      try {
+        if (bookingId) {
+          if (type === "booking_created") {
+            router.push(`/(provider)/booking-details?id=${bookingId}` as any);
+          } else {
+            router.push({ pathname: "/tracking", params: { id: bookingId } } as any);
+          }
+        }
+      } catch {}
+    });
+    return () => sub.remove();
+  }, []);
+
+  return null;
+}
 
 // ── RTL: default to Arabic RTL at module scope ──
 // On first install isRTL is false; we set forceRTL(true) so the *next* launch
@@ -139,6 +174,7 @@ export default function RootLayout() {
               <ThemeProvider>
                 <I18nProvider>
                   <AuthProvider>
+                    <PushRegistrar />
                     <ChatBadgeProvider>
                       <NotifBadgeProvider>
                         <BookingProvider>

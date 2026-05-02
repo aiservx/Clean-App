@@ -7,7 +7,7 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useBooking, DEFAULT_SERVICE } from "@/store/booking";
-import { createNotification } from "@/lib/notifications";
+import { createNotification, notifyAvailableProviders } from "@/lib/notifications";
 
 type Method = {
   id: string;
@@ -286,6 +286,11 @@ export default function PaymentScreen() {
                   "✅ تم استلام طلبك!",
                   "طلبك في طور البحث عن أفضل مزود قريب منك. يمكنك تتبع الحالة من هنا",
                   { bookingId: row.id }
+                );
+                notifyAvailableProviders(
+                  "🔔 طلب جديد!",
+                  `يوجد طلب خدمة جديد متاح بالقرب منك`,
+                  { bookingId: row.id, type: "booking_created" }
                 );
                 router.replace({ pathname: "/tracking", params: { id: row.id } } as any);
               } else router.replace("/tracking");

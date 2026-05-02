@@ -117,7 +117,7 @@ export default function NotificationsScreen() {
       .channel(`notif-${session.user.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${session.user.id}` },
+        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${session.user.id}` },
         () => load(),
       )
       .subscribe();
@@ -139,17 +139,18 @@ export default function NotificationsScreen() {
 
   const markAllRead = async () => {
     if (!session?.user || unreadCount === 0) return;
+    const unreadIds = items.filter((n) => !n.read).map((n) => n.id);
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
-    await supabase
-      .from("notifications")
-      .update({ read: true })
-      .eq("user_id", session.user.id)
-      .eq("read", false);
+    if (unreadIds.length > 0) {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .in("id", unreadIds);
+    }
   };
 
   const onPressItem = async (n: Notif) => {
     if (!n.read) {
-      // Optimistic update
       setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
       await supabase.from("notifications").update({ read: true }).eq("id", n.id);
     }
