@@ -149,13 +149,13 @@ export default function AddressForm() {
         </View>
 
         <Text style={[styles.label, { color: colors.foreground }]}>{t("address_name")}</Text>
-        <TextInput style={[styles.input, { backgroundColor: colors.card, color: colors.foreground }]} placeholder={t("address_name_ph")} placeholderTextColor={colors.mutedForeground} value={title} onChangeText={setTitle} textAlign="right" />
+        <TextInput style={[styles.input, { backgroundColor: colors.card, color: colors.foreground }]} placeholder={t("address_name_ph")} placeholderTextColor={colors.mutedForeground} value={title} onChangeText={setTitle} />
 
         <Text style={[styles.label, { color: colors.foreground }]}>{t("city")}</Text>
-        <TextInput style={[styles.input, { backgroundColor: colors.card, color: colors.foreground }]} value={city} onChangeText={setCity} textAlign="right" />
+        <TextInput style={[styles.input, { backgroundColor: colors.card, color: colors.foreground }]} value={city} onChangeText={setCity} />
 
         <Text style={[styles.label, { color: colors.foreground }]}>{t("address_details")}</Text>
-        <TextInput style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, height: 80, paddingTop: 12 }]} placeholder={t("address_details_ph")} placeholderTextColor={colors.mutedForeground} value={details} onChangeText={setDetails} textAlign="right" multiline />
+        <TextInput style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, height: 80, paddingTop: 12 }]} placeholder={t("address_details_ph")} placeholderTextColor={colors.mutedForeground} value={details} onChangeText={setDetails} multiline />
 
         <TouchableOpacity onPress={() => setDefaultAddr(!defaultAddr)} style={styles.defRow}>
           <View style={[styles.checkBox, { borderColor: colors.primary, backgroundColor: defaultAddr ? colors.primary : "transparent" }]}>

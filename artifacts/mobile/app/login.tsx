@@ -73,7 +73,6 @@ export default function LoginScreen() {
             autoCapitalize="none"
             value={username}
             onChangeText={setUsername}
-            textAlign="right"
           />
         </View>
 
@@ -86,7 +85,6 @@ export default function LoginScreen() {
             secureTextEntry
             value={pwd}
             onChangeText={setPwd}
-            textAlign="right"
           />
         </View>
 

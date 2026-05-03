@@ -106,7 +106,6 @@ export default function SignupScreen() {
               secureTextEntry={(f as any).sec}
               value={f.v}
               onChangeText={f.s}
-              textAlign="right"
             />
           </View>
         ))}

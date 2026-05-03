@@ -113,6 +113,10 @@ async function registerCategories() {
   }
 }
 
+// Store current device's push token for cleanup on signOut
+let _currentDeviceToken: string | null = null;
+export function getCurrentPushToken(): string | null { return _currentDeviceToken; }
+
 // ── Token registration ─────────────────────────────────────────────────────
 export async function registerForPush(userId: string): Promise<string | null> {
   if (!Device.isDevice) {
@@ -143,6 +147,7 @@ export async function registerForPush(userId: string): Promise<string | null> {
     const token = tokenData.data;
 
     console.log("[notifications] push token:", token.slice(0, 30) + "…");
+    _currentDeviceToken = token;
 
     if (token && userId) {
       await supabase
@@ -266,25 +271,24 @@ export async function notifyAvailableProviders(
         console.log("[notifications] notifyProviders: no session token — skipping server route");
         return;
       }
-      await Promise.all(
-        providerIds.map((id: string) =>
-          fetch(`${PUSH_API_URL}/api/push`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-              userId: id,
-              title,
-              body,
-              data: data ?? {},
-              categoryIdentifier: "new_booking",
-              ...(bookingId ? { bookingId } : {}),
-            }),
-          }).catch(() => {}),
-        ),
-      );
+      const res = await fetch(`${PUSH_API_URL}/api/push/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          userIds: providerIds,
+          title,
+          body,
+          data: data ?? {},
+          categoryIdentifier: "new_booking",
+          channelId: "new_booking",
+          ...(bookingId ? { bookingId } : {}),
+        }),
+      }).catch(() => null);
+      const json = await res?.json().catch(() => null);
+      console.log(`[notifications] notifyProviders batch → sent=${json?.sent ?? "?"}/${json?.total ?? "?"}`);
     } else {
       console.warn("[notifications] notifyAvailableProviders: EXPO_PUBLIC_API_URL not set — push skipped. Set it in eas.json and rebuild.");
     }

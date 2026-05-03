@@ -163,7 +163,7 @@ function RatingSheet({
       // Notify provider
       try {
         const body = `حصلت على ${stars} نجوم${comment.trim() ? ` — "${comment.trim().slice(0, 50)}"` : ""}`;
-        sendPushNotification(trigger.providerId, "⭐ تقييم جديد!", body, { bookingId: trigger.bookingId });
+        sendPushNotification(trigger.providerId, "⭐ تقييم جديد!", body, { bookingId: trigger.bookingId }, undefined, "default");
         createNotification(trigger.providerId, "review_received", "⭐ تقييم جديد!", body, { bookingId: trigger.bookingId });
       } catch {}
 

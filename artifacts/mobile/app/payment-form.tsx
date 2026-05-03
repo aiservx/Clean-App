@@ -42,7 +42,6 @@ export default function PaymentForm() {
           maxLength={16}
           value={num}
           onChangeText={setNum}
-          textAlign="right"
         />
 
         <Text style={[styles.label, { color: colors.foreground }]}>اسم حامل البطاقة</Text>
@@ -52,7 +51,6 @@ export default function PaymentForm() {
           placeholderTextColor={colors.mutedForeground}
           value={name}
           onChangeText={setName}
-          textAlign="right"
         />
 
         <View style={{ flexDirection: "row", gap: 10 }}>
@@ -64,7 +62,6 @@ export default function PaymentForm() {
               placeholderTextColor={colors.mutedForeground}
               value={exp}
               onChangeText={setExp}
-              textAlign="right"
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -78,7 +75,6 @@ export default function PaymentForm() {
               secureTextEntry
               value={cvv}
               onChangeText={setCvv}
-              textAlign="right"
             />
           </View>
         </View>

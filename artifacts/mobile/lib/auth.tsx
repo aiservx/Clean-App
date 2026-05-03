@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "./supabase";
 import type { Session, User } from "@supabase/supabase-js";
+import { getCurrentPushToken } from "./notifications";
 
 export type Role = "user" | "provider" | "admin";
 
@@ -198,9 +199,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      const { data: { session: s } } = await supabase.auth.getSession();
-      if (s?.user?.id) {
-        await supabase.from("push_tokens").delete().eq("user_id", s.user.id);
+      const token = getCurrentPushToken();
+      if (token) {
+        await supabase.from("push_tokens").delete().eq("token", token);
       }
     } catch {}
     try {

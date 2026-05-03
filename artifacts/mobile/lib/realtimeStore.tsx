@@ -23,6 +23,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { AppState, type AppStateStatus } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "./supabase";
 import { useAuth } from "./auth";
@@ -425,6 +426,23 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     getAlreadyRated().then((s) => { ratedSetRef.current = s; });
     return () => { removeAllChannels(); };
   }, [uid, isCustomer, subscribe]);
+
+  // ── AppState reconnection ────────────────────────────────────────────────
+  // When the app comes back from background, re-subscribe to realtime channels
+  // and reload data to catch anything missed while the app was inactive.
+
+  useEffect(() => {
+    const handleAppState = (nextState: AppStateStatus) => {
+      if (nextState === "active" && uid) {
+        console.log("[realtime] app became active — reconnecting channels");
+        subscribe(uid);
+        if (isCustomer) loadBookings(uid);
+        loadNotifs(uid);
+      }
+    };
+    const sub = AppState.addEventListener("change", handleAppState);
+    return () => sub.remove();
+  }, [uid, isCustomer, subscribe, loadBookings, loadNotifs]);
 
   // ── Public API ──────────────────────────────────────────────────────────
 

@@ -302,6 +302,7 @@ alter publication supabase_realtime add table booking_status_log;
 alter publication supabase_realtime add table notifications;
 alter publication supabase_realtime add table providers;
 alter publication supabase_realtime add table messages;
+alter publication supabase_realtime add table chat_rooms;
 
 -- ============================================================================
 -- ADMIN POLICIES — admins can do everything (fix for "edit/delete don't work")

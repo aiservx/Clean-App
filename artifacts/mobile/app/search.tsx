@@ -34,7 +34,6 @@ export default function SearchScreen() {
           placeholder="ابحث عن خدمة أو عامل..."
           placeholderTextColor={colors.mutedForeground}
           style={styles.input}
-          textAlign="right"
           value={q}
           onChangeText={setQ}
         />

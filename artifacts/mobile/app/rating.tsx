@@ -109,7 +109,7 @@ export default function RatingScreen() {
 
     const notifTitle = "⭐ تقييم جديد!";
     const notifBody = `حصلت على تقييم ${rating} نجوم${comment.trim() ? ` — "${comment.trim().slice(0, 60)}"` : ""}`;
-    sendPushNotification(providerId, notifTitle, notifBody, { bookingId });
+    sendPushNotification(providerId, notifTitle, notifBody, { bookingId }, undefined, "default");
     createNotification(providerId, "review_received", notifTitle, notifBody, { bookingId });
 
     setSubmitting(false);
@@ -214,7 +214,6 @@ export default function RatingScreen() {
                 placeholder="اكتب ملاحظاتك عن الخدمة…"
                 placeholderTextColor="#94A3B8"
                 multiline
-                textAlign="right"
                 textAlignVertical="top"
                 value={comment}
                 onChangeText={(t) => t.length <= 500 && setComment(t)}
