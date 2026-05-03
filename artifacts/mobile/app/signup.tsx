@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   title: { fontFamily: "Tajawal_700Bold", fontSize: 24, marginBottom: 4 },
   sub: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginBottom: 14 },
   banner: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderRadius: 14, borderWidth: 1.5, marginBottom: 14 },
-  bannerText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14, flex: 1, textAlign: "right" },
+  bannerText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14, flex: 1 },
   roleRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
   roleC: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, padding: 14, borderRadius: 16, borderWidth: 1.5 },
   roleT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },

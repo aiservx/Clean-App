@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (p: { email: string; password: string; full_name: string; phone: string; role: Role; username?: string; gender?: string }) => {
-    const apiBase = (process.env.EXPO_PUBLIC_API_URL ?? "https://609c9cb2-0be1-4424-a700-c1a6f116b301-00-39jip95chll1j.picard.replit.dev:8080").replace(/\/$/, "");
+    const apiBase = (process.env.EXPO_PUBLIC_API_URL ?? "https://clean-app--create43.replit.app").replace(/\/$/, "");
     try {
       // Route through API server which uses Admin SDK to bypass broken trigger
       const res = await fetch(`${apiBase}/api/auth/register`, {
