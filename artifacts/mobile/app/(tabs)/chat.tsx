@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { useI18n } from "@/lib/i18n";
 import { useChatBadge } from "@/lib/chatBadge";
+import { getBatchRoomUnread } from "@/lib/chatRoomRead";
 import GuestEmpty from "@/components/GuestEmpty";
 import FloatingTabBar from "@/components/FloatingTabBar";
 
@@ -66,22 +67,21 @@ export default function ChatInboxScreen() {
   const loadConversations = useCallback(async () => {
     if (!session?.user) { setLoading(false); return; }
     try {
+      const userId = session.user.id;
       const isProvider = profile?.role === "provider";
 
-      // Load chat rooms
       const { data: rooms } = await supabase
         .from("chat_rooms")
         .select("id, booking_id, user_id, provider_id, created_at")
-        .or(isProvider ? `provider_id.eq.${session.user.id}` : `user_id.eq.${session.user.id}`)
+        .or(isProvider ? `provider_id.eq.${userId}` : `user_id.eq.${userId}`)
         .order("created_at", { ascending: false })
         .limit(50);
 
       if (!rooms || rooms.length === 0) {
-        // Also check bookings without chat rooms
         const { data: bookings } = await supabase
           .from("bookings")
           .select("id, provider_id, status, created_at, services(title_ar), provider:profiles!bookings_provider_id_fkey(full_name, avatar_url), client:profiles!bookings_user_id_fkey(full_name, avatar_url)")
-          .eq(isProvider ? "provider_id" : "user_id", session.user.id)
+          .eq(isProvider ? "provider_id" : "user_id", userId)
           .in("status", ["pending", "accepted", "on_the_way", "in_progress", "completed"])
           .order("created_at", { ascending: false })
           .limit(20);
@@ -106,16 +106,23 @@ export default function ChatInboxScreen() {
         return;
       }
 
-      // For each room, get last message + booking info
-      const convs: Conversation[] = [];
-      for (const room of rooms) {
+      const roomIds = rooms.map((r) => r.id);
+      const [unreadMap, ...roomDetails] = await Promise.all([
+        getBatchRoomUnread(userId, roomIds),
+        ...rooms.map((room) => {
+          const otherId = isProvider ? room.user_id : room.provider_id;
+          return Promise.all([
+            supabase.from("profiles").select("full_name, avatar_url").eq("id", otherId).maybeSingle(),
+            supabase.from("messages").select("body, created_at").eq("room_id", room.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+            supabase.from("bookings").select("status, services(title_ar)").eq("id", room.booking_id).maybeSingle(),
+          ]);
+        }),
+      ]);
+
+      const convs: Conversation[] = rooms.map((room, i) => {
         const otherId = isProvider ? room.user_id : room.provider_id;
-        const [profileRes, lastMsgRes, bookingRes] = await Promise.all([
-          supabase.from("profiles").select("full_name, avatar_url").eq("id", otherId).maybeSingle(),
-          supabase.from("messages").select("body, created_at").eq("room_id", room.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-          supabase.from("bookings").select("status, services(title_ar)").eq("id", room.booking_id).maybeSingle(),
-        ]);
-        convs.push({
+        const [profileRes, lastMsgRes, bookingRes] = roomDetails[i];
+        return {
           room_id: room.id,
           booking_id: room.booking_id,
           other_id: otherId,
@@ -123,11 +130,11 @@ export default function ChatInboxScreen() {
           other_avatar: profileRes.data?.avatar_url || null,
           last_message: lastMsgRes.data?.body || "ابدأ المحادثة",
           last_at: lastMsgRes.data?.created_at || room.created_at,
-          unread: 0,
+          unread: (unreadMap as Record<string, number>)[room.id] ?? 0,
           service_title: (bookingRes.data as any)?.services?.title_ar || "خدمة",
           status: (bookingRes.data as any)?.status || "pending",
-        });
-      }
+        };
+      });
       convs.sort((a, b) => new Date(b.last_at).getTime() - new Date(a.last_at).getTime());
       setConversations(convs);
     } catch (e) {
@@ -156,7 +163,6 @@ export default function ChatInboxScreen() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
         <View style={{ width: 44 }} />
         <View style={s.hCenter}>
@@ -173,7 +179,6 @@ export default function ChatInboxScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
-        {/* AI Assistant card */}
         <TouchableOpacity
           style={[s.aiCard, { backgroundColor: "#7C3AED" }]}
           activeOpacity={0.9}
@@ -198,7 +203,6 @@ export default function ChatInboxScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Conversations */}
         <Text style={[s.sectionTitle, { color: colors.foreground }]}>المحادثات</Text>
 
         {loading ? (
@@ -212,41 +216,64 @@ export default function ChatInboxScreen() {
             <Text style={[s.emptySub, { color: colors.mutedForeground }]}>{t("no_conversations_sub")}</Text>
           </View>
         ) : (
-          conversations.map((conv) => {
-            const initials = conv.other_name.trim().split(" ").map((w) => w[0]).slice(0, 2).join("");
-            return (
-              <TouchableOpacity
-                key={conv.booking_id}
-                style={[s.convCard, { backgroundColor: colors.card }]}
-                activeOpacity={0.85}
-                onPress={() => router.push({
-                  pathname: "/chat-detail",
-                  params: {
-                    name: conv.other_name,
-                    bookingId: conv.booking_id,
-                    ...(conv.room_id ? { roomId: conv.room_id } : {}),
-                  },
-                } as any)}
-              >
-                <View style={s.convRow}>
-                  <Image source={conv.other_avatar ? { uri: conv.other_avatar } : require("@/assets/images/default-avatar.png")} style={s.convAvatar} />
-                  <View style={s.convInfo}>
-                    <View style={s.convNameRow}>
-                      <Text style={[s.convName, { color: colors.foreground }]} numberOfLines={1}>{conv.other_name}</Text>
-                      <Text style={[s.convTime, { color: colors.mutedForeground }]}>{fmtTime(conv.last_at)}</Text>
+          conversations.map((conv) => (
+            <TouchableOpacity
+              key={conv.booking_id}
+              style={[s.convCard, { backgroundColor: conv.unread > 0 ? colors.primaryLight : colors.card }]}
+              activeOpacity={0.85}
+              onPress={() => router.push({
+                pathname: "/chat-detail",
+                params: {
+                  name: conv.other_name,
+                  bookingId: conv.booking_id,
+                  ...(conv.room_id ? { roomId: conv.room_id } : {}),
+                },
+              } as any)}
+            >
+              <View style={s.convRow}>
+                <View style={{ position: "relative" }}>
+                  <Image
+                    source={conv.other_avatar ? { uri: conv.other_avatar } : require("@/assets/images/default-avatar.png")}
+                    style={s.convAvatar}
+                  />
+                  {conv.unread > 0 && (
+                    <View style={[s.avatarBadge, { backgroundColor: colors.primary }]}>
+                      <Text style={s.avatarBadgeT}>{conv.unread > 99 ? "99+" : conv.unread}</Text>
                     </View>
-                    <Text style={[s.convMsg, { color: colors.mutedForeground }]} numberOfLines={1}>{conv.last_message}</Text>
-                    <View style={s.convMeta}>
-                      <View style={[s.convStatus, { backgroundColor: statusColor(conv.status) + "22" }]}>
-                        <Text style={[s.convStatusT, { color: statusColor(conv.status) }]}>{STATUS_AR[conv.status] || conv.status}</Text>
+                  )}
+                </View>
+                <View style={s.convInfo}>
+                  <View style={s.convNameRow}>
+                    <Text style={[s.convName, { color: colors.foreground, fontFamily: conv.unread > 0 ? "Tajawal_700Bold" : "Tajawal_500Medium" }]} numberOfLines={1}>
+                      {conv.other_name}
+                    </Text>
+                    <Text style={[s.convTime, { color: conv.unread > 0 ? colors.primary : colors.mutedForeground }]}>
+                      {fmtTime(conv.last_at)}
+                    </Text>
+                  </View>
+                  <View style={s.convMsgRow}>
+                    <Text
+                      style={[s.convMsg, { flex: 1, color: conv.unread > 0 ? colors.foreground : colors.mutedForeground, fontFamily: conv.unread > 0 ? "Tajawal_700Bold" : "Tajawal_400Regular" }]}
+                      numberOfLines={1}
+                    >
+                      {conv.last_message}
+                    </Text>
+                    {conv.unread > 0 && (
+                      <View style={[s.unreadBadge, { backgroundColor: colors.primary }]}>
+                        <Text style={s.unreadBadgeT}>{conv.unread > 99 ? "99+" : String(conv.unread)}</Text>
                       </View>
-                      <Text style={[s.convService, { color: colors.mutedForeground }]}>{conv.service_title}</Text>
+                    )}
+                  </View>
+                  <View style={s.convMeta}>
+                    <View style={[s.convStatus, { backgroundColor: statusColor(conv.status) + "22" }]}>
+                      <Text style={[s.convStatusT, { color: statusColor(conv.status) }]}>{STATUS_AR[conv.status] || conv.status}</Text>
                     </View>
+                    <Text style={[s.convService, { color: colors.mutedForeground }]}>{conv.service_title}</Text>
                   </View>
                 </View>
-              </TouchableOpacity>
-            );
-          })
+              </View>
+            </TouchableOpacity>
+          ))
         )}
       </ScrollView>
 
@@ -291,11 +318,24 @@ const s = StyleSheet.create({
   convCard: { borderRadius: 16, padding: 14, marginBottom: 10 },
   convRow: { flexDirection: "row", gap: 12 },
   convAvatar: { width: 50, height: 50, borderRadius: 25 },
+  avatarBadge: {
+    position: "absolute", top: -4, end: -4,
+    minWidth: 18, height: 18, borderRadius: 9,
+    alignItems: "center", justifyContent: "center",
+    paddingHorizontal: 4, borderWidth: 2, borderColor: "#FFF",
+  },
+  avatarBadgeT: { color: "#FFF", fontSize: 9, fontFamily: "Tajawal_700Bold" },
   convInfo: { flex: 1, alignItems: "flex-end" },
-  convNameRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  convName: { fontFamily: "Tajawal_700Bold", fontSize: 14, flex: 1 },
+  convNameRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" },
+  convName: { fontSize: 14, flex: 1 },
   convTime: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
-  convMsg: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 4 },
+  convMsgRow: { flexDirection: "row", alignItems: "center", width: "100%", marginTop: 4, gap: 6 },
+  convMsg: { fontSize: 12 },
+  unreadBadge: {
+    minWidth: 20, height: 20, borderRadius: 10,
+    alignItems: "center", justifyContent: "center", paddingHorizontal: 5,
+  },
+  unreadBadgeT: { color: "#FFF", fontSize: 10, fontFamily: "Tajawal_700Bold" },
   convMeta: { flexDirection: "row", gap: 8, marginTop: 6, alignItems: "center", justifyContent: "flex-start" },
   convStatus: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   convStatusT: { fontFamily: "Tajawal_700Bold", fontSize: 9 },

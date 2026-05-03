@@ -10,6 +10,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { sendPushNotification, createNotification } from "@/lib/notifications";
+import { markRoomRead } from "@/lib/chatRoomRead";
 
 type Msg = { id: string; sender_id: string; body: string; created_at: string };
 
@@ -61,6 +63,7 @@ export default function ChatDetail() {
   }>();
 
   const [roomId, setRoomId] = useState<string | null>(paramRoomId ?? null);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -70,6 +73,20 @@ export default function ChatDetail() {
   const otherTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const isTypingRef = useRef(false);
+
+  const resolveOtherUser = useCallback(async (rid: string) => {
+    if (!session?.user) return;
+    try {
+      const { data: room } = await supabase
+        .from("chat_rooms")
+        .select("user_id, provider_id")
+        .eq("id", rid)
+        .maybeSingle();
+      if (!room) return;
+      const other = room.user_id === session.user.id ? room.provider_id : room.user_id;
+      setOtherUserId(other ?? null);
+    } catch {}
+  }, [session]);
 
   const ensureRoom = useCallback(async (): Promise<string | null> => {
     if (!session?.user) return null;
@@ -96,9 +113,15 @@ export default function ChatDetail() {
       .eq("room_id", rid).order("created_at", { ascending: true });
     if (data) setMsgs(data as Msg[]);
     setLoading(false);
-  }, [ensureRoom]);
+    await resolveOtherUser(rid);
+  }, [ensureRoom, resolveOtherUser]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!roomId || !session?.user) return;
+    markRoomRead(session.user.id, roomId).catch(() => {});
+  }, [roomId, session?.user?.id]);
 
   useEffect(() => {
     if (!roomId || !session?.user) return;
@@ -117,6 +140,7 @@ export default function ChatDetail() {
         if ((p.new as Msg).sender_id !== userId) {
           setOtherTyping(false);
           if (otherTypingTimeoutRef.current) clearTimeout(otherTypingTimeoutRef.current);
+          markRoomRead(userId, roomId).catch(() => {});
         }
         setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
       })
@@ -179,6 +203,26 @@ export default function ChatDetail() {
     if (!rid) return;
     await supabase.from("messages").insert({ room_id: rid, sender_id: session.user.id, body });
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+
+    const other = otherUserId;
+    if (other) {
+      const senderName = name || "مستخدم نظافة";
+      sendPushNotification(
+        other,
+        `💬 رسالة من ${senderName}`,
+        body.length > 80 ? body.slice(0, 80) + "…" : body,
+        { bookingId: bookingId ?? rid, roomId: rid, type: "chat_message" },
+        undefined,
+        "chat",
+      ).catch(() => {});
+      createNotification(
+        other,
+        "chat_message",
+        `💬 رسالة من ${senderName}`,
+        body,
+        { bookingId: bookingId ?? rid, roomId: rid },
+      ).catch(() => {});
+    }
   };
 
   return (

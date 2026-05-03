@@ -8,6 +8,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { useChatBadge } from "@/lib/chatBadge";
+import { getBatchRoomUnread } from "@/lib/chatRoomRead";
 
 type Room = {
   id: string;
@@ -18,6 +19,7 @@ type Room = {
   lastMsgBody: string | null;
   lastMsgAt: string | null;
   createdAt: string;
+  unread: number;
 };
 
 const STATUS_AR: Record<string, string> = {
@@ -50,6 +52,7 @@ export default function ProviderChat() {
   const load = useCallback(async () => {
     if (!session?.user) { setLoading(false); return; }
     try {
+      const userId = session.user.id;
       const { data } = await supabase
         .from("chat_rooms")
         .select(`
@@ -57,9 +60,10 @@ export default function ProviderChat() {
           customer:profiles!chat_rooms_user_id_fkey(full_name),
           bookings:booking_id(status, services:service_id(title_ar))
         `)
-        .eq("provider_id", session.user.id)
+        .eq("provider_id", userId)
         .order("created_at", { ascending: false })
         .limit(30);
+
       if (data) {
         const roomIds = data.map((r: any) => r.id);
         let lastMsgs: Record<string, { body: string; created_at: string }> = {};
@@ -74,6 +78,9 @@ export default function ProviderChat() {
             });
           }
         }
+
+        const unreadMap = roomIds.length > 0 ? await getBatchRoomUnread(userId, roomIds) : {};
+
         setRooms(data.map((r: any) => ({
           id: r.id,
           bookingId: r.booking_id,
@@ -83,6 +90,7 @@ export default function ProviderChat() {
           lastMsgBody: lastMsgs[r.id]?.body ?? null,
           lastMsgAt: lastMsgs[r.id]?.created_at ?? r.created_at,
           createdAt: r.created_at,
+          unread: (unreadMap as Record<string, number>)[r.id] ?? 0,
         })));
       }
     } catch {}
@@ -121,17 +129,27 @@ export default function ProviderChat() {
           ) : rooms.map((r) => (
             <TouchableOpacity
               key={r.id}
-              style={[styles.row, { borderBottomColor: colors.border }]}
+              style={[styles.row, { borderBottomColor: colors.border, backgroundColor: r.unread > 0 ? colors.primaryLight : "transparent" }]}
               onPress={() => router.push(
                 `/chat-detail?name=${encodeURIComponent(r.customerName ?? "عميل")}&roomId=${r.id}${r.bookingId ? `&bookingId=${r.bookingId}` : ""}` as any
               )}
             >
               <View style={styles.left}>
-                <Text style={[styles.time, { color: colors.mutedForeground }]}>{relTime(r.lastMsgAt)}</Text>
+                <Text style={[styles.time, { color: r.unread > 0 ? colors.primary : colors.mutedForeground }]}>{relTime(r.lastMsgAt)}</Text>
+                {r.unread > 0 && (
+                  <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.unreadBadgeT}>{r.unread > 99 ? "99+" : String(r.unread)}</Text>
+                  </View>
+                )}
               </View>
               <View style={styles.center}>
-                <Text style={[styles.name, { color: colors.foreground }]}>{r.customerName ?? "عميل"}</Text>
-                <Text style={[styles.last, { color: colors.mutedForeground }]} numberOfLines={1}>
+                <Text style={[styles.name, { color: colors.foreground, fontFamily: r.unread > 0 ? "Tajawal_700Bold" : "Tajawal_700Bold" }]}>
+                  {r.customerName ?? "عميل"}
+                </Text>
+                <Text
+                  style={[styles.last, { color: r.unread > 0 ? colors.foreground : colors.mutedForeground, fontFamily: r.unread > 0 ? "Tajawal_700Bold" : "Tajawal_500Medium" }]}
+                  numberOfLines={1}
+                >
                   {r.lastMsgBody
                     ? r.lastMsgBody
                     : r.serviceName
@@ -139,8 +157,8 @@ export default function ProviderChat() {
                       : "ابدأ المحادثة"}
                 </Text>
               </View>
-              <View style={[styles.av, { backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }]}>
-                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 18, color: colors.primary }}>
+              <View style={[styles.av, { backgroundColor: r.unread > 0 ? colors.primary : colors.primaryLight, alignItems: "center", justifyContent: "center", position: "relative" }]}>
+                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 18, color: r.unread > 0 ? "#FFF" : colors.primary }}>
                   {(r.customerName ?? "ع").charAt(0)}
                 </Text>
               </View>
@@ -157,12 +175,17 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 16, marginBottom: 14 },
   hT: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   hS: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: 14, borderBottomWidth: 1 },
-  left: { alignItems: "center", justifyContent: "center", width: 50 },
+  row: { flexDirection: "row", alignItems: "center", paddingVertical: 14, paddingHorizontal: 10, borderBottomWidth: 1, borderRadius: 12, marginBottom: 2 },
+  left: { alignItems: "center", justifyContent: "center", width: 54, gap: 4 },
   time: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
+  unreadBadge: {
+    minWidth: 20, height: 20, borderRadius: 10,
+    alignItems: "center", justifyContent: "center", paddingHorizontal: 5,
+  },
+  unreadBadgeT: { color: "#FFF", fontSize: 10, fontFamily: "Tajawal_700Bold" },
   center: { flex: 1, alignItems: "flex-end", marginHorizontal: 12 },
-  name: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 2 },
-  last: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
+  name: { fontSize: 14, marginBottom: 2 },
+  last: { fontSize: 11 },
   av: { width: 50, height: 50, borderRadius: 25 },
   emptyT: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 16, textAlign: "center" },
   emptyS: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 6, textAlign: "center" },
