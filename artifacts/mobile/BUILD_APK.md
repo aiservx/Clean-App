@@ -1,6 +1,24 @@
 # بناء ملف APK لتطبيق نظافة
 
-## Build #10 — جارٍ الآن 🔄 (الإصلاح الحقيقي للكراش)
+## Build #11 — جارٍ الآن 🔄 (خريطة حقيقية + إشعارات + RTL)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `13c25071-6bc4-400b-9f4a-73dd09aad777` |
+| Platform | Android |
+| Profile | **preview** |
+| Status | **in progress** |
+| صفحة الـ Build | https://expo.dev/accounts/hadystow/projects/mobile/builds/13c25071-6bc4-400b-9f4a-73dd09aad777 |
+
+### الإصلاحات في Build #11
+- `AppMap.android.tsx` — خريطة OpenStreetMap حقيقية عبر WebView + Leaflet (بدون Google Maps API)
+- `_layout.tsx` — RTL مع حماية AsyncStorage لمنع التكرار اللانهائي
+- `notifications.ts` — `createNotification` تُرسل push تلقائياً
+- `push_notification_trigger.sql` — trigger قاعدة البيانات للإشعارات التلقائية
+
+---
+
+## Build #10 — ✅ اكتمل (إصلاح الكراش)
 
 | الحقل | القيمة |
 |-------|--------|

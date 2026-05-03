@@ -220,13 +220,18 @@ export async function sendPushNotification(
   }
 }
 
-// ── Create in-app notification record ─────────────────────────────────────
+// ── Create in-app notification record AND send push ────────────────────────
+// This is the single source of truth — calling this always inserts a DB row
+// AND sends a push notification (if the user has a registered token).
+// The DB-level trigger (push_notification_trigger.sql) acts as a backup
+// when the API server is unreachable.
 export async function createNotification(
   userId: string,
   type: string,
   title: string,
   body: string,
   data?: Record<string, any>,
+  skipPush = false,
 ) {
   try {
     await supabase.from("notifications").insert({
@@ -240,6 +245,15 @@ export async function createNotification(
     console.log(`[notifications] createNotification type=${type} for user=${userId} ✓`);
   } catch (e) {
     console.log("[notifications] createNotification failed:", (e as Error).message);
+  }
+
+  // Also fire push notification so the user gets it on their device
+  if (!skipPush) {
+    const channelId = type === "booking_created" ? "new_booking"
+      : type === "booking_update"  ? "booking_status"
+      : type === "message"         ? "chat"
+      : "default";
+    await sendPushNotification(userId, title, body, data, type, channelId);
   }
 }
 
@@ -293,10 +307,10 @@ export async function notifyAvailableProviders(
       console.warn("[notifications] notifyAvailableProviders: EXPO_PUBLIC_API_URL not set — push skipped. Set it in eas.json and rebuild.");
     }
 
-    // Save in-app notification records for all providers (non-blocking)
+    // Save in-app notification records for all providers (skip push — batch already handled it)
     Promise.all(
       providerIds.map((id: string) =>
-        createNotification(id, "booking_created", title, body, data ?? {}),
+        createNotification(id, "booking_created", title, body, data ?? {}, true),
       ),
     ).catch(() => {});
   } catch (e) {

@@ -141,11 +141,32 @@ function PushRegistrar() {
 }
 
 // ── RTL: force Arabic RTL from the very first launch ──────────────────────
-// forceRTL takes effect on next cold start — no reloadAsync needed
-// (reloadAsync on a fresh EAS project can crash the app if the updates
-//  channel hasn't been published yet)
+// forceRTL(true) takes effect on the NEXT JS load. On first install we call
+// reloadAsync() exactly once (guarded by AsyncStorage) so the user never
+// sees an LTR flash. The guard prevents an infinite reload loop.
 I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
+if (!I18nManager.isRTL) {
+  // Kick off async guard — do NOT await at module level
+  (async () => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const AsyncStorage = require("@react-native-async-storage/async-storage").default;
+      const done = await AsyncStorage.getItem("__rtl_reloaded_v2__");
+      if (!done) {
+        await AsyncStorage.setItem("__rtl_reloaded_v2__", "1");
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { reloadAsync } = require("expo-updates");
+        if (typeof reloadAsync === "function") {
+          await reloadAsync();
+        }
+      }
+    } catch (e) {
+      // expo-updates unavailable or channel not published — RTL applies on next cold restart
+      console.log("[RTL] reload skipped:", (e as Error)?.message);
+    }
+  })();
+}
 
 // Web: direction is handled by I18nProvider via DOM
 if (typeof document !== "undefined") {
