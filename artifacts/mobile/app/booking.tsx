@@ -135,15 +135,15 @@ export default function BookingScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
+        </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>إتمام الحجز</Text>
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
             راجع تفاصيل الحجز وأكد الطلب
           </Text>
         </View>
-        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
-        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
@@ -220,8 +220,8 @@ export default function BookingScreen() {
           <>
             {/* Date Selection */}
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>اختر التاريخ</Text>
               <Feather name="calendar" size={18} color={colors.foreground} />
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>اختر التاريخ</Text>
             </View>
             <ScrollView
               horizontal
@@ -253,8 +253,8 @@ export default function BookingScreen() {
 
             {/* Time Selection */}
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>اختر الوقت</Text>
               <Feather name="clock" size={18} color={colors.foreground} />
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>اختر الوقت</Text>
             </View>
             <ScrollView
               horizontal
@@ -287,10 +287,10 @@ export default function BookingScreen() {
 
         {/* Provider Selection — REAL from DB */}
         <View style={styles.sectionHeader}>
+          <Feather name="user" size={18} color={colors.foreground} />
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             {bookingType === "instant" ? "أقرب فني متاح" : "اختر الفني"}
           </Text>
-          <Feather name="user" size={18} color={colors.foreground} />
         </View>
 
         {loadingProvs ? (
@@ -328,8 +328,8 @@ export default function BookingScreen() {
                   <Image source={p.avatar_url ? { uri: p.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.cleanerAvatar} />
                   <Text style={[styles.cleanerName, { color: colors.foreground }]} numberOfLines={1}>{p.full_name || "فني"}</Text>
                   <View style={styles.ratingRow}>
-                    <Text style={[styles.ratingText, { color: colors.foreground }]}>{p.rating.toFixed(1)}</Text>
                     <MaterialCommunityIcons name="star" size={14} color={colors.warning} />
+                    <Text style={[styles.ratingText, { color: colors.foreground }]}>{p.rating.toFixed(1)}</Text>
                   </View>
                   {p.d_km != null && (
                     <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 10, color: colors.mutedForeground, marginTop: 2 }}>
@@ -346,34 +346,34 @@ export default function BookingScreen() {
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.summaryHeader, { color: colors.foreground }]}>ملخص الطلب</Text>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{service.title}</Text>
             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الخدمة</Text>
+            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{service.title}</Text>
           </View>
           {bookingType === "scheduled" && selectedDate && (
             <>
               <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>التاريخ</Text>
                 <Text style={[styles.summaryValue, { color: colors.foreground }]}>
                   {selectedDate.day}، {selectedDate.num} {selectedDate.month}
                 </Text>
-                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>التاريخ</Text>
               </View>
               <View style={styles.summaryRow}>
-                <Text style={[styles.summaryValue, { color: colors.foreground }]}>{selectedTime.range}</Text>
                 <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الوقت</Text>
+                <Text style={[styles.summaryValue, { color: colors.foreground }]}>{selectedTime.range}</Text>
               </View>
             </>
           )}
           {bookingType === "instant" && (
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryValue, { color: colors.primary }]}>الآن (خلال دقائق)</Text>
               <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الموعد</Text>
+              <Text style={[styles.summaryValue, { color: colors.primary }]}>الآن (خلال دقائق)</Text>
             </View>
           )}
           <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الفني</Text>
             <Text style={[styles.summaryValue, { color: colors.foreground }]}>
               {selectedProvider?.full_name || "أقرب فني متاح"}
             </Text>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الفني</Text>
           </View>
 
           <View style={[styles.divider, { backgroundColor: colors.border }]} />

@@ -126,28 +126,28 @@ export default function BookingDetails() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
 
         <View style={[styles.statusCard, { backgroundColor: isDone && booking.status !== "completed" ? "#EF4444" : colors.primary }]}>
+          <Feather name={(STATUS_ICON[booking.status] ?? "circle") as any} size={46} color="rgba(255,255,255,0.85)" />
           <View style={{ flex: 1 }}>
             <Text style={styles.statusL}>الحالة الحالية</Text>
             <Text style={styles.statusT}>{STATUS_AR[booking.status] ?? booking.status}</Text>
             <Text style={styles.statusS}>{fmtDate(booking.scheduled_at)}</Text>
           </View>
-          <Feather name={(STATUS_ICON[booking.status] ?? "circle") as any} size={46} color="rgba(255,255,255,0.85)" />
         </View>
 
         {booking.provider && (
           <View style={[styles.box, { backgroundColor: colors.card }]}>
             <View style={styles.row}>
-              <Image source={booking.provider.avatar_url ? { uri: booking.provider.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.av} />
-              <View style={{ flex: 1, marginHorizontal: 10, alignItems: "flex-end" }}>
-                <Text style={[styles.n, { color: colors.foreground }]}>{booking.provider.full_name ?? "مزود الخدمة"}</Text>
-                <Text style={[styles.s, { color: colors.mutedForeground }]}>مزود خدمة معتمد</Text>
-              </View>
               <TouchableOpacity
                 style={[styles.icon, { backgroundColor: colors.primaryLight }]}
                 onPress={() => router.push(`/chat-detail?name=${encodeURIComponent(booking.provider?.full_name ?? "مزود")}&bookingId=${booking.id}` as any)}
               >
                 <Feather name="message-circle" size={16} color={colors.primary} />
               </TouchableOpacity>
+              <View style={{ flex: 1, marginHorizontal: 10 }}>
+                <Text style={[styles.n, { color: colors.foreground }]}>{booking.provider.full_name ?? "مزود الخدمة"}</Text>
+                <Text style={[styles.s, { color: colors.mutedForeground }]}>مزود خدمة معتمد</Text>
+              </View>
+              <Image source={booking.provider.avatar_url ? { uri: booking.provider.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.av} />
             </View>
           </View>
         )}
@@ -156,15 +156,15 @@ export default function BookingDetails() {
         <View style={[styles.box, { backgroundColor: colors.card }]}>
           {timeline.map((s, i) => (
             <View key={s.step} style={styles.tlRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.tlT, { color: s.done ? colors.foreground : colors.mutedForeground, fontFamily: s.active ? "Tajawal_700Bold" : "Tajawal_500Medium" }]}>{s.label}</Text>
-                <Text style={[styles.tlTime, { color: colors.mutedForeground }]}>{s.time}</Text>
-              </View>
               <View style={styles.tlIconCol}>
                 {i < timeline.length - 1 && <View style={[styles.tlLine, { backgroundColor: timeline[i + 1]?.done ? colors.primary : colors.border }]} />}
                 <View style={[styles.tlDot, { backgroundColor: s.done ? colors.primary : colors.border, borderWidth: s.active ? 4 : 0, borderColor: colors.primaryLight }]}>
                   {s.done && <Feather name="check" size={10} color="#FFF" />}
                 </View>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.tlT, { color: s.done ? colors.foreground : colors.mutedForeground, fontFamily: s.active ? "Tajawal_700Bold" : "Tajawal_500Medium" }]}>{s.label}</Text>
+                <Text style={[styles.tlTime, { color: colors.mutedForeground }]}>{s.time}</Text>
               </View>
             </View>
           ))}
@@ -180,8 +180,8 @@ export default function BookingDetails() {
             { l: "طريقة الدفع",   v: booking.payment_method === "cash" ? "نقدي" : booking.payment_method === "card" ? "بطاقة" : "—" },
           ].map((d) => (
             <View key={d.l} style={styles.dRow}>
-              <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
               <Text style={[styles.dL, { color: colors.mutedForeground }]}>{d.l}</Text>
+              <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
             </View>
           ))}
         </View>
@@ -193,13 +193,13 @@ export default function BookingDetails() {
             { l: "ضريبة (15%)", v: `${tax.toFixed(0)} ر.س` },
           ].map((d) => (
             <View key={d.l} style={styles.dRow}>
-              <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
               <Text style={[styles.dL, { color: colors.mutedForeground }]}>{d.l}</Text>
+              <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
             </View>
           ))}
           <View style={[styles.dRow, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10, marginTop: 4 }]}>
-            <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 16, color: colors.primary }}>{booking.total.toFixed(0)} ر.س</Text>
             <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.foreground }}>الإجمالي</Text>
+            <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 16, color: colors.primary }}>{booking.total.toFixed(0)} ر.س</Text>
           </View>
         </View>
       </ScrollView>

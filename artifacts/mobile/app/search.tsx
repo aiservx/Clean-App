@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image , I18nManager} from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 import ScreenHeader from "@/components/ScreenHeader";
@@ -72,15 +72,15 @@ export default function SearchScreen() {
         <View style={{ gap: 10 }}>
           {PROVIDERS.map((p) => (
             <TouchableOpacity key={p.id} style={[styles.prov, { backgroundColor: colors.card }]} onPress={() => router.push(`/provider/${p.id}`)}>
-              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
-              <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 10 }}>
+              <Image source={p.img} style={{ width: 44, height: 44, borderRadius: 22 }} />
+              <View style={{ flex: 1, marginHorizontal: 10 }}>
                 <Text style={[styles.provN, { color: colors.foreground }]}>{p.n}</Text>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                  <Feather name="star" size={11} color={colors.warning} />
+                  <MaterialCommunityIcons name="star" size={11} color={colors.warning} />
                   <Text style={[styles.provR, { color: colors.mutedForeground }]}>{p.r}</Text>
                 </View>
               </View>
-              <Image source={p.img} style={{ width: 44, height: 44, borderRadius: 22 }} />
+              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
             </TouchableOpacity>
           ))}
         </View>

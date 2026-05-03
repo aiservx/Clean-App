@@ -230,13 +230,13 @@ function RatingSheet({
             >
               {/* Header row */}
               <View style={styles.headerRow}>
+                <TouchableOpacity style={styles.closeBtn} onPress={handleDismiss}>
+                  <Feather name="x" size={18} color="#64748B" />
+                </TouchableOpacity>
                 <View style={styles.headerTextWrap}>
                   <Text style={styles.headerTitle}>قيّم الخدمة</Text>
                   <Text style={styles.headerSub}>كيف كانت تجربتك مع مزود الخدمة؟</Text>
                 </View>
-                <TouchableOpacity style={styles.closeBtn} onPress={handleDismiss}>
-                  <Feather name="x" size={18} color="#64748B" />
-                </TouchableOpacity>
               </View>
 
               {/* Provider card */}
@@ -246,6 +246,14 @@ function RatingSheet({
                 end={{ x: 1, y: 1 }}
                 style={styles.providerCard}
               >
+                <View style={styles.completedBadge}>
+                  <MaterialCommunityIcons name="check-circle" size={14} color="#16C47F" />
+                  <Text style={styles.completedText}>مكتمل</Text>
+                </View>
+                <View style={styles.providerInfo}>
+                  <Text style={styles.providerName}>{trigger.providerName}</Text>
+                  <Text style={styles.providerRole}>مزود خدمة معتمد ✓</Text>
+                </View>
                 <Image
                   source={
                     trigger.providerAvatar
@@ -254,14 +262,6 @@ function RatingSheet({
                   }
                   style={styles.avatar}
                 />
-                <View style={styles.providerInfo}>
-                  <Text style={styles.providerName}>{trigger.providerName}</Text>
-                  <Text style={styles.providerRole}>مزود خدمة معتمد ✓</Text>
-                </View>
-                <View style={styles.completedBadge}>
-                  <MaterialCommunityIcons name="check-circle" size={14} color="#16C47F" />
-                  <Text style={styles.completedText}>مكتمل</Text>
-                </View>
               </LinearGradient>
 
               {/* Stars */}
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 16,
   },
-  headerTextWrap: { flex: 1, alignItems: "flex-end" },
+  headerTextWrap: { flex: 1 },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#1E293B" },
   headerSub: { fontFamily: "Tajawal_400Regular", fontSize: 13, color: "#64748B", marginTop: 2 },
   closeBtn: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#FFF",
   },
-  providerInfo: { flex: 1, alignItems: "flex-end" },
+  providerInfo: { flex: 1 },
   providerName: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#1E293B" },
   providerRole: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B", marginTop: 2 },
   completedBadge: {

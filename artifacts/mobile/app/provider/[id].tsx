@@ -212,15 +212,15 @@ export default function ProviderDetail() {
         >
           {/* Top row actions */}
           <View style={s.topRow}>
-            <TouchableOpacity style={[s.icon, { backgroundColor: "#FFF" }]} onPress={() => setFav(!fav)}>
-              <MaterialCommunityIcons name={fav ? "heart" : "heart-outline"} size={18} color={fav ? colors.danger : colors.foreground} />
+            <TouchableOpacity style={[s.icon, { backgroundColor: "#FFF" }]} onPress={() => router.back()}>
+              <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={20} color={colors.foreground} />
             </TouchableOpacity>
+            <View style={{ flex: 1 }} />
             <TouchableOpacity style={[s.icon, { backgroundColor: "#FFF" }]} onPress={handleShare}>
               <Feather name="share-2" size={16} color={colors.foreground} />
             </TouchableOpacity>
-            <View style={{ flex: 1 }} />
-            <TouchableOpacity style={[s.icon, { backgroundColor: "#FFF" }]} onPress={() => router.back()}>
-              <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={20} color={colors.foreground} />
+            <TouchableOpacity style={[s.icon, { backgroundColor: "#FFF" }]} onPress={() => setFav(!fav)}>
+              <MaterialCommunityIcons name={fav ? "heart" : "heart-outline"} size={18} color={fav ? colors.danger : colors.foreground} />
             </TouchableOpacity>
           </View>
 
@@ -372,13 +372,6 @@ export default function ProviderDetail() {
 
       {/* Bottom bar — FIXED layout */}
       <View style={[s.bottomBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.card }]}>
-        <View style={s.priceWrap}>
-          <Text style={[s.priceL, { color: colors.mutedForeground }]}>ابتداءً من</Text>
-          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 3 }}>
-            <Text style={[s.priceV, { color: colors.foreground }]}>{p.hourly_rate}</Text>
-            <Text style={[s.priceCurr, { color: colors.mutedForeground }]}>ر.س</Text>
-          </View>
-        </View>
         <TouchableOpacity
           style={[s.bookBtn, { backgroundColor: colors.primary }]}
           onPress={() => {
@@ -387,9 +380,16 @@ export default function ProviderDetail() {
           }}
           activeOpacity={0.88}
         >
-          <Feather name="arrow-left" size={18} color="#FFF" />
           <Text style={s.bookBtnT}>احجز الآن</Text>
+          <Feather name={I18nManager.isRTL ? "arrow-left" : "arrow-right"} size={18} color="#FFF" />
         </TouchableOpacity>
+        <View style={s.priceWrap}>
+          <Text style={[s.priceL, { color: colors.mutedForeground }]}>ابتداءً من</Text>
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 3 }}>
+            <Text style={[s.priceV, { color: colors.foreground }]}>{p.hourly_rate}</Text>
+            <Text style={[s.priceCurr, { color: colors.mutedForeground }]}>ر.س</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
