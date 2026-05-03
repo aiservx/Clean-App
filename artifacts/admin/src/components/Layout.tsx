@@ -19,6 +19,7 @@ const NAV: { path: string; label: string; icon: string }[] = [
   { path: "/branding", label: "الهوية والألوان", icon: "🎨" },
   { path: "/home-builder", label: "بناء الصفحة الرئيسية", icon: "🧩" },
   { path: "/commission", label: "العمولة", icon: "💰" },
+  { path: "/ota-updates", label: "التحديثات الفورية", icon: "🔄" },
   { path: "/settings", label: "الإعدادات", icon: "⚙️" },
 ];
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Alert, Platform } from "react-native";
 
 // expo-updates is a native module — guard against web/simulator gracefully
@@ -11,51 +11,84 @@ try {
   Updates = null;
 }
 
-export type OTAStatus =
-  | "idle"
-  | "checking"
-  | "downloading"
-  | "ready"
-  | "error"
-  | "no_update";
+type OTAConfig = {
+  force_update?: boolean;
+  update_message?: string;
+};
+
+const DEFAULT_MESSAGE =
+  "تم تنزيل تحديث جديد لتطبيق نظافة. أعد تشغيل التطبيق للحصول على أحدث الميزات.";
 
 export function useOTAUpdate() {
-  const [status, setStatus] = useState<OTAStatus>("idle");
   const checked = useRef(false);
 
   useEffect(() => {
     if (!Updates || checked.current) return;
-    // Only run in production-like environments (not Expo Go dev client)
     if (__DEV__) return;
 
     checked.current = true;
     checkAndApply();
   }, []);
+}
 
-  return { status };
+async function fetchOTAConfig(): Promise<OTAConfig> {
+  try {
+    // Lazy-import supabase to avoid circular dependency
+    const { supabase } = await import("@/lib/supabase");
+    const { data } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "ota_config")
+      .maybeSingle();
+    return (data?.value as OTAConfig) ?? {};
+  } catch {
+    return {};
+  }
 }
 
 async function checkAndApply() {
   if (!Updates) return;
   try {
-    const result = await Updates.checkForUpdateAsync();
-    if (!result.isAvailable) return;
+    const [updateResult, config] = await Promise.all([
+      Updates.checkForUpdateAsync(),
+      fetchOTAConfig(),
+    ]);
+
+    if (!updateResult.isAvailable) return;
 
     await Updates.fetchUpdateAsync();
 
-    Alert.alert(
-      "تحديث جديد متاح 🎉",
-      "تم تنزيل تحديث جديد لتطبيق نظافة. أعد تشغيل التطبيق للحصول على أحدث الميزات والإصلاحات.",
-      [
-        { text: "لاحقاً", style: "cancel" },
-        {
-          text: "إعادة التشغيل الآن",
-          onPress: () => Updates?.reloadAsync().catch(() => {}),
-        },
-      ],
-      { cancelable: false }
-    );
+    const message = config.update_message || DEFAULT_MESSAGE;
+    const forceUpdate = config.force_update === true;
+
+    if (forceUpdate) {
+      // Blocking alert — no "لاحقاً" option
+      Alert.alert(
+        "تحديث إجباري 🔔",
+        message,
+        [
+          {
+            text: "تحديث الآن",
+            onPress: () => Updates?.reloadAsync().catch(() => {}),
+          },
+        ],
+        { cancelable: false }
+      );
+    } else {
+      Alert.alert(
+        "تحديث جديد متاح 🎉",
+        message,
+        [
+          { text: "لاحقاً", style: "cancel" },
+          {
+            text: "إعادة التشغيل الآن",
+            onPress: () => Updates?.reloadAsync().catch(() => {}),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
   } catch {
-    // Silently ignore update errors — never crash the app over OTA
+    // Never crash the app over OTA errors
   }
 }

@@ -15,6 +15,7 @@ import Offers from "@/pages/Offers";
 import Notifications from "@/pages/Notifications";
 import Support from "@/pages/Support";
 import Settings, { CommissionPage, BrandingPage, PoliciesPage, HomeBuilderPage } from "@/pages/Settings";
+import OTAUpdates from "@/pages/OTAUpdates";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ function Routes() {
       <Route path="/branding" component={BrandingPage} />
       <Route path="/home-builder" component={HomeBuilderPage} />
       <Route path="/commission" component={CommissionPage} />
+      <Route path="/ota-updates" component={OTAUpdates} />
       <Route path="/settings" component={Settings} />
       <Route>
         <div className="p-8">
