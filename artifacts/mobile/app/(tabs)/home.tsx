@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image, I18nManager } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -612,8 +612,8 @@ export default function HomeScreen() {
   );
 }
 
-const rowDir = "row" as const;
-const colAlign = "flex-start" as const;
+const rowDir = I18nManager.isRTL ? ("row" as const) : ("row-reverse" as const);
+const colAlign = I18nManager.isRTL ? ("flex-start" as const) : ("flex-end" as const);
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
