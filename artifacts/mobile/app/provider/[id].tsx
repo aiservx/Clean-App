@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Image,
-  Platform, ActivityIndicator, Linking, Alert, Share,
-, I18nManager} from "react-native";
+  Platform, ActivityIndicator, Linking, Alert, Share, I18nManager,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";

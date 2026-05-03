@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
-  Animated, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image,
-, I18nManager} from "react-native";
+  Animated, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image, I18nManager,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
