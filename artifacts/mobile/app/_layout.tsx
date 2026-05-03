@@ -141,23 +141,11 @@ function PushRegistrar() {
 }
 
 // ── RTL: force Arabic RTL from the very first launch ──────────────────────
-// forceRTL only takes effect on the NEXT JS reload. If the app started without
-// RTL (fresh install), we apply it immediately and trigger a JS-level reload
-// via expo-updates so the user never sees an LTR layout.
+// forceRTL takes effect on next cold start — no reloadAsync needed
+// (reloadAsync on a fresh EAS project can crash the app if the updates
+//  channel hasn't been published yet)
 I18nManager.allowRTL(true);
-if (!I18nManager.isRTL) {
-  I18nManager.forceRTL(true);
-  // Dynamically require expo-updates to avoid crashes on web/Expo Go
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const Updates = require("expo-updates");
-    if (typeof Updates?.reloadAsync === "function") {
-      Updates.reloadAsync().catch(() => {});
-    }
-  } catch {
-    // expo-updates unavailable (web / Expo Go) — RTL will apply on next cold start
-  }
-}
+I18nManager.forceRTL(true);
 
 // Web: direction is handled by I18nProvider via DOM
 if (typeof document !== "undefined") {

@@ -1,6 +1,22 @@
 # بناء ملف APK لتطبيق نظافة
 
-## Build #9 — جارٍ الآن 🔄 (إصلاح الكراش)
+## Build #10 — جارٍ الآن 🔄 (الإصلاح الحقيقي للكراش)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `42dfb0c6-6563-41b9-89a0-ad7f457dad8a` |
+| Platform | Android |
+| Profile | **preview** |
+| Status | **in progress** |
+| صفحة الـ Build | https://expo.dev/accounts/hadystow/projects/mobile/builds/42dfb0c6-6563-41b9-89a0-ad7f457dad8a |
+
+### الإصلاحات في Build #10
+- `AppMap.android.tsx` — ملف جديد كلياً: بديل آمن 100% بدون Google Maps على Android (كان يُغلق التطبيق بشكل native لا يمكن إيقافه)
+- `_layout.tsx` — حذف `Updates.reloadAsync()` الذي كان يُغلق التطبيق على مشاريع EAS الجديدة
+
+---
+
+## Build #9 — ✅ اكتمل (إصلاح جزئي)
 
 | الحقل | القيمة |
 |-------|--------|
