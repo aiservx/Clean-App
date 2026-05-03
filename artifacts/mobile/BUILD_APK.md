@@ -1,5 +1,19 @@
 # بناء ملف APK لتطبيق نظافة
 
+## Build #8 — جارٍ الآن 🔄 (حساب hadystow)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `a8ef00e3-ef82-4394-8cce-3812c685d6c5` |
+| Platform | Android |
+| Profile | **preview** |
+| Status | **in progress** |
+| الحساب | hadystow |
+| EAS Project ID | `09e4ce5c-f181-49b0-b379-68b832e1f292` |
+| صفحة الـ Build | https://expo.dev/accounts/hadystow/projects/mobile/builds/a8ef00e3-ef82-4394-8cce-3812c685d6c5 |
+
+---
+
 ## آخر Build ناجح — Development Client (Build #7) ✅
 
 | الحقل | القيمة |

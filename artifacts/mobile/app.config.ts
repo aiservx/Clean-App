@@ -48,14 +48,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     web: {
       favicon: "./assets/images/icon-light.png",
     },
-    updates: {
-      url: "https://u.expo.dev/dd03c810-2182-47e7-9a0a-823fdcc351b8",
-      fallbackToCacheTimeout: 0,
-      checkAutomatically: "ON_LOAD",
-      requestHeaders: {
-        "expo-channel-name": "preview",
-      },
-    },
     runtimeVersion: {
       policy: "appVersion",
     },
@@ -74,7 +66,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         "expo-notifications",
         { icon: "./assets/images/icon-light.png", color: "#7C3AED" },
       ],
-      "expo-updates",
     ],
     experiments: {
       typedRoutes: true,
@@ -83,14 +74,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       ...(config.extra ?? {}),
       eas: {
-        projectId: "dd03c810-2182-47e7-9a0a-823fdcc351b8",
+        projectId: "09e4ce5c-f181-49b0-b379-68b832e1f292",
       },
       router: {
         origin,
         headOrigin: origin,
       },
     },
-    owner: "clean-beaton",
+    owner: "hadystow",
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore – Replit-specific extension field
     _replit: {
