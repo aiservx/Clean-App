@@ -71,11 +71,11 @@ export default function OffersScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <View style={{ width: 44 }} />
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>العروض والخصومات</Text>
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
           <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>العروض والخصومات</Text>
+        <View style={{ width: 44 }} />
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
@@ -96,17 +96,17 @@ export default function OffersScreen() {
 
         {/* ── Seasonal offers ── show 2 by default, toggle to show all 8 */}
         <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض موسمية</Text>
           <TouchableOpacity
             onPress={() => setShowAllSeasonal((v) => !v)}
             style={styles.seeAllChip}
             activeOpacity={0.7}
           >
-            <Feather name={showAllSeasonal ? "chevron-up" : "chevron-down"} size={12} color={colors.primary} />
             <Text style={[styles.seeAll, { color: colors.primary }]}>
               {showAllSeasonal ? "عرض أقل" : `عرض الكل (${SEASONAL_PROMOS.length})`}
             </Text>
+            <Feather name={showAllSeasonal ? "chevron-up" : "chevron-down"} size={12} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض موسمية</Text>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12, marginBottom: 22 }}>
@@ -170,17 +170,17 @@ export default function OffersScreen() {
 
         {/* ── Featured offers ── show 2 by default, toggle to show all */}
         <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض حصرية</Text>
           <TouchableOpacity
             onPress={() => setShowAllFeatured((v) => !v)}
             style={styles.seeAllChip}
             activeOpacity={0.7}
           >
-            <Feather name={showAllFeatured ? "chevron-up" : "chevron-down"} size={12} color={colors.primary} />
             <Text style={[styles.seeAll, { color: colors.primary }]}>
               {showAllFeatured ? "عرض أقل" : `عرض الكل (${FEATURED_PROMOS.length})`}
             </Text>
+            <Feather name={showAllFeatured ? "chevron-up" : "chevron-down"} size={12} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض حصرية</Text>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12, marginBottom: 22 }}>
@@ -235,10 +235,10 @@ export default function OffersScreen() {
 
         {/* Premium Coupons */}
         <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>كوبونات مميزة</Text>
           <TouchableOpacity>
             <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
           </TouchableOpacity>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>كوبونات مميزة</Text>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12 }}>
