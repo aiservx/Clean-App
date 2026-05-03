@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,6 +7,8 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+
+type MsgType = "error" | "success" | null;
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -16,9 +18,25 @@ export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
   const [busy, setBusy] = useState(false);
+  const [msgType, setMsgType] = useState<MsgType>(null);
+  const [msgText, setMsgText] = useState("");
+
+  const showMsg = (type: MsgType, text: string) => {
+    setMsgType(type);
+    setMsgText(text);
+  };
+
+  const clearMsg = () => {
+    setMsgType(null);
+    setMsgText("");
+  };
 
   const onSubmit = async () => {
-    if (!username || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
+    clearMsg();
+    if (!username || !pwd) {
+      showMsg("error", t("enter_credentials") || "يرجى إدخال اسم المستخدم وكلمة المرور");
+      return;
+    }
     const loginEmail = username.includes("@") ? username.trim() : `${username.trim()}@clean-app.local`;
     setBusy(true);
 
@@ -27,29 +45,36 @@ export default function LoginScreen() {
 
       if (res.error) {
         setBusy(false);
-        return Alert.alert(t("signin_error"), res.error);
+        const errMsg = res.error.includes("Invalid") || res.error.includes("invalid")
+          ? "اسم المستخدم أو كلمة المرور غير صحيحة"
+          : res.error.includes("confirm")
+          ? "يرجى تأكيد بريدك الإلكتروني أولاً"
+          : res.error.includes("too many")
+          ? "محاولات كثيرة جداً، حاول لاحقاً"
+          : res.error;
+        showMsg("error", errMsg);
+        return;
       }
+
+      showMsg("success", "تم تسجيل الدخول بنجاح ✓");
 
       const role = res.role || "user";
-
-      if (role === "provider" || role === "admin") {
-        router.replace("/(provider)/dashboard" as any);
-      } else {
-        router.replace("/(tabs)/home" as any);
-      }
+      setTimeout(() => {
+        if (role === "provider" || role === "admin") {
+          router.replace("/(provider)/dashboard" as any);
+        } else {
+          router.replace("/(tabs)/home" as any);
+        }
+      }, 800);
     } catch (e) {
-      Alert.alert(t("signin_error"), (e as Error).message);
+      showMsg("error", (e as Error).message || "خطأ في الاتصال بالشبكة");
     } finally {
       setBusy(false);
     }
   };
 
   const browseAsGuest = async () => {
-    try {
-      await signOut();
-    } catch (e) {
-      console.warn("[v0] signOut failed during guest browse:", (e as Error)?.message);
-    }
+    try { await signOut(); } catch {}
     router.replace("/(tabs)/home" as any);
   };
 
@@ -64,7 +89,31 @@ export default function LoginScreen() {
           <Text style={[styles.sub, { color: colors.mutedForeground }]}>{t("login_sub")}</Text>
         </View>
 
-        <View style={[styles.field, { backgroundColor: colors.card }]}>
+        {msgType !== null && (
+          <View style={[
+            styles.banner,
+            msgType === "success"
+              ? { backgroundColor: "#D1FAE5", borderColor: "#16C47F" }
+              : { backgroundColor: "#FEE2E2", borderColor: "#EF4444" },
+          ]}>
+            <Feather
+              name={msgType === "success" ? "check-circle" : "alert-circle"}
+              size={18}
+              color={msgType === "success" ? "#16C47F" : "#EF4444"}
+            />
+            <Text style={[
+              styles.bannerText,
+              { color: msgType === "success" ? "#065F46" : "#991B1B" },
+            ]}>
+              {msgText}
+            </Text>
+          </View>
+        )}
+
+        <View style={[
+          styles.field,
+          { backgroundColor: colors.card, borderColor: msgType === "error" && !username ? "#EF4444" : "transparent", borderWidth: 1.5 },
+        ]}>
           <Feather name="at-sign" size={18} color={colors.mutedForeground} />
           <TextInput
             style={[styles.input, { color: colors.foreground }]}
@@ -72,11 +121,14 @@ export default function LoginScreen() {
             placeholderTextColor={colors.mutedForeground}
             autoCapitalize="none"
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(v) => { setUsername(v); clearMsg(); }}
           />
         </View>
 
-        <View style={[styles.field, { backgroundColor: colors.card }]}>
+        <View style={[
+          styles.field,
+          { backgroundColor: colors.card, borderColor: msgType === "error" && !pwd ? "#EF4444" : "transparent", borderWidth: 1.5 },
+        ]}>
           <Feather name="lock" size={18} color={colors.mutedForeground} />
           <TextInput
             style={[styles.input, { color: colors.foreground }]}
@@ -84,13 +136,20 @@ export default function LoginScreen() {
             placeholderTextColor={colors.mutedForeground}
             secureTextEntry
             value={pwd}
-            onChangeText={setPwd}
+            onChangeText={(v) => { setPwd(v); clearMsg(); }}
           />
         </View>
 
         <TouchableOpacity activeOpacity={0.9} onPress={onSubmit} disabled={busy} style={{ marginTop: 8 }}>
-          <LinearGradient colors={[colors.primary, colors.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.btn}>
-            <Text style={styles.btnT}>{busy ? t("loading") : t("signin")}</Text>
+          <LinearGradient
+            colors={busy ? ["#9CA3AF", "#6B7280"] : [colors.primary, colors.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.btn}
+          >
+            <Text style={styles.btnT}>
+              {busy ? "جارٍ تسجيل الدخول..." : t("signin")}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -115,7 +174,9 @@ const styles = StyleSheet.create({
   heroCenter: { alignItems: "center", marginBottom: 32 },
   logo: { width: 88, height: 88, borderRadius: 28, alignItems: "center", justifyContent: "center", marginBottom: 18, shadowColor: "#16C47F", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 6 },
   title: { fontFamily: "Tajawal_700Bold", fontSize: 28, textAlign: "center", marginBottom: 6 },
-  sub: { fontFamily: "Tajawal_500Medium", fontSize: 14, textAlign: "center", marginBottom: 0 },
+  sub: { fontFamily: "Tajawal_500Medium", fontSize: 14, textAlign: "center" },
+  banner: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderRadius: 14, borderWidth: 1.5, marginBottom: 14 },
+  bannerText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14, flex: 1, textAlign: "right" },
   field: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 56, borderRadius: 16, marginBottom: 12, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14 },
   btn: { height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },

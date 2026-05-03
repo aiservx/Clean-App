@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform , I18nManager} from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, I18nManager } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,6 +7,8 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth, type Role } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+
+type MsgType = "error" | "success" | null;
 
 export default function SignupScreen() {
   const insets = useSafeAreaInsets();
@@ -21,25 +23,51 @@ export default function SignupScreen() {
   const [gender, setGender] = useState<"male" | "female">("male");
   const [role, setRole] = useState<Role>("user");
   const [busy, setBusy] = useState(false);
+  const [msgType, setMsgType] = useState<MsgType>(null);
+  const [msgText, setMsgText] = useState("");
+
+  const showMsg = (type: MsgType, text: string) => {
+    setMsgType(type);
+    setMsgText(text);
+  };
+
+  const clearMsg = () => {
+    setMsgType(null);
+    setMsgText("");
+  };
 
   const onSubmit = async () => {
-    if (!name || !username || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
-    if (pwd.length < 6) return Alert.alert(t("error"), "كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+    clearMsg();
+    if (!name.trim()) return showMsg("error", "يرجى إدخال الاسم الكامل");
+    if (!username.trim()) return showMsg("error", "يرجى إدخال اسم المستخدم");
+    if (!pwd) return showMsg("error", "يرجى إدخال كلمة المرور");
+    if (pwd.length < 6) return showMsg("error", "كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+
     const loginEmail = username.includes("@") ? username.trim() : `${username.trim()}@clean-app.local`;
     setBusy(true);
     try {
       const { error } = await signUp({ email: loginEmail, password: pwd, full_name: name, phone, role, username: username.trim(), gender });
       if (error) {
         setBusy(false);
-        return Alert.alert(t("error"), error);
+        const errMsg = error.includes("already") || error.includes("duplicate")
+          ? "اسم المستخدم هذا مستخدم بالفعل، جرّب اسماً آخر"
+          : error.includes("password")
+          ? "كلمة المرور ضعيفة، اختر كلمة أقوى"
+          : error.includes("email")
+          ? "البريد الإلكتروني غير صحيح"
+          : error;
+        showMsg("error", errMsg);
+        return;
       }
       setBusy(false);
-      Alert.alert(t("ok"), "تم إنشاء الحساب بنجاح. سجّل دخولك للمتابعة.", [
-        { text: t("ok"), onPress: () => router.replace("/login") },
-      ]);
+      showMsg("success", role === "provider"
+        ? "تم إنشاء حساب مزود الخدمة بنجاح ✓ — سجّل دخولك للمتابعة"
+        : "تم إنشاء الحساب بنجاح ✓ — سجّل دخولك للمتابعة"
+      );
+      setTimeout(() => router.replace("/login"), 2200);
     } catch (e) {
       setBusy(false);
-      Alert.alert(t("error"), (e as Error)?.message || "خطأ في الاتصال بالشبكة");
+      showMsg("error", (e as Error)?.message || "خطأ في الاتصال بالشبكة");
     }
   };
 
@@ -55,22 +83,42 @@ export default function SignupScreen() {
         <Text style={[styles.title, { color: colors.foreground }]}>{t("signup_title")}</Text>
         <Text style={[styles.sub, { color: colors.mutedForeground }]}>{t("account_type")}</Text>
 
+        {msgType !== null && (
+          <View style={[
+            styles.banner,
+            msgType === "success"
+              ? { backgroundColor: "#D1FAE5", borderColor: "#16C47F" }
+              : { backgroundColor: "#FEE2E2", borderColor: "#EF4444" },
+          ]}>
+            <Feather
+              name={msgType === "success" ? "check-circle" : "alert-circle"}
+              size={18}
+              color={msgType === "success" ? "#16C47F" : "#EF4444"}
+            />
+            <Text style={[
+              styles.bannerText,
+              { color: msgType === "success" ? "#065F46" : "#991B1B" },
+            ]}>
+              {msgText}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.roleRow}>
           <TouchableOpacity
-            onPress={() => setRole("user")}
+            onPress={() => { setRole("user"); clearMsg(); }}
             style={[styles.roleC, { borderColor: role === "user" ? colors.primary : colors.border, backgroundColor: role === "user" ? colors.primaryLight : colors.card }]}>
             <Feather name="user" size={20} color={role === "user" ? colors.primary : colors.mutedForeground} />
             <Text style={[styles.roleT, { color: role === "user" ? colors.primary : colors.foreground }]}>{t("customer")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => setRole("provider")}
+            onPress={() => { setRole("provider"); clearMsg(); }}
             style={[styles.roleC, { borderColor: role === "provider" ? colors.accent : colors.border, backgroundColor: role === "provider" ? colors.accentLight : colors.card }]}>
             <MaterialCommunityIcons name="briefcase-check" size={20} color={role === "provider" ? colors.accent : colors.mutedForeground} />
             <Text style={[styles.roleT, { color: role === "provider" ? colors.accent : colors.foreground }]}>{t("provider")}</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Gender selection */}
         <Text style={[styles.genderLabel, { color: colors.foreground }]}>{t("gender") || "الجنس"}</Text>
         <View style={styles.genderRow}>
           <TouchableOpacity
@@ -105,14 +153,21 @@ export default function SignupScreen() {
               autoCapitalize="none"
               secureTextEntry={(f as any).sec}
               value={f.v}
-              onChangeText={f.s}
+              onChangeText={(v) => { f.s(v); clearMsg(); }}
             />
           </View>
         ))}
 
         <TouchableOpacity activeOpacity={0.9} onPress={onSubmit} disabled={busy} style={{ marginTop: 8 }}>
-          <LinearGradient colors={[colors.primary, colors.primaryDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.btn}>
-            <Text style={styles.btnT}>{busy ? t("loading") : t("signup")}</Text>
+          <LinearGradient
+            colors={busy ? ["#9CA3AF", "#6B7280"] : [colors.primary, colors.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.btn}
+          >
+            <Text style={styles.btnT}>
+              {busy ? "جارٍ إنشاء الحساب..." : t("signup")}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -131,7 +186,9 @@ const styles = StyleSheet.create({
   backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", marginBottom: 16 },
   logo: { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center", alignSelf: "flex-end", marginBottom: 12 },
   title: { fontFamily: "Tajawal_700Bold", fontSize: 24, marginBottom: 4 },
-  sub: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginBottom: 18 },
+  sub: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginBottom: 14 },
+  banner: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderRadius: 14, borderWidth: 1.5, marginBottom: 14 },
+  bannerText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14, flex: 1, textAlign: "right" },
   roleRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
   roleC: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, padding: 14, borderRadius: 16, borderWidth: 1.5 },
   roleT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
