@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { usernameToEmail } from "@/lib/username";
 
 type MsgType = "error" | "success" | null;
 
@@ -37,7 +38,7 @@ export default function LoginScreen() {
       showMsg("error", t("enter_credentials") || "يرجى إدخال اسم المستخدم وكلمة المرور");
       return;
     }
-    const loginEmail = username.includes("@") ? username.trim() : `${username.trim()}@clean-app.local`;
+    const loginEmail = usernameToEmail(username);
     setBusy(true);
 
     try {

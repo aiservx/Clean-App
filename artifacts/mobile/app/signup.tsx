@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth, type Role } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { usernameToEmail } from "@/lib/username";
 
 type MsgType = "error" | "success" | null;
 
@@ -43,7 +44,7 @@ export default function SignupScreen() {
     if (!pwd) return showMsg("error", "يرجى إدخال كلمة المرور");
     if (pwd.length < 6) return showMsg("error", "كلمة المرور يجب أن تكون 6 أحرف على الأقل");
 
-    const loginEmail = username.includes("@") ? username.trim() : `${username.trim()}@clean-app.local`;
+    const loginEmail = usernameToEmail(username);
     setBusy(true);
     try {
       const { error } = await signUp({ email: loginEmail, password: pwd, full_name: name, phone, role, username: username.trim(), gender });
