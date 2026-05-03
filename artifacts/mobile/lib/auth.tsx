@@ -179,21 +179,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (p: { email: string; password: string; full_name: string; phone: string; role: Role; username?: string; gender?: string }) => {
+    const apiBase = (process.env.EXPO_PUBLIC_API_URL ?? "https://609c9cb2-0be1-4424-a700-c1a6f116b301-00-39jip95chll1j.picard.replit.dev:8080").replace(/\/$/, "");
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: p.email,
-        password: p.password,
-        options: { data: { full_name: p.full_name, phone: p.phone, role: p.role, username: p.username, gender: p.gender } },
+      // Route through API server which uses Admin SDK to bypass broken trigger
+      const res = await fetch(`${apiBase}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: p.username ?? p.email,
+          password: p.password,
+          full_name: p.full_name,
+          phone: p.phone,
+          role: p.role,
+          gender: p.gender ?? "male",
+        }),
       });
-      if (error) return { error: error.message };
-      if (data.user) {
-        try {
-          await ensureProfile(data.user.id, { full_name: p.full_name, phone: p.phone, role: p.role });
-        } catch {}
+      const json = await res.json() as { success?: boolean; error?: string };
+      if (!res.ok || json.error) {
+        return { error: json.error ?? "خطأ في إنشاء الحساب" };
       }
       return {};
     } catch (e) {
-      return { error: (e as Error)?.message || "Network error" };
+      return { error: (e as Error)?.message || "خطأ في الاتصال بالشبكة" };
     }
   }, []);
 

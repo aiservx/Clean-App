@@ -50,14 +50,7 @@ export default function SignupScreen() {
       const { error } = await signUp({ email: loginEmail, password: pwd, full_name: name, phone, role, username: username.trim(), gender });
       if (error) {
         setBusy(false);
-        const errMsg = error.includes("already") || error.includes("duplicate")
-          ? "اسم المستخدم هذا مستخدم بالفعل، جرّب اسماً آخر"
-          : error.includes("password")
-          ? "كلمة المرور ضعيفة، اختر كلمة أقوى"
-          : error.includes("email")
-          ? "البريد الإلكتروني غير صحيح"
-          : error;
-        showMsg("error", errMsg);
+        showMsg("error", error);
         return;
       }
       setBusy(false);
