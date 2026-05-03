@@ -1,0 +1,202 @@
+# تقرير تقييم نظام الإشعارات - تطبيق نظافة
+
+## الملفات التي تم فحصها
+- `artifacts/mobile/lib/notifications.ts` — المحرك الرئيسي للإشعارات
+- `artifacts/mobile/app/_layout.tsx` — تسجيل التوكن + معالجة الضغط على الإشعار
+- `artifacts/mobile/lib/realtimeStore.tsx` — اشتراكات Supabase Realtime
+- `artifacts/mobile/lib/notifBadge.tsx` — شارة عدد الإشعارات
+- `artifacts/mobile/app/notifications.tsx` — شاشة إشعارات العميل
+- `artifacts/mobile/app/provider-notifications.tsx` — شاشة إشعارات المزود
+- `artifacts/mobile/app/(provider)/booking-details.tsx` — إرسال إشعارات عند تغيير حالة الحجز
+- `artifacts/mobile/app/chat-detail.tsx` — إشعارات الرسائل
+- `artifacts/mobile/app/payment.tsx` — إشعارات عند إنشاء حجز جديد
+- `artifacts/api-server/src/routes/push.ts` — خادم API لإرسال Push
+- `artifacts/mobile/db/schema.sql` — جداول وسياسات قاعدة البيانات
+- `artifacts/mobile/eas.json` — إعدادات بناء APK
+- `artifacts/mobile/app.config.ts` — إعدادات Expo
+- `artifacts/admin/src/pages/Notifications.tsx` — صفحة إشعارات لوحة الأدمن
+
+---
+
+## مشاكل حرجة (Critical)
+
+### 1. `EXPO_PUBLIC_API_URL` غير مضبوط — الإشعارات لا تصل أبداً!
+
+**هذا هو السبب الرئيسي لعدم وصول الإشعارات.**
+
+في `notifications.ts` سطر 6:
+```ts
+const PUSH_API_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+```
+
+في `eas.json` لا يوجد `EXPO_PUBLIC_API_URL` — فقط Supabase URL و Key:
+```json
+"env": {
+  "EXPO_PUBLIC_SUPABASE_URL": "...",
+  "EXPO_PUBLIC_SUPABASE_ANON_KEY": "..."
+  // EXPO_PUBLIC_API_URL مفقود!
+}
+```
+
+**النتيجة:**
+- `PUSH_API_URL` = `""` (فارغ) → الكود يتخطى مسار API Server
+- يذهب للمسار البديل: استعلام مباشر من Supabase عبر العميل
+- لكن جدول `push_tokens` عليه RLS:
+  ```sql
+  create policy "push own" on push_tokens for all
+    using (auth.uid() = user_id)
+  ```
+- هذا يعني: المستخدم A لا يستطيع قراءة توكنات المستخدم B
+- **عندما المزود يغير حالة الحجز ويحاول إرسال push للعميل → يحصل على 0 توكنات → الإشعار لا يُرسل أبداً**
+
+**الحل:**
+1. نشر API Server على Replit أو أي خادم
+2. إضافة `EXPO_PUBLIC_API_URL` في `eas.json` لكل ملف بناء
+3. إضافة `SUPABASE_SERVICE_ROLE_KEY` كسر في خادم API
+
+### 2. لوحة الأدمن لا ترسل Push Notifications
+
+في `admin/src/pages/Notifications.tsx`:
+```ts
+// يضيف فقط في جدول notifications في Supabase
+await supabase.from("notifications").insert(...)
+```
+
+**لا يوجد أي استدعاء لـ Expo Push API أو API Server!**
+
+يعني: عندما الأدمن يرسل إشعار → يظهر فقط داخل التطبيق عند فتحه → **لا يصل كإشعار مع صوت أو بانر**.
+
+**الحل:** استدعاء `POST /api/push` لكل مستخدم مستهدف بعد الإدخال في قاعدة البيانات.
+
+### 3. سياسة RLS مفقودة لتحديث الإشعارات (Mark as Read)
+
+في `schema.sql`:
+```sql
+create policy "notif own" on notifications for select using (auth.uid() = user_id);
+create policy "notif insert any" on notifications for insert with check (true);
+-- لا توجد سياسة UPDATE!
+```
+
+الكود يستدعي:
+```ts
+supabase.from("notifications").update({ read: true }).eq("id", n.id)
+```
+
+**بدون سياسة update، المستخدم العادي لا يستطيع تعليم إشعاراته كمقروءة!**
+
+**الحل:**
+```sql
+CREATE POLICY "notif update own" ON notifications
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+```
+
+---
+
+## مشاكل متوسطة (Moderate)
+
+### 4. تفويض `notifyAvailableProviders` عبر API Server قد يفشل
+
+عند إنشاء حجز جديد:
+```ts
+notifyAvailableProviders("طلب جديد!", "...", { bookingId: row.id })
+```
+
+في API Server، `callerMayNotify()` يتحقق أن المرسل والمستقبل يشتركان في حجز:
+```ts
+// يبحث في bookings عن صف يربط العميل والمزود
+```
+
+لكن الحجز الجديد `provider_id = null` (لم يُقبل بعد) — فلا يوجد ارتباط بين العميل والمزودين المتاحين → **الإشعار يُحظر (403 forbidden)**.
+
+**الحل:** إضافة استثناء في `callerMayNotify` للإشعارات من نوع `new_booking` أو إنشاء endpoint خاص `/api/push/broadcast-providers`.
+
+### 5. عدم تنظيف Push Token عند تسجيل الخروج
+
+عند خروج المستخدم، التوكن يبقى في جدول `push_tokens` → الإشعارات تصل للجهاز رغم أن المستخدم سجل خروج.
+
+**الحل:**
+```ts
+// في auth.tsx signOut:
+await supabase.from("push_tokens").delete().eq("user_id", userId);
+```
+
+### 6. لا يوجد تتبع لحالة التسليم (Delivery Receipts)
+
+- لا يتم فحص Expo Push Receipts بعد الإرسال
+- لا يتم معالجة أخطاء مثل `DeviceNotRegistered` (توكن منتهي)
+- لا يوجد retry عند الفشل
+
+---
+
+## مشاكل بسيطة (Minor)
+
+### 7. الصوت = "default" فقط
+كل القنوات تستخدم `sound: "default"`. يعمل بشكل طبيعي لكن صوت مخصص يعطي تجربة أفضل.
+
+### 8. إعادة تسجيل القنوات والفئات في كل مرة
+`createAndroidChannels()` و `registerCategories()` تُستدعى في كل `registerForPush`. غير ضار لكن غير ضروري.
+
+---
+
+## ما يعمل بشكل جيد
+
+1. **عرض الإشعارات في الواجهة الأمامية (Foreground):**
+   ```ts
+   shouldShowAlert: true,
+   shouldPlaySound: true,
+   shouldSetBadge: true,
+   ```
+   مضبوط بشكل صحيح — **لو وصل الإشعار فعلاً، سيظهر بالصوت والبانر**.
+
+2. **قنوات Android متعددة ومنظمة:**
+   - `default` — إشعارات عامة (HIGH)
+   - `new_booking` — طلبات جديدة (MAX) مع اهتزاز قوي
+   - `booking_status` — تحديثات الحجز (HIGH)
+   - `chat` — رسائل المحادثة (HIGH)
+   - `promotions` — عروض (LOW)
+
+3. **أزرار تفاعلية (Actionable Notifications):**
+   - قبول/رفض الحجز من الإشعار مباشرة
+   - تتبع الطلب
+   - تقييم الخدمة
+
+4. **معالجة الضغط على الإشعار:**
+   - التوجيه الصحيح لكل نوع إشعار (حجز → تتبع، رسالة → محادثة)
+
+5. **Supabase Realtime:**
+   - اشتراكات حية على جداول `bookings` و `notifications`
+   - تحديث تلقائي لشارة الإشعارات
+   - يعمل بشكل ممتاز للإشعارات داخل التطبيق
+
+6. **بنية قاعدة البيانات:**
+   - جدول `notifications` و `push_tokens` مصممان بشكل صحيح
+   - Realtime مفعّل على الجداول المطلوبة
+
+---
+
+## ملخص التقييم
+
+| المكوّن | الحالة | ملاحظة |
+|---------|--------|--------|
+| تسجيل Push Token | يعمل | يُسجل في DB عند تسجيل الدخول |
+| إشعارات Foreground | يعمل | صوت + بانر + badge |
+| إشعارات Background/Killed | **لا يعمل** | لأن Push لا يُرسل أصلاً (EXPO_PUBLIC_API_URL مفقود) |
+| صوت الإشعارات | يعمل (نظرياً) | Sound = "default" مضبوط لكن Push لا يصل |
+| إشعارات الرسائل | **لا تصل كـ Push** | نفس المشكلة - RLS يمنع قراءة توكنات الطرف الآخر |
+| إشعارات الحجز | **لا تصل كـ Push** | نفس المشكلة |
+| لوحة الأدمن → Push | **لا يعمل** | لا يستدعي Push API |
+| تعليم كمقروء | **لا يعمل** | سياسة UPDATE مفقودة |
+| إشعارات داخل التطبيق | يعمل | Supabase Realtime |
+| شارة الإشعارات | يعمل | عداد حقيقي من DB |
+
+---
+
+## خطوات الإصلاح المطلوبة (بالترتيب)
+
+1. **نشر API Server** + إضافة `EXPO_PUBLIC_API_URL` في `eas.json`
+2. **إضافة سياسة RLS** لتحديث الإشعارات
+3. **إصلاح تفويض** `notifyAvailableProviders`
+4. **إضافة Push في لوحة الأدمن**
+5. **تنظيف التوكنات** عند تسجيل الخروج
+6. **إعادة بناء APK** بعد الإصلاحات
