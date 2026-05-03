@@ -217,6 +217,8 @@ drop policy if exists "notif own" on notifications;
 create policy "notif own" on notifications for select using (auth.uid() = user_id);
 drop policy if exists "notif insert any" on notifications;
 create policy "notif insert any" on notifications for insert with check (true);
+drop policy if exists "notif update own" on notifications;
+create policy "notif update own" on notifications for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "provider self update" on providers;
 create policy "provider self update" on providers for update using (auth.uid() = id);
 drop policy if exists "provider self insert" on providers;
@@ -239,6 +241,19 @@ create policy "msg participant" on messages for all using (
 );
 drop policy if exists "payout own" on payouts;
 create policy "payout own" on payouts for all using (auth.uid() = provider_id) with check (auth.uid() = provider_id);
+
+-- =========== ADMIN RPC: fetch push tokens bypassing RLS ==================
+create or replace function get_push_tokens_for_users(user_ids uuid[])
+returns table(token text, user_id uuid)
+language sql
+security definer
+set search_path = public
+as $$
+  select pt.token, pt.user_id
+  from push_tokens pt
+  where pt.user_id = any(user_ids)
+    and public.is_admin();
+$$;
 
 -- =========== TRIGGERS ===========
 create or replace function public.handle_new_user()

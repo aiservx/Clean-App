@@ -198,6 +198,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      if (s?.user?.id) {
+        await supabase.from("push_tokens").delete().eq("user_id", s.user.id);
+      }
+    } catch {}
+    try {
       await supabase.auth.signOut();
     } catch (e) {
       console.warn("[v0] signOut network call failed:", (e as Error)?.message);

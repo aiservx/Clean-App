@@ -1,91 +1,78 @@
 # بناء ملف APK لتطبيق نظافة
 
-> ⚠️ Replit لا يستطيع بناء APK مباشرة (لا يوجد Android SDK داخل البيئة).
-> الطريقة الرسمية والمدعومة من Expo هي عبر **EAS Build** السحابي — يبني على
-> خوادم Expo ويُعيد لك ملف `.apk` أو `.aab` جاهز للتنزيل.
+> الطريقة الرسمية والمدعومة من Expo هي عبر **EAS Build** السحابي —
+> يبني على خوادم Expo ويُعيد لك ملف `.apk` جاهز للتنزيل.
 
 ---
 
-## 1) متطلبات أولية (مرة واحدة)
+## الحالة الراهنة للإشعارات (بعد الإصلاحات)
 
-1. حساب مجاني على [expo.dev](https://expo.dev/signup)
-2. تثبيت EAS CLI على جهازك المحلي:
-   ```bash
-   npm i -g eas-cli
-   ```
-3. تسجيل الدخول:
-   ```bash
-   eas login
-   ```
-
-> 🔑 إن كان لديك أسرار في Replit Secrets (مثل `EXPO_PUBLIC_SUPABASE_URL` و
-> `EXPO_PUBLIC_SUPABASE_ANON_KEY`) أضفها أيضاً على EAS:
-> `eas secret:create --scope project --name EXPO_PUBLIC_SUPABASE_URL --value "..."`
+| المكوّن | الحالة |
+|---------|--------|
+| EXPO_PUBLIC_API_URL في eas.json | ✅ مضاف |
+| سياسة UPDATE للإشعارات (Mark as Read) | ✅ مضافة |
+| تفويض notifyAvailableProviders | ✅ مُصلح (يسمح new_booking → available providers) |
+| إشعارات لوحة الأدمن كـ Push | ✅ مُصلح (يستدعي Expo Push مباشرة) |
+| تنظيف Push Token عند الخروج | ✅ مُصلح |
+| RPC get_push_tokens_for_users | ✅ مضاف للـ schema |
 
 ---
 
-## 2) إعدادات المشروع (موجودة بالفعل)
+## الخطوات لبناء APK
 
-- `app.config.ts` يضبط `android.package = "com.nadhafa.app"` و `versionCode`
-- `eas.json` (إن لم يكن موجوداً، أنشئه — انظر القسم التالي)
+### 1) أدوات مطلوبة (مرة واحدة)
 
-### eas.json (نسخة جاهزة)
+```bash
+npm i -g eas-cli
+eas login
+```
 
-أنشئ الملف داخل `artifacts/mobile/eas.json`:
+### 2) تحديث EXPO_PUBLIC_API_URL (مهم!)
+
+في `artifacts/mobile/eas.json`، تأكد أن `EXPO_PUBLIC_API_URL` يشير
+إلى API server المنشور. القيمة الحالية هي للـ dev domain — غيّرها
+لرابط الـ deployment الثابت إن وُجد:
 
 ```json
-{
-  "cli": { "version": ">= 12.0.0" },
-  "build": {
-    "preview-apk": {
-      "distribution": "internal",
-      "android": { "buildType": "apk" }
-    },
-    "production": {
-      "autoIncrement": true,
-      "android": { "buildType": "app-bundle" }
-    }
-  },
-  "submit": { "production": {} }
-}
+"EXPO_PUBLIC_API_URL": "https://YOUR-DEPLOYED-API-SERVER-URL"
+```
+
+### 3) بناء APK للاختبار (preview)
+
+```bash
+cd artifacts/mobile
+EXPO_TOKEN=your_token eas build --platform android --profile preview --non-interactive
+```
+
+أو بدون `--non-interactive` للتفاعل مع الأسئلة:
+
+```bash
+eas build --platform android --profile preview
+```
+
+سيظهر رابط تنزيل خلال 10–20 دقيقة على:
+`https://expo.dev/accounts/clean-beaton/projects/mobile/builds`
+
+### 4) بناء AAB لـ Google Play
+
+```bash
+eas build --platform android --profile production
 ```
 
 ---
 
-## 3) بناء APK للاختبار
-
-من داخل مجلد `artifacts/mobile`:
-
-```bash
-eas build --profile preview-apk --platform android
-```
-
-ستحصل على رابط تنزيل في الـ terminal خلال 10–20 دقيقة. شغّل الملف على هاتفك
-أو أرسله لمختبرين.
-
-## 4) بناء AAB لرفعه على Google Play
-
-```bash
-eas build --profile production --platform android
-```
-
-يُنتج ملف `.aab` للرفع على Google Play Console.
-
----
-
-## 5) ملاحظات مهمة
+## ملاحظات مهمة
 
 - إن واجهت خطأ "Invalid keystore" في أول مرة، اختر **"Generate new keystore"**
-  حين يسألك EAS — هذا يحدث مرة واحدة فقط ويُحفظ تلقائياً.
-- Push notifications تتطلب رفع مفتاح Firebase Cloud Messaging على EAS:
-  `eas credentials` → اختر Android → FCM Server Key.
-- الخرائط تستخدم Apple Maps على iOS و Google Maps على Android — لا حاجة
-  لمفاتيح إضافية للبناء الافتراضي.
+  حين يسألك EAS — يحدث مرة واحدة فقط.
+- `SUPABASE_SERVICE_ROLE_KEY` يجب أن يكون مضبوطاً في API Server
+  (Replit Secrets) ليتمكن push.ts من تجاوز RLS.
+- بعد تحديث eas.json بـ EXPO_PUBLIC_API_URL الصحيح، أعد بناء APK.
 
 ---
 
-## 6) لماذا لا أستطيع البناء من Replit؟
+## آخر build ناجح
 
-البناء يحتاج Java + Android SDK + NDK (~10GB) وموارد BUILD ضخمة لا تتوفر في
-حاوية Replit الافتراضية. لذلك تستخدم خدمة EAS التي تتولى ذلك سحابياً
-بالمجان حتى 30 بناء/شهر.
+تم بدء build عبر EAS في:
+`https://expo.dev/accounts/clean-beaton/projects/mobile/builds/f5875d74-d9b4-40fd-b667-5d5ff777b572`
+
