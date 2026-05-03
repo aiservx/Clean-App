@@ -168,6 +168,15 @@ export async function registerForPush(userId: string): Promise<string | null> {
 // If not configured, falls back to direct Supabase query (may fail due to RLS
 // if push_tokens has row-level security enabled — which is the default).
 
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function sendPushNotification(
   userId: string,
   title: string,
@@ -179,9 +188,17 @@ export async function sendPushNotification(
   try {
     // ── Preferred: route through API server (bypasses RLS) ──────────────
     if (PUSH_API_URL) {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        console.log("[notifications] sendPush: no session token — skipping server route");
+        return;
+      }
       const res = await fetch(`${PUSH_API_URL}/api/push`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({ userId, title, body, data, categoryIdentifier, channelId }),
       });
       const json = await res.json().catch(() => null);
@@ -289,12 +306,19 @@ export async function notifyAvailableProviders(
     console.log(`[notifications] notifying ${providerIds.length} available providers`);
 
     if (PUSH_API_URL) {
-      // Send individually through API server so each benefits from RLS bypass
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        console.log("[notifications] notifyProviders: no session token — skipping server route");
+        return;
+      }
       await Promise.all(
         providerIds.map((id: string) =>
           fetch(`${PUSH_API_URL}/api/push`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
             body: JSON.stringify({
               userId: id,
               title,
