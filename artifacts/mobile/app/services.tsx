@@ -161,7 +161,7 @@ export default function ServicesScreen() {
                     <Text style={[styles.serviceDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{service.desc_ar}</Text>
                     <View style={styles.cardFooter}>
                       <View style={[styles.arrowBtn, { backgroundColor: colors.primary }]}>
-                        <Feather name="arrow-left" size={14} color="#FFF" />
+                        <Feather name="arrow-right" size={14} color="#FFF" />
                       </View>
                       <Text style={[styles.priceText, { color: colors.foreground }]}>
                         {t("starts_from")} <Text style={{ color: colors.primary, fontFamily: "Tajawal_700Bold" }}>{Number(service.base_price)}</Text> {t("sar")}

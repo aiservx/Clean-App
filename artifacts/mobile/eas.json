@@ -13,7 +13,7 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
-        "EXPO_PUBLIC_API_URL": "https://10252f24-0ba5-48e4-9528-e9243ecba660-00-3fvtassaapdy7.spock.replit.dev"
+        "EXPO_PUBLIC_API_URL": "https://eb9ca67f-3840-494c-a44c-7f4dce377432-00-ssajzbo1u1yq.kirk.replit.dev"
       }
     },
     "preview": {
@@ -25,7 +25,7 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
-        "EXPO_PUBLIC_API_URL": "https://10252f24-0ba5-48e4-9528-e9243ecba660-00-3fvtassaapdy7.spock.replit.dev"
+        "EXPO_PUBLIC_API_URL": "https://eb9ca67f-3840-494c-a44c-7f4dce377432-00-ssajzbo1u1yq.kirk.replit.dev"
       }
     },
     "production": {
@@ -37,7 +37,7 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
-        "EXPO_PUBLIC_API_URL": "https://10252f24-0ba5-48e4-9528-e9243ecba660-00-3fvtassaapdy7.spock.replit.dev"
+        "EXPO_PUBLIC_API_URL": "https://eb9ca67f-3840-494c-a44c-7f4dce377432-00-ssajzbo1u1yq.kirk.replit.dev"
       }
     }
   },

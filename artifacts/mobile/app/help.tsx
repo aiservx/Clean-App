@@ -45,7 +45,7 @@ export default function Help() {
               <Text style={styles.aiSub}>اسأل أي سؤال عن الخدمات والحجوزات والأسعار واحصل على إجابة فورية</Text>
             </View>
             <View style={styles.aiArrow}>
-              <Feather name="arrow-left" size={18} color="#FFF" />
+              <Feather name="arrow-right" size={18} color="#FFF" />
             </View>
           </LinearGradient>
         </TouchableOpacity>

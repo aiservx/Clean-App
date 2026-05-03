@@ -480,7 +480,7 @@ export default function ProviderHome() {
                     </>
                   ) : (
                     <TouchableOpacity onPress={() => router.push(`/(provider)/booking-details?id=${o.id}` as any)} style={[styles.acceptBtn, { backgroundColor: statusColors[o.status] || colors.primary }]}>
-                      <Feather name="arrow-left" size={12} color="#FFF" />
+                      <Feather name="arrow-right" size={12} color="#FFF" />
                       <Text style={styles.acceptT}>التفاصيل</Text>
                     </TouchableOpacity>
                   )}

@@ -219,7 +219,7 @@ export default function OffersScreen() {
                 </Text>
                 <View style={styles.featuredCtaRow}>
                   <View style={[styles.featuredCta, { backgroundColor: p.ctaBg }]}>
-                    <Feather name={copiedId === p.id ? "check" : "arrow-left"} size={12} color={p.ctaText} />
+                    <Feather name={copiedId === p.id ? "check" : "arrow-right"} size={12} color={p.ctaText} />
                     <Text style={[styles.featuredCtaText, { color: p.ctaText }]}>
                       {copiedId === p.id ? "تم النسخ" : p.cta}
                     </Text>
