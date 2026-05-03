@@ -142,9 +142,11 @@ externalPort = 3001
 [userenv]
 
 [userenv.shared]
-EXPO_PUBLIC_SUPABASE_URL = "https://ppokdtzlisaxsrmtwlrb.supabase.co"
-EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_4aV1hEm-Ow4oy6AAgUR7rg_miOdFXHa"
+EXPO_PUBLIC_SUPABASE_URL = "https://mffdpjwtwseftaqrslgx.supabase.co"
+EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D"
 EXPO_TOKEN = "acyVVoIgjk-jsB4Sf32bkhWf_7xnkkf8islfv3Yy"
+SUPABASE_URL = "https://mffdpjwtwseftaqrslgx.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8"
 
 [nix]
 channel = "stable-25_05"
