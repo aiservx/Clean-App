@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Link } from "wouter";
 import { Card, PageHeader, StatusChip } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
@@ -115,7 +116,12 @@ export default function Dashboard() {
               آخر الحجوزات
             </h2>
           </div>
-          <span style={{ fontSize: 12, color: "#64748B" }}>{recent.length} نتيجة</span>
+          <Link href="/bookings">
+            <a className="text-sm font-bold transition-opacity hover:opacity-70"
+              style={{ color: "var(--color-primary)", fontFamily: "Tajawal, sans-serif" }}>
+              عرض الكل ←
+            </a>
+          </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full" style={{ fontSize: 13 }}>

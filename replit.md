@@ -128,6 +128,26 @@ Massive issue-list pass. All 35 tasks (T001–T090) addressed.
 ### Free-tier note
 - Replit free tier blocks third-party connectors; this build relies only on Supabase (already wired) and Expo OTA. APK builds run on Expo's EAS cloud — see `artifacts/mobile/BUILD_APK.md`.
 
+## 2026-05-03 — Admin Bookings overhaul + push notifications
+
+### Admin Bookings page (`artifacts/admin/src/pages/Bookings.tsx`) — complete rewrite
+- **No longer uses generic CRUDPage** — dedicated page with full real-time capabilities
+- **Real-time subscription** via `supabase.channel("admin-bookings-live")` — table updates live without refresh
+- **Status change workflow**: selecting new status → updates `bookings.status` → inserts `booking_status_log` row → sends Expo push notification to user immediately
+- **Push notifications** sent directly to Expo API (`https://exp.host/--/api/v2/push/send`) to all user's push tokens; also inserts in-app `notifications` row
+- **Expandable rows** — click any row to see: booking details, full status timeline with timestamps, inline status selector
+- **Stats bar**: counts by all status categories (pending / active / completed / cancelled)
+- **Filter chips**: filter by status; search by name, service, or booking ID
+- **Toast feedback**: shows "✓ الحالة محدّثة" on success with 3.5s auto-dismiss
+
+### Dashboard (`artifacts/admin/src/pages/Dashboard.tsx`)
+- Added "عرض الكل ←" link to navigate directly to `/bookings` from the recent bookings table
+
+### APK builds (EAS Cloud)
+- Most recent finished APK: `https://expo.dev/artifacts/eas/7iJBTtb4UWLwAaYB6rXxDe.apk` (2026-05-03 14:48)
+- EAS project: `dd03c810-2182-47e7-9a0a-823fdcc351b8`, account: `clean-beaton`
+- To build: `cd artifacts/mobile && EXPO_TOKEN=<token> npx eas build --platform android --profile preview --non-interactive --no-wait`
+
 ## 2026-05-01 — Real data: chat + booking-details + notifications
 
 All remaining hardcoded/fake data replaced with live Supabase queries:
