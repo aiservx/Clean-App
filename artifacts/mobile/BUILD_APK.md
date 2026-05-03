@@ -1,78 +1,70 @@
 # بناء ملف APK لتطبيق نظافة
 
-> الطريقة الرسمية والمدعومة من Expo هي عبر **EAS Build** السحابي —
-> يبني على خوادم Expo ويُعيد لك ملف `.apk` جاهز للتنزيل.
+## آخر Build ناجح ✅
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `cf43488d-3d9e-40d5-b339-f5b5840f5c47` |
+| Platform | Android |
+| Profile | preview |
+| Status | **finished** |
+| SDK Version | 54.0.0 |
+| Runtime Version | 1.0.0 |
+| Version | 1.0.0 (versionCode 2) |
+| Started | 5/3/2026, 4:34 AM |
+| Finished | 5/3/2026, 5:12 AM |
+| **تنزيل APK** | **https://expo.dev/artifacts/eas/rArctytyRmDaRsPXmWUUJT.apk** |
+| صفحة الـ Build | https://expo.dev/accounts/clean-beaton/projects/mobile/builds/cf43488d-3d9e-40d5-b339-f5b5840f5c47 |
 
 ---
 
-## الحالة الراهنة للإشعارات (بعد الإصلاحات)
+## بناء جديد قيد التشغيل (بعد إصلاحات الإشعارات)
 
-| المكوّن | الحالة |
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `f5875d74-d9b4-40fd-b667-5d5ff777b572` |
+| Status | **in progress** |
+| صفحة الـ Build | https://expo.dev/accounts/clean-beaton/projects/mobile/builds/f5875d74-d9b4-40fd-b667-5d5ff777b572 |
+
+يشمل هذا البناء جميع إصلاحات الإشعارات — ستجد رابط التنزيل في الصفحة أعلاه فور اكتماله.
+
+---
+
+## الإصلاحات المطبّقة (تتضمنها الـ builds الجديدة)
+
+| المشكلة | الإصلاح |
 |---------|--------|
-| EXPO_PUBLIC_API_URL في eas.json | ✅ مضاف |
-| سياسة UPDATE للإشعارات (Mark as Read) | ✅ مضافة |
-| تفويض notifyAvailableProviders | ✅ مُصلح (يسمح new_booking → available providers) |
-| إشعارات لوحة الأدمن كـ Push | ✅ مُصلح (يستدعي Expo Push مباشرة) |
-| تنظيف Push Token عند الخروج | ✅ مُصلح |
-| RPC get_push_tokens_for_users | ✅ مضاف للـ schema |
+| `EXPO_PUBLIC_API_URL` مفقود | أُضيف إلى `eas.json` (development + preview) |
+| Mark as Read لا يعمل | أُضيفت سياسة UPDATE على جدول notifications |
+| إشعارات المزودين الجدد تُحظر (403) | أُصلح `callerMayNotify` يسمح new_booking → available providers |
+| لوحة الأدمن لا ترسل Push | تستدعي الآن Expo Push API مباشرة |
+| التوكن يبقى بعد الخروج | يُحذف push token قبل signOut |
 
 ---
 
-## الخطوات لبناء APK
+## كيفية إعادة البناء
 
-### 1) أدوات مطلوبة (مرة واحدة)
-
-```bash
-npm i -g eas-cli
-eas login
-```
-
-### 2) تحديث EXPO_PUBLIC_API_URL (مهم!)
-
-في `artifacts/mobile/eas.json`، تأكد أن `EXPO_PUBLIC_API_URL` يشير
-إلى API server المنشور. القيمة الحالية هي للـ dev domain — غيّرها
-لرابط الـ deployment الثابت إن وُجد:
-
-```json
-"EXPO_PUBLIC_API_URL": "https://YOUR-DEPLOYED-API-SERVER-URL"
-```
-
-### 3) بناء APK للاختبار (preview)
-
+### من الـ terminal المحلي:
 ```bash
 cd artifacts/mobile
-EXPO_TOKEN=your_token eas build --platform android --profile preview --non-interactive
-```
-
-أو بدون `--non-interactive` للتفاعل مع الأسئلة:
-
-```bash
+eas login   # مرة واحدة
 eas build --platform android --profile preview
 ```
 
-سيظهر رابط تنزيل خلال 10–20 دقيقة على:
-`https://expo.dev/accounts/clean-beaton/projects/mobile/builds`
-
-### 4) بناء AAB لـ Google Play
-
+### من Replit (عبر EAS_NO_VCS):
 ```bash
-eas build --platform android --profile production
+cd artifacts/mobile
+EAS_NO_VCS=1 EXPO_TOKEN="$EXPO_TOKEN" npx eas-cli build \
+  --platform android --profile preview --non-interactive
 ```
 
 ---
 
-## ملاحظات مهمة
+## ملاحظة حول EXPO_PUBLIC_API_URL
 
-- إن واجهت خطأ "Invalid keystore" في أول مرة، اختر **"Generate new keystore"**
-  حين يسألك EAS — يحدث مرة واحدة فقط.
-- `SUPABASE_SERVICE_ROLE_KEY` يجب أن يكون مضبوطاً في API Server
-  (Replit Secrets) ليتمكن push.ts من تجاوز RLS.
-- بعد تحديث eas.json بـ EXPO_PUBLIC_API_URL الصحيح، أعد بناء APK.
+القيمة الحالية في `eas.json` هي dev domain. لـ APK إنتاجي مستقر:
+1. انشر API Server عبر Replit Deployments للحصول على URL ثابت
+2. غيّر `EXPO_PUBLIC_API_URL` في `eas.json` للـ URL الثابت
+3. أعد البناء
 
----
-
-## آخر build ناجح
-
-تم بدء build عبر EAS في:
-`https://expo.dev/accounts/clean-beaton/projects/mobile/builds/f5875d74-d9b4-40fd-b667-5d5ff777b572`
-
+وتأكد أن `SUPABASE_SERVICE_ROLE_KEY` مضبوط في Replit Secrets للـ API Server.
