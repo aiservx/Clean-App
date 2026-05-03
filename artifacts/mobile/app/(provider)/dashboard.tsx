@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, RefreshControl, Alert, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, RefreshControl, Alert, ActivityIndicator, I18nManager } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -480,7 +480,7 @@ export default function ProviderHome() {
                     </>
                   ) : (
                     <TouchableOpacity onPress={() => router.push(`/(provider)/booking-details?id=${o.id}` as any)} style={[styles.acceptBtn, { backgroundColor: statusColors[o.status] || colors.primary }]}>
-                      <Feather name="arrow-right" size={12} color="#FFF" />
+                      <Feather name={I18nManager.isRTL ? "arrow-left" : "arrow-right"} size={12} color="#FFF" />
                       <Text style={styles.acceptT}>التفاصيل</Text>
                     </TouchableOpacity>
                   )}

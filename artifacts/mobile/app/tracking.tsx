@@ -37,7 +37,7 @@ function StatusToast({
   }, []);
   return (
     <Animated.View style={[toastStyles.wrap, { top: insets.top + 8, transform: [{ translateY: slide }] }]}>
-      <View style={[toastStyles.card, { borderLeftColor: color, borderLeftWidth: 4 }]}>
+      <View style={[toastStyles.card, { borderRightColor: color, borderRightWidth: 4 }]}>
         <View style={[toastStyles.iconBox, { backgroundColor: color + "20" }]}>
           <MaterialCommunityIcons name={(STATUS_ICON_MAP[status] || "bell-outline") as any} size={22} color={color} />
         </View>

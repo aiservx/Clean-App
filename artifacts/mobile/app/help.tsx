@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, I18nManager } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -45,7 +45,7 @@ export default function Help() {
               <Text style={styles.aiSub}>اسأل أي سؤال عن الخدمات والحجوزات والأسعار واحصل على إجابة فورية</Text>
             </View>
             <View style={styles.aiArrow}>
-              <Feather name="arrow-right" size={18} color="#FFF" />
+              <Feather name={I18nManager.isRTL ? "arrow-left" : "arrow-right"} size={18} color="#FFF" />
             </View>
           </LinearGradient>
         </TouchableOpacity>

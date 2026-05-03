@@ -4,6 +4,28 @@
 
 Arabic RTL cleaning services mobile app (نظافة) built with Expo + Supabase backend. Full RTL support, Cairo/Tajawal Arabic typography, premium green aesthetic. Includes admin dashboard at `artifacts/admin/` and Express API at `artifacts/api-server/`.
 
+## Recent Fixes (May 2026)
+
+### RTL Layout
+- `RatingBottomSheet.tsx`: `textAlign:"right"` fixed
+- `tracking.tsx`: toast border changed to `borderRightColor` for RTL
+- `help.tsx`, `services.tsx`, `offers.tsx`, `dashboard.tsx`: arrow icons use `I18nManager.isRTL ? "arrow-left" : "arrow-right"`
+
+### Push Notifications
+- `booking-details.tsx` (provider advance): sends `review_request` category when status = `completed`
+- `bookings.tsx` (customer): cancel button for `pending` bookings → updates DB, logs status, notifies provider via push + in-app notification
+- Admin `Bookings.tsx` `notifyUser()`: now routes through API server `/api/push` (uses service role, bypasses RLS); rich localized messages per status
+- Admin `Notifications.tsx` broadcast: routes through API server `/api/push/batch`; shows error if request fails
+
+### Admin Dashboard
+- All routes registered in `App.tsx`: `/policies`, `/branding`, `/home-builder`, `/commission` → `PoliciesPage`, `BrandingPage`, `HomeBuilderPage`, `CommissionPage` from Settings.tsx
+- No direct `exp.host` calls from admin browser (was failing due to RLS on `push_tokens`)
+
+### APK Builds
+- Preview APK (5/3/2026 16:34): https://expo.dev/artifacts/eas/39vUWwxq2apDbwEdvYngRW.apk
+- Development APK (5/3/2026 17:25): https://expo.dev/artifacts/eas/hs8BE8CVF3Gkzedobekwhe.apk
+- New build needed after current session commits to include cancel-booking + notification fixes
+
 ## How to run (one-click)
 
 The "Start application" workflow runs `bash scripts/start-all.sh`, which kills any stale processes on ports 8080/18115/23744 and then launches all three services in parallel:

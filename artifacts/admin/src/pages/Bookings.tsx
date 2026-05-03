@@ -3,7 +3,7 @@ import { Card, PageHeader, StatusChip } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
+const API_BASE = import.meta.env.VITE_API_URL || "https://eb9ca67f-3840-494c-a44c-7f4dce377432-00-ssajzbo1u1yq.kirk.replit.dev";
 
 const STATUS_FLOW = ["pending", "accepted", "on_the_way", "in_progress", "completed"] as const;
 type BookingStatus = typeof STATUS_FLOW[number] | "cancelled" | "rejected";
@@ -49,33 +49,47 @@ const fmtDate = (iso: string | null) => {
   return d.toLocaleString("ar-SA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 };
 
-// ── Send push + in-app notification ──────────────────────────────────────────
+// ── Send push + in-app notification via API server (uses service role) ───────
 async function notifyUser(userId: string, status: BookingStatus, bookingId: string) {
-  const title = "نظافة — تحديث طلبك";
-  const body = STATUS_AR[status] ?? status;
+  const NOTIF_MESSAGES: Record<string, { title: string; body: string }> = {
+    accepted:    { title: "✅ تم قبول طلبك!", body: "المزود تأكد على طلبك وسيتوجه إليك قريباً" },
+    on_the_way:  { title: "🚗 المزود في الطريق إليك", body: "استعد! مزود الخدمة متجه نحوك الآن" },
+    in_progress: { title: "🧹 بدأت الخدمة", body: "مزود الخدمة وصل وبدأ العمل لديك" },
+    completed:   { title: "✨ اكتملت الخدمة!", body: "تم إنجاز الخدمة بنجاح. كيف تقيّم الخدمة؟" },
+    cancelled:   { title: "❌ تم إلغاء طلبك", body: "تم إلغاء هذا الطلب من لوحة الإدارة" },
+    rejected:    { title: "🚫 تم رفض طلبك", body: "تم رفض هذا الطلب، يمكنك تقديم طلب جديد" },
+  };
+  const msg = NOTIF_MESSAGES[status] ?? { title: "نظافة — تحديث طلبك", body: STATUS_AR[status] ?? status };
 
   try {
-    // 1. In-app notification row
+    // 1. In-app notification (always)
     await supabase.from("notifications").insert({
-      user_id: userId, title, body, type: "booking_status",
-      data: { booking_id: bookingId, status },
+      user_id: userId, title: msg.title, body: msg.body, type: "booking_status",
+      data: { booking_id: bookingId, status }, read: false,
     });
 
-    // 2. Push tokens
-    const { data: tokens } = await supabase
-      .from("push_tokens").select("token").eq("user_id", userId);
-    if (!tokens?.length) return;
+    // 2. Push via API server (service role bypasses RLS)
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    if (!token) return;
 
-    await fetch(EXPO_PUSH_URL, {
+    await fetch(`${API_BASE}/api/push`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json", "Accept-Encoding": "gzip, deflate" },
-      body: JSON.stringify(tokens.map((t) => ({
-        to: t.token, title, body, sound: "default", priority: "high",
-        channelId: "default", data: { booking_id: bookingId, status },
-      }))),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userId,
+        title: msg.title,
+        body: msg.body,
+        data: { bookingId, status },
+        categoryIdentifier: status === "completed" ? "review_request" : "booking_update",
+        channelId: "booking_status",
+      }),
     });
   } catch (e) {
-    console.error("notify error", e);
+    console.error("[admin] notify error", e);
   }
 }
 

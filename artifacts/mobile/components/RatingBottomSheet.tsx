@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     fontFamily: "Tajawal_400Regular",
     fontSize: 11,
     color: "#94A3B8",
-    textAlign: "left",
+    textAlign: "right",
     marginTop: 4,
   },
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, PageHeader } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
-const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
+const API_BASE = import.meta.env.VITE_API_URL || "https://eb9ca67f-3840-494c-a44c-7f4dce377432-00-ssajzbo1u1yq.kirk.replit.dev";
 
 export default function Notifications() {
   const [title, setTitle] = useState("");
@@ -11,63 +11,52 @@ export default function Notifications() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pushCount, setPushCount] = useState<number | null>(null);
+  const [err, setErr] = useState<string | null>(null);
 
   async function send() {
     setLoading(true);
     setPushCount(null);
+    setErr(null);
     try {
       let q = supabase.from("profiles").select("id");
       if (target === "users") q = q.eq("role", "user");
       if (target === "providers") q = q.eq("role", "provider");
       const { data: users } = await q;
-      if (!users?.length) {
-        setSent(true);
-        return;
-      }
+      if (!users?.length) { setSent(true); return; }
 
       const userIds = users.map((u: any) => u.id);
 
+      // 1. Save in-app notifications
       await supabase.from("notifications").insert(
-        userIds.map((id: string) => ({ user_id: id, title, body, type: "admin_broadcast" }))
+        userIds.map((id: string) => ({ user_id: id, title, body, type: "admin_broadcast", read: false }))
       );
 
-      const { data: tokenRows } = await supabase.rpc("get_push_tokens_for_users", {
-        user_ids: userIds,
+      // 2. Send push via API server (uses service role key to bypass RLS)
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) { setErr("لا توجد جلسة تسجيل دخول"); return; }
+
+      const res = await fetch(`${API_BASE}/api/push/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          userIds,
+          title,
+          body,
+          data: { type: "admin_broadcast" },
+          channelId: "default",
+        }),
       });
 
-      if (tokenRows?.length) {
-        const BATCH = 100;
-        let successCount = 0;
-        for (let i = 0; i < tokenRows.length; i += BATCH) {
-          const chunk = tokenRows.slice(i, i + BATCH);
-          const messages = chunk.map((t: any) => ({
-            to: t.token,
-            title,
-            body,
-            sound: "default",
-            priority: "high",
-            channelId: "default",
-          }));
-          const res = await fetch(EXPO_PUSH_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              "Accept-Encoding": "gzip, deflate",
-            },
-            body: JSON.stringify(messages),
-          });
-          const json = await res.json().catch(() => null);
-          const ok = (json?.data ?? []).filter((d: any) => d?.status === "ok").length;
-          successCount += ok;
-        }
-        setPushCount(successCount);
-      } else {
-        setPushCount(0);
-      }
-
+      const json = await res.json().catch(() => null);
+      setPushCount(json?.sent ?? 0);
       setSent(true);
       setTimeout(() => setSent(false), 4000);
+    } catch (e: any) {
+      setErr(e?.message ?? "حدث خطأ");
     } finally {
       setLoading(false);
     }
@@ -100,6 +89,9 @@ export default function Notifications() {
         >
           {loading ? "جاري الإرسال…" : "إرسال الإشعار"}
         </button>
+        {err && (
+          <div className="text-center text-red-600 text-sm p-3 bg-red-50 rounded-xl">{err}</div>
+        )}
         {sent && (
           <div className="text-center text-emerald-600 text-sm">
             تم الإرسال بنجاح ✓

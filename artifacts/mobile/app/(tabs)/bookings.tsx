@@ -8,6 +8,8 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+import { sendPushNotification, createNotification } from "@/lib/notifications";
 import { useRealtimeBookings } from "@/lib/realtimeStore";
 import GuestEmpty from "@/components/GuestEmpty";
 import FloatingTabBar from "@/components/FloatingTabBar";
@@ -80,6 +82,38 @@ export default function BookingsScreen() {
       { text: "إلغاء", style: "cancel" },
       { text: "نعم", onPress: () => router.push("/services") },
     ]);
+  };
+
+  const cancelBooking = (item: any) => {
+    Alert.alert(
+      "إلغاء الطلب",
+      "هل أنت متأكد من إلغاء هذا الطلب؟",
+      [
+        { text: "تراجع", style: "cancel" },
+        {
+          text: "إلغاء الطلب",
+          style: "destructive",
+          onPress: async () => {
+            await supabase.from("bookings").update({ status: "cancelled" }).eq("id", item.id);
+            await supabase.from("booking_status_log").insert({
+              booking_id: item.id, status: "cancelled", note: "ألغي بواسطة العميل",
+            });
+            if (item.provider_id) {
+              sendPushNotification(
+                item.provider_id,
+                "❌ تم إلغاء الطلب",
+                `قام العميل بإلغاء طلب ${item.service_title || ""}`,
+                { bookingId: item.id },
+                undefined,
+                "booking_status",
+              );
+              createNotification(item.provider_id, "booking_cancelled", "❌ تم إلغاء الطلب", `قام العميل بإلغاء طلب ${item.service_title || ""}`, { bookingId: item.id });
+            }
+            refresh();
+          },
+        },
+      ]
+    );
   };
 
   if (!session) {
@@ -242,12 +276,21 @@ export default function BookingsScreen() {
                         <Text style={[styles.actionBtnText, { color: colors.foreground }]}>عرض التفاصيل</Text>
                       </TouchableOpacity>
                     )}
-                    <TouchableOpacity
-                      style={[styles.reorderBtn, { backgroundColor: colors.primaryLight }]}
-                      onPress={() => reorder(item.service_title)}
-                    >
-                      <Text style={[styles.reorderBtnText, { color: colors.primary }]}>إعادة طلب</Text>
-                    </TouchableOpacity>
+                    {item.status === "pending" ? (
+                      <TouchableOpacity
+                        style={[styles.reorderBtn, { backgroundColor: "#FEE2E2" }]}
+                        onPress={() => cancelBooking(item)}
+                      >
+                        <Text style={[styles.reorderBtnText, { color: "#EF4444" }]}>إلغاء</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={[styles.reorderBtn, { backgroundColor: colors.primaryLight }]}
+                        onPress={() => reorder(item.service_title)}
+                      >
+                        <Text style={[styles.reorderBtnText, { color: colors.primary }]}>إعادة طلب</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </TouchableOpacity>
               );
