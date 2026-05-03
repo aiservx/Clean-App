@@ -1,13 +1,33 @@
 # بناء ملف APK لتطبيق نظافة
 
-## Build #8 — جارٍ الآن 🔄 (حساب hadystow)
+## Build #9 — جارٍ الآن 🔄 (إصلاح الكراش)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `1acb56eb-ec85-44e3-8638-677c3c7dc93c` |
+| Platform | Android |
+| Profile | **preview** |
+| Status | **in progress** |
+| الحساب | hadystow |
+| EAS Project ID | `09e4ce5c-f181-49b0-b379-68b832e1f292` |
+| صفحة الـ Build | https://expo.dev/accounts/hadystow/projects/mobile/builds/1acb56eb-ec85-44e3-8638-677c3c7dc93c |
+
+### الإصلاحات في Build #9
+- `AppMap.native.tsx` — تغليف MapView بـ ErrorBoundary لمنع crash من Google Maps
+- `notifications.ts` — تصحيح projectId للحساب الجديد `hadystow`
+- `app.config.ts` — إعادة إضافة `expo-updates` مع URL المشروع الجديد
+- `eas.json` — تحديث `EXPO_PUBLIC_API_URL` للـ domain الحالي
+
+---
+
+## Build #8 — ✅ اكتمل (hadystow)
 
 | الحقل | القيمة |
 |-------|--------|
 | Build ID | `a8ef00e3-ef82-4394-8cce-3812c685d6c5` |
 | Platform | Android |
 | Profile | **preview** |
-| Status | **in progress** |
+| Status | **finished** |
 | الحساب | hadystow |
 | EAS Project ID | `09e4ce5c-f181-49b0-b379-68b832e1f292` |
 | صفحة الـ Build | https://expo.dev/accounts/hadystow/projects/mobile/builds/a8ef00e3-ef82-4394-8cce-3812c685d6c5 |

@@ -1,6 +1,25 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, Component } from "react";
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT, AnimatedRegion } from "react-native-maps";
 import { StyleSheet, View, Image, Animated } from "react-native";
+
+// ── Map ErrorBoundary: catches any render error from MapView ───────────────
+class MapErrorBoundary extends Component<
+  { children: React.ReactNode; style?: any },
+  { crashed: boolean }
+> {
+  state = { crashed: false };
+  static getDerivedStateFromError() { return { crashed: true }; }
+  render() {
+    if (this.state.crashed) {
+      return (
+        <View style={[this.props.style, styles.mapFallback]}>
+          <View style={styles.mapFallbackInner} />
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export type LatLng = { latitude: number; longitude: number };
 
@@ -135,44 +154,48 @@ export default function AppMap({
   }, [region.latitude, region.longitude, animateTrigger]);
 
   return (
-    <View style={[styles.wrap, style]} pointerEvents={pointerEvents}>
-      <MapView
-        ref={mapRef}
-        provider={PROVIDER_DEFAULT}
-        style={StyleSheet.absoluteFill}
-        initialRegion={region}
-        scrollEnabled={scrollEnabled}
-        zoomEnabled={zoomEnabled}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-      >
-        {/* Route polyline */}
-        {polyline && polyline.coordinates.length > 1 && (
-          <Polyline
-            coordinates={polyline.coordinates}
-            strokeColor={polyline.color ?? "#10B981"}
-            strokeWidth={polyline.width ?? 5}
-            lineDashPattern={undefined}
-            lineCap="round"
-            lineJoin="round"
-          />
-        )}
+    <MapErrorBoundary style={[styles.wrap, style]}>
+      <View style={[styles.wrap, style]} pointerEvents={pointerEvents}>
+        <MapView
+          ref={mapRef}
+          provider={PROVIDER_DEFAULT}
+          style={StyleSheet.absoluteFill}
+          initialRegion={region}
+          scrollEnabled={scrollEnabled}
+          zoomEnabled={zoomEnabled}
+          showsUserLocation={false}
+          showsMyLocationButton={false}
+        >
+          {/* Route polyline */}
+          {polyline && polyline.coordinates.length > 1 && (
+            <Polyline
+              coordinates={polyline.coordinates}
+              strokeColor={polyline.color ?? "#10B981"}
+              strokeWidth={polyline.width ?? 5}
+              lineDashPattern={undefined}
+              lineCap="round"
+              lineJoin="round"
+            />
+          )}
 
-        {/* Markers */}
-        {markers?.map((m) =>
-          m.animated ? (
-            <AnimatedMarker key={m.id} marker={m} onPress={onMarkerPress} />
-          ) : (
-            <StaticMarker key={m.id} marker={m} onPress={onMarkerPress} />
-          ),
-        )}
-      </MapView>
-    </View>
+          {/* Markers */}
+          {markers?.map((m) =>
+            m.animated ? (
+              <AnimatedMarker key={m.id} marker={m} onPress={onMarkerPress} />
+            ) : (
+              <StaticMarker key={m.id} marker={m} onPress={onMarkerPress} />
+            ),
+          )}
+        </MapView>
+      </View>
+    </MapErrorBoundary>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: { overflow: "hidden" },
+  mapFallback: { backgroundColor: "#E8F5E9", alignItems: "center", justifyContent: "center" },
+  mapFallbackInner: { width: 48, height: 48, borderRadius: 24, backgroundColor: "#16C47F40" },
   avatarMarker: {
     width: 44,
     height: 44,

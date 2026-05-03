@@ -48,6 +48,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     web: {
       favicon: "./assets/images/icon-light.png",
     },
+    updates: {
+      url: "https://u.expo.dev/09e4ce5c-f181-49b0-b379-68b832e1f292",
+      fallbackToCacheTimeout: 0,
+      checkAutomatically: "ON_LOAD",
+      requestHeaders: {
+        "expo-channel-name": "preview",
+      },
+    },
     runtimeVersion: {
       policy: "appVersion",
     },
@@ -66,6 +74,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         "expo-notifications",
         { icon: "./assets/images/icon-light.png", color: "#7C3AED" },
       ],
+      "expo-updates",
     ],
     experiments: {
       typedRoutes: true,

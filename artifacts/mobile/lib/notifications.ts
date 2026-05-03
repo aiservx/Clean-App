@@ -142,7 +142,7 @@ export async function registerForPush(userId: string): Promise<string | null> {
     }
 
     const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: "dd03c810-2182-47e7-9a0a-823fdcc351b8",
+      projectId: "09e4ce5c-f181-49b0-b379-68b832e1f292",
     });
     const token = tokenData.data;
 
