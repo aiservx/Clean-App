@@ -308,9 +308,8 @@ function statusColor(status: string): string {
   return map[status] || "#6B7280";
 }
 
-const RTL = I18nManager.isRTL;
-const rowDir = RTL ? "row" : "row-reverse";
-const colAlign = RTL ? "flex-start" : "flex-end";
+const rowDir = "row" as const;
+const colAlign = "flex-start" as const;
 
 const s = StyleSheet.create({
   container: { flex: 1 },

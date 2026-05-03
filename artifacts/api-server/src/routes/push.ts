@@ -5,10 +5,14 @@ import { logger } from "../lib/logger";
 const router: IRouter = Router();
 
 const SUPABASE_URL =
-  process.env.SUPABASE_URL ?? "https://ppokdtzlisaxsrmtwlrb.supabase.co";
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? "";
-const SUPABASE_SERVICE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
+  process.env.SUPABASE_URL ?? "https://mffdpjwtwseftaqrslgx.supabase.co";
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8";
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+
+if (!SUPABASE_SERVICE_KEY) {
+  logger.warn("SUPABASE_SERVICE_ROLE_KEY is not set — push notifications will fail. Set it in environment secrets.");
+}
 
 // ── Verify Supabase JWT and return caller's user ID ───────────────────────
 
