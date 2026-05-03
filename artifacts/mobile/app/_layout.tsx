@@ -11,6 +11,7 @@ import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import React, { useEffect, useRef } from "react";
 import { Platform } from "react-native";
+import type { Session } from "@supabase/supabase-js";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 // Safe KeyboardProvider wrapper — falls back to a plain wrapper if the native module crashes
 let KeyboardProvider: React.ComponentType<{ children: React.ReactNode }>;
@@ -38,6 +39,9 @@ import { RatingBottomSheetController } from "@/components/RatingBottomSheet";
 function PushRegistrar() {
   const { session } = useAuth();
   const registered = useRef<string | null>(null);
+  // Keep session in a ref so the notification listener always has fresh session
+  const sessionRef = useRef<Session | null>(null);
+  useEffect(() => { sessionRef.current = session; }, [session]);
 
   useEffect(() => {
     if (!session?.user?.id || registered.current === session.user.id) return;
@@ -53,30 +57,63 @@ function PushRegistrar() {
       const type = data?.type || "";
       const actionId = response.actionIdentifier;
 
+      // ── Provider taps Accept / Reject on a new-booking notification ──────
       if (bookingId && (actionId === "accept" || actionId === "reject")) {
+        if (actionId === "reject") {
+          // Reject = just dismiss — don't change booking status so other
+          // providers still see the request in their dashboard.
+          console.log("[push] provider rejected booking notification, dismissing");
+          return;
+        }
+
+        // Accept: claim the booking for this provider
         try {
           const { supabase: sb } = await import("@/lib/supabase");
-          const newStatus = actionId === "accept" ? "accepted" : "rejected";
-          await sb.from("bookings").update({ status: newStatus }).eq("id", bookingId);
-          if (actionId === "accept") {
-            const { createNotification: cn, sendPushNotification: spn } = await import("@/lib/notifications");
-            const { data: bk } = await sb
-              .from("bookings")
-              .select("user_id, services(title_ar)")
-              .eq("id", bookingId)
-              .maybeSingle();
-            if (bk?.user_id) {
-              const svcTitle = (bk.services as any)?.title_ar || "الخدمة";
-              cn(bk.user_id, "booking_accepted", "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
-              spn(bk.user_id, "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
-            }
+          const providerId = sessionRef.current?.user?.id;
+
+          const updatePayload: any = { status: "accepted" };
+          if (providerId) updatePayload.provider_id = providerId;
+
+          const { error } = await sb
+            .from("bookings")
+            .update(updatePayload)
+            .eq("id", bookingId)
+            .eq("status", "pending"); // only accept if still pending (race-safe)
+
+          if (error) {
+            console.log("[push] accept booking failed:", error.message);
+            return;
           }
+
+          // Mark provider unavailable
+          if (providerId) {
+            await sb.from("providers").update({ available: false }).eq("id", providerId);
+          }
+
+          // Notify the customer
+          const { createNotification: cn, sendPushNotification: spn } = await import("@/lib/notifications");
+          const { data: bk } = await sb
+            .from("bookings")
+            .select("user_id, services(title_ar)")
+            .eq("id", bookingId)
+            .maybeSingle();
+          if (bk?.user_id) {
+            const svcTitle = (bk.services as any)?.title_ar || "الخدمة";
+            cn(bk.user_id, "booking_accepted", "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
+            spn(bk.user_id, "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
+          }
+
+          // Navigate provider to booking details
+          try {
+            router.push(`/(provider)/booking-details?id=${bookingId}` as any);
+          } catch {}
         } catch (e) {
-          console.log("[v0] inline action failed:", (e as Error).message);
+          console.log("[push] accept action failed:", (e as Error).message);
         }
         return;
       }
 
+      // ── User taps the notification body (no action button) ─────────────
       try {
         if (bookingId) {
           if (type === "booking_created") {

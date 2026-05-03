@@ -263,7 +263,7 @@ export async function createNotification(
   }
 }
 
-// ── Notify all available providers ────────────────────────────────────────
+// ── Notify all available providers — batched single API call ───────────────
 
 export async function notifyAvailableProviders(
   title: string,
@@ -275,19 +275,60 @@ export async function notifyAvailableProviders(
       .from("providers")
       .select("id")
       .eq("available", true)
-      .limit(30);
+      .limit(50);
 
     if (!provRows?.length) {
       console.log("[notifications] notifyProviders: no available providers");
       return;
     }
 
-    console.log(`[notifications] notifying ${provRows.length} available providers`);
+    const providerIds = provRows.map((p: any) => p.id);
+    console.log(`[notifications] notifying ${providerIds.length} available providers`);
 
-    for (const prov of provRows) {
-      sendPushNotification(prov.id, title, body, data, "new_booking");
-      createNotification(prov.id, "booking_created", title, body, data ?? {});
+    // Fetch ALL push tokens in one query
+    const { data: tokenRows } = await supabase
+      .from("push_tokens")
+      .select("token, user_id")
+      .in("user_id", providerIds);
+
+    if (!tokenRows?.length) {
+      console.log("[notifications] notifyProviders: no push tokens found");
+      return;
     }
+
+    // Build one batch of messages for Expo Push API
+    const messages = tokenRows.map((t: any) => ({
+      to: t.token,
+      title,
+      body,
+      data: data ?? {},
+      sound: "default",
+      priority: "high",
+      channelId: "new_booking",
+      categoryId: "new_booking",
+      ttl: 300, // 5 min — stale booking alerts are useless
+    }));
+
+    const res = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Accept-Encoding": "gzip, deflate",
+      },
+      body: JSON.stringify(messages),
+    });
+
+    const json = await res.json().catch(() => null);
+    const successCount = (json?.data ?? []).filter((d: any) => d?.status === "ok").length;
+    console.log(`[notifications] notifyProviders: ${successCount}/${messages.length} delivered`);
+
+    // Save in-app notification records for all providers (non-blocking)
+    Promise.all(
+      providerIds.map((id: string) =>
+        createNotification(id, "booking_created", title, body, data ?? {}),
+      ),
+    ).catch(() => {});
   } catch (e) {
     console.log("[notifications] notifyAvailableProviders failed:", (e as Error).message);
   }

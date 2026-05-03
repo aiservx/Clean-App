@@ -280,16 +280,19 @@ export default function PaymentScreen() {
               const { data: row, error } = await supabase.from("bookings").insert(insertData).select("id").maybeSingle();
               if (error) console.log("[v0] booking insert error:", error.message);
               if (row?.id) {
+                const svcTitle = booking.service?.title || "خدمة تنظيف";
+                const svcPrice = booking.service?.price ?? 0;
+
                 createNotification(
                   user.id,
                   "booking_created",
                   "✅ تم استلام طلبك!",
-                  "طلبك في طور البحث عن أفضل مزود قريب منك. يمكنك تتبع الحالة من هنا",
+                  `طلبك لـ${svcTitle} في طور البحث عن أفضل مزود قريب منك`,
                   { bookingId: row.id }
                 );
                 notifyAvailableProviders(
-                  "🔔 طلب جديد!",
-                  `يوجد طلب خدمة جديد متاح بالقرب منك`,
+                  `🔔 طلب ${svcTitle} جديد!`,
+                  `قيمة الطلب ${svcPrice} ر.س — اضغط قبول للحجز الفوري`,
                   { bookingId: row.id, type: "booking_created" }
                 );
                 router.replace({ pathname: "/tracking", params: { id: row.id } } as any);
