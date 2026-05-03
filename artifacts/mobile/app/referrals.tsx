@@ -52,11 +52,11 @@ export default function Referrals() {
         <View style={[styles.codeBox, { backgroundColor: colors.card }]}>
           <Text style={[styles.codeLabel, { color: colors.mutedForeground }]}>كود الدعوة الخاص بك</Text>
           <View style={styles.codeRow}>
+            <Text style={[styles.code, { color: colors.foreground }]}>{code}</Text>
             <TouchableOpacity style={[styles.copyBtn, { backgroundColor: colors.primaryLight }]}>
               <Feather name="copy" size={16} color={colors.primary} />
               <Text style={[styles.copyT, { color: colors.primary }]}>نسخ</Text>
             </TouchableOpacity>
-            <Text style={[styles.code, { color: colors.foreground }]}>{code}</Text>
           </View>
         </View>
 
@@ -82,11 +82,11 @@ export default function Referrals() {
             { i: "gift", t: "تستلم 50 ر.س فوراً", c: "#EC4899" },
           ].map((s, i) => (
             <View key={s.t} style={styles.step}>
-              <Text style={[styles.stepN, { color: colors.mutedForeground }]}>{i + 1}</Text>
-              <Text style={[styles.stepT, { color: colors.foreground }]}>{s.t}</Text>
               <View style={[styles.stepIcon, { backgroundColor: s.c + "22" }]}>
                 <Feather name={s.i as any} size={18} color={s.c} />
               </View>
+              <Text style={[styles.stepT, { color: colors.foreground }]}>{s.t}</Text>
+              <Text style={[styles.stepN, { color: colors.mutedForeground }]}>{i + 1}</Text>
             </View>
           ))}
         </View>
@@ -95,14 +95,14 @@ export default function Referrals() {
         <View style={{ gap: 8 }}>
           {FRIENDS.map((f, i) => (
             <View key={i} style={[styles.friend, { backgroundColor: colors.card }]}>
-              <Text style={[styles.fReward, { color: colors.success, fontFamily: "Tajawal_700Bold" }]}>{f.reward}</Text>
-              <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 10 }}>
-                <Text style={[styles.fN, { color: colors.foreground }]}>{f.n}</Text>
-                <Text style={[styles.fS, { color: colors.mutedForeground }]}>{f.st}</Text>
-              </View>
               <View style={[styles.fAv, { backgroundColor: colors.primaryLight }]}>
                 <Feather name="user" size={18} color={colors.primary} />
               </View>
+              <View style={{ flex: 1, marginHorizontal: 10 }}>
+                <Text style={[styles.fN, { color: colors.foreground }]}>{f.n}</Text>
+                <Text style={[styles.fS, { color: colors.mutedForeground }]}>{f.st}</Text>
+              </View>
+              <Text style={[styles.fReward, { color: colors.success, fontFamily: "Tajawal_700Bold" }]}>{f.reward}</Text>
             </View>
           ))}
         </View>

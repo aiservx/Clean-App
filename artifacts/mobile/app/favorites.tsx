@@ -22,27 +22,27 @@ export default function FavoritesScreen() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }} showsVerticalScrollIndicator={false}>
         {favs.map((f) => (
           <View key={f.id} style={[styles.card, { backgroundColor: colors.card }]}>
-            <TouchableOpacity onPress={() => setFavs(favs.filter((x) => x.id !== f.id))}>
-              <MaterialCommunityIcons name="heart" size={22} color={colors.danger} />
-            </TouchableOpacity>
-            <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 12 }}>
+            <Image source={f.img} style={{ width: 56, height: 56, borderRadius: 28 }} />
+            <View style={{ flex: 1, marginHorizontal: 12 }}>
               <Text style={[styles.n, { color: colors.foreground }]}>{f.n}</Text>
               <View style={styles.statsRow}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                  <MaterialCommunityIcons name="star" size={11} color={colors.warning} />
+                  <Text style={[styles.exp, { color: colors.foreground, fontFamily: "Tajawal_700Bold" }]}>{f.r}</Text>
+                </View>
+                <View style={styles.dotSep} />
+                <Text style={[styles.exp, { color: colors.mutedForeground }]}>خبرة {f.e} سنوات</Text>
                 <View style={[styles.statusPill, { backgroundColor: f.st === "متاح الآن" ? colors.successLight : colors.warningLight }]}>
                   <Text style={[styles.statusT, { color: f.st === "متاح الآن" ? colors.success : colors.warning }]}>{f.st}</Text>
-                </View>
-                <Text style={[styles.exp, { color: colors.mutedForeground }]}>خبرة {f.e} سنوات</Text>
-                <View style={styles.dotSep} />
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                  <Feather name="star" size={11} color={colors.warning} />
-                  <Text style={[styles.exp, { color: colors.foreground, fontFamily: "Tajawal_700Bold" }]}>{f.r}</Text>
                 </View>
               </View>
               <TouchableOpacity style={[styles.btn, { backgroundColor: colors.primary }]} onPress={() => router.push(`/provider/${f.id}`)}>
                 <Text style={styles.btnT}>عرض البروفايل واحجز</Text>
               </TouchableOpacity>
             </View>
-            <Image source={f.img} style={{ width: 56, height: 56, borderRadius: 28 }} />
+            <TouchableOpacity onPress={() => setFavs(favs.filter((x) => x.id !== f.id))}>
+              <MaterialCommunityIcons name="heart" size={22} color={colors.danger} />
+            </TouchableOpacity>
           </View>
         ))}
         {favs.length === 0 && (

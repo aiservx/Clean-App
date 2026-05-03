@@ -42,28 +42,28 @@ export default function ProviderHours() {
             const s = schedule[d.id];
             return (
               <View key={d.id} style={[styles.dayRow, { backgroundColor: colors.card }]}>
-                <Switch
-                  value={s.active}
-                  onValueChange={(v) => setSchedule({ ...schedule, [d.id]: { ...s, active: v, from: v ? "08:00" : "—", to: v ? "20:00" : "—" } })}
-                  trackColor={{ true: colors.primary, false: "#E5E7EB" }}
-                  thumbColor="#FFF"
-                />
+                <Text style={[styles.dayL, { color: colors.foreground }]}>{d.l}</Text>
                 <View style={{ flex: 1, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 8 }}>
                   {s.active ? (
                     <>
                       <View style={[styles.timeBox, { backgroundColor: colors.muted }]}>
-                        <Text style={[styles.timeT, { color: colors.foreground }]}>{s.to}</Text>
+                        <Text style={[styles.timeT, { color: colors.foreground }]}>{s.from}</Text>
                       </View>
                       <Text style={[styles.dash, { color: colors.mutedForeground }]}>إلى</Text>
                       <View style={[styles.timeBox, { backgroundColor: colors.muted }]}>
-                        <Text style={[styles.timeT, { color: colors.foreground }]}>{s.from}</Text>
+                        <Text style={[styles.timeT, { color: colors.foreground }]}>{s.to}</Text>
                       </View>
                     </>
                   ) : (
                     <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: colors.mutedForeground }}>مغلق</Text>
                   )}
                 </View>
-                <Text style={[styles.dayL, { color: colors.foreground }]}>{d.l}</Text>
+                <Switch
+                  value={s.active}
+                  onValueChange={(v) => setSchedule({ ...schedule, [d.id]: { ...s, active: v, from: v ? "08:00" : "—", to: v ? "20:00" : "—" } })}
+                  trackColor={{ true: colors.primary, false: "#E5E7EB" }}
+                  thumbColor="#FFF"
+                />
               </View>
             );
           })}

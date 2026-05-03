@@ -118,21 +118,21 @@ export default function Statement() {
               const stBg = r.statusColor === "success" ? colors.successLight : r.statusColor === "danger" ? colors.dangerLight : r.statusColor === "warning" ? "#FEF3C7" : colors.muted;
               return (
                 <View key={r.id} style={[styles.row, { backgroundColor: colors.card }]}>
-                  <Text style={[styles.amt, { color: isIn ? colors.success : colors.danger }]}>
-                    {isIn ? "+" : "-"}{r.amount.toLocaleString("ar-SA", { maximumFractionDigits: 2 })} ر.س
-                  </Text>
-                  <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 10 }}>
-                    <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={1}>{r.title}</Text>
-                    <View style={{ flexDirection: "row", gap: 6, alignItems: "center", marginTop: 3 }}>
-                      <View style={[styles.statusPill, { backgroundColor: stBg }]}>
-                        <Text style={[styles.statusT, { color: stColor }]}>{r.status}</Text>
-                      </View>
-                      <Text style={[styles.date, { color: colors.mutedForeground }]}>{fmt(r.date)}</Text>
-                    </View>
-                  </View>
                   <View style={[styles.icon, { backgroundColor: isIn ? colors.successLight : colors.dangerLight }]}>
                     <Feather name={isIn ? "arrow-down" : "arrow-up"} size={16} color={isIn ? colors.success : colors.danger} />
                   </View>
+                  <View style={{ flex: 1, marginHorizontal: 10 }}>
+                    <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={1}>{r.title}</Text>
+                    <View style={{ flexDirection: "row", gap: 6, alignItems: "center", marginTop: 3 }}>
+                      <Text style={[styles.date, { color: colors.mutedForeground }]}>{fmt(r.date)}</Text>
+                      <View style={[styles.statusPill, { backgroundColor: stBg }]}>
+                        <Text style={[styles.statusT, { color: stColor }]}>{r.status}</Text>
+                      </View>
+                    </View>
+                  </View>
+                  <Text style={[styles.amt, { color: isIn ? colors.success : colors.danger }]}>
+                    {isIn ? "+" : "-"}{r.amount.toLocaleString("ar-SA", { maximumFractionDigits: 2 })} ر.س
+                  </Text>
                 </View>
               );
             })}

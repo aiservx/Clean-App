@@ -125,15 +125,15 @@ export default function Withdraw() {
             const a = method === m.id;
             return (
               <TouchableOpacity key={m.id} onPress={() => setMethod(m.id)} style={[styles.mRow, { backgroundColor: colors.card, borderColor: a ? colors.primary : "transparent" }]}>
-                <View style={[styles.radio, { borderColor: a ? colors.primary : colors.border }]}>
-                  {a && <View style={[styles.radioDot, { backgroundColor: colors.primary }]} />}
+                <View style={[styles.mIcon, { backgroundColor: m.c + "22" }]}>
+                  <Feather name={m.i as any} size={18} color={m.c} />
                 </View>
-                <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 12 }}>
+                <View style={{ flex: 1, marginHorizontal: 12 }}>
                   <Text style={[styles.mL, { color: colors.foreground }]}>{m.l}</Text>
                   <Text style={[styles.mS, { color: colors.mutedForeground }]}>{m.s}</Text>
                 </View>
-                <View style={[styles.mIcon, { backgroundColor: m.c + "22" }]}>
-                  <Feather name={m.i as any} size={18} color={m.c} />
+                <View style={[styles.radio, { borderColor: a ? colors.primary : colors.border }]}>
+                  {a && <View style={[styles.radioDot, { backgroundColor: colors.primary }]} />}
                 </View>
               </TouchableOpacity>
             );
@@ -163,8 +163,8 @@ export default function Withdraw() {
             { l: "الإجمالي للتحويل", v: `${amount || 0} ر.س`, b: true },
           ].map((r) => (
             <View key={r.l} style={styles.sRow}>
-              <Text style={[styles.sV, { color: r.g ? colors.success : colors.foreground, fontFamily: r.b ? "Tajawal_700Bold" : "Tajawal_500Medium", fontSize: r.b ? 14 : 12 }]}>{r.v}</Text>
               <Text style={[styles.sL, { color: r.b ? colors.foreground : colors.mutedForeground, fontFamily: r.b ? "Tajawal_700Bold" : "Tajawal_500Medium" }]}>{r.l}</Text>
+              <Text style={[styles.sV, { color: r.g ? colors.success : colors.foreground, fontFamily: r.b ? "Tajawal_700Bold" : "Tajawal_500Medium", fontSize: r.b ? 14 : 12 }]}>{r.v}</Text>
             </View>
           ))}
         </View>
