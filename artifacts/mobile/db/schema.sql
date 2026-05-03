@@ -409,8 +409,8 @@ begin
     v_type := 'booking_status';
     case new.status
       when 'accepted'  then v_title := 'تم قبول طلبك ✅';      v_body := 'الفنّي قَبِل طلبك وسيتواصل معك قريباً.';
-      when 'on_way'    then v_title := 'الفنّي في الطريق 🚗';   v_body := 'يمكنك متابعة موقع الفنّي مباشرة من شاشة التتبع.';
-      when 'started'   then v_title := 'بدأ تنفيذ الخدمة 🧹';   v_body := 'الفنّي بدأ العمل على طلبك.';
+      when 'on_the_way' then v_title := 'الفنّي في الطريق 🚗';   v_body := 'يمكنك متابعة موقع الفنّي مباشرة من شاشة التتبع.';
+      when 'in_progress' then v_title := 'بدأ تنفيذ الخدمة 🧹';   v_body := 'الفنّي بدأ العمل على طلبك.';
       when 'completed' then v_title := 'اكتملت الخدمة 🎉';      v_body := 'يسعدنا معرفة رأيك — اضغط لتقييم الفنّي.';
       when 'cancelled' then v_title := 'تم إلغاء الطلب';        v_body := 'إذا كان هذا غير صحيح يمكنك التواصل مع الدعم.';
       else                  v_title := 'تحديث على الطلب';        v_body := 'الحالة الجديدة: ' || new.status;

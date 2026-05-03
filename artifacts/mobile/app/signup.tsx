@@ -24,7 +24,7 @@ export default function SignupScreen() {
 
   const onSubmit = async () => {
     if (!name || !username || !pwd) return Alert.alert(t("error"), t("enter_credentials"));
-    if (pwd.length < 6) return Alert.alert(t("error"), "Password must be at least 6 characters");
+    if (pwd.length < 6) return Alert.alert(t("error"), "كلمة المرور يجب أن تكون 6 أحرف على الأقل");
     const loginEmail = username.includes("@") ? username.trim() : `${username.trim()}@clean-app.local`;
     setBusy(true);
     try {
@@ -34,12 +34,12 @@ export default function SignupScreen() {
         return Alert.alert(t("error"), error);
       }
       setBusy(false);
-      Alert.alert(t("ok"), "Account created. Sign in to continue.", [
+      Alert.alert(t("ok"), "تم إنشاء الحساب بنجاح. سجّل دخولك للمتابعة.", [
         { text: t("ok"), onPress: () => router.replace("/login") },
       ]);
     } catch (e) {
       setBusy(false);
-      Alert.alert(t("error"), (e as Error)?.message || "Network error");
+      Alert.alert(t("error"), (e as Error)?.message || "خطأ في الاتصال بالشبكة");
     }
   };
 

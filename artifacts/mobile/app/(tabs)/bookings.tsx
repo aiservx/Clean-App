@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
-  RefreshControl, Image, Alert, I18nManager,
+  RefreshControl, Image, Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -261,9 +261,8 @@ export default function BookingsScreen() {
   );
 }
 
-const RTL = I18nManager.isRTL;
-const rowDir = RTL ? "row" : "row-reverse";
-const colAlign = RTL ? "flex-start" : "flex-end";
+const rowDir = "row" as const;
+const colAlign = "flex-start" as const;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

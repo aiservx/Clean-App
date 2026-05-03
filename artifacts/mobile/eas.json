@@ -11,8 +11,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://ppokdtzlisaxsrmtwlrb.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_4aV1hEm-Ow4oy6AAgUR7rg_miOdFXHa",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
         "EXPO_PUBLIC_API_URL": "https://clean-app--create43.replit.app"
       }
     },
@@ -23,8 +23,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://ppokdtzlisaxsrmtwlrb.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_4aV1hEm-Ow4oy6AAgUR7rg_miOdFXHa",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
         "EXPO_PUBLIC_API_URL": "https://clean-app--create43.replit.app"
       }
     },
@@ -35,8 +35,8 @@
       },
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://ppokdtzlisaxsrmtwlrb.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_4aV1hEm-Ow4oy6AAgUR7rg_miOdFXHa",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
         "EXPO_PUBLIC_API_URL": "https://clean-app--create43.replit.app"
       }
     }

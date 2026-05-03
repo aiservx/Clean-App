@@ -187,13 +187,8 @@ export default function ProfileScreen() {
   );
 }
 
-// RTL helper: on first launch isRTL is false (forceRTL needs a full reload to take effect).
-// Using `RTL ? "row" : "row-reverse"` gives correct visual order in BOTH cases:
-//   isRTL=false → "row-reverse" manually creates right-to-left order
-//   isRTL=true  → "row" + the RTL system's automatic reversal = same result
-const RTL = I18nManager.isRTL;
-const rowDir = RTL ? "row" : "row-reverse";
-const colAlign = RTL ? "flex-start" : "flex-end"; // aligns children to visual RIGHT
+const rowDir = "row" as const;
+const colAlign = "flex-start" as const;
 
 const s = StyleSheet.create({
   root: { flex: 1 },

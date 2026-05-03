@@ -451,9 +451,8 @@ export default function BookingScreen() {
   );
 }
 
-const RTL = I18nManager.isRTL;
-const rowDir = RTL ? "row" : "row-reverse";
-const colAlign = RTL ? "flex-start" : "flex-end";
+const rowDir = "row" as const;
+const colAlign = "flex-start" as const;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

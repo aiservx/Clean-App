@@ -5,8 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 // Hardcoded credentials — these are the publishable anon key, safe to embed
 // in client code (same approach as artifacts/admin/src/lib/supabase.ts).
 // Env-var override is kept so EAS secrets / .env still win when present.
-const SUPABASE_URL = "https://ppokdtzlisaxsrmtwlrb.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_4aV1hEm-Ow4oy6AAgUR7rg_miOdFXHa";
+const SUPABASE_URL = "https://mffdpjwtwseftaqrslgx.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D";
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL || SUPABASE_URL;
 const anon = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_ANON_KEY;

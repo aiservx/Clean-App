@@ -1,15 +1,27 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity , I18nManager} from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, I18nManager } from "react-native";
 import { Feather, MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
-const CARDS = [
-  { id: "1", brand: "visa", last: "4242", name: "أحمد محمد", default: true, color: "#1A1F71" },
-  { id: "2", brand: "mastercard", last: "8888", name: "أحمد محمد", default: false, color: "#EB001B" },
-];
+type SavedCard = {
+  id: string;
+  brand: string;
+  last4: string;
+  holder_name: string;
+  is_default: boolean;
+};
+
+const BRAND_COLORS: Record<string, string> = {
+  visa: "#1A1F71",
+  mastercard: "#EB001B",
+  mada: "#16C47F",
+  default: "#374151",
+};
 
 const OTHER = [
   { id: "apple", t: "Apple Pay", i: null as null, c: "#000" },
@@ -19,34 +31,68 @@ const OTHER = [
 
 export default function PaymentMethods() {
   const colors = useColors();
+  const { session } = useAuth();
+  const [cards, setCards] = useState<SavedCard[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadCards = useCallback(async () => {
+    if (!session?.user) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data } = await supabase
+        .from("payment_methods")
+        .select("id, brand, last4, holder_name, is_default")
+        .eq("user_id", session.user.id)
+        .order("is_default", { ascending: false });
+      setCards((data as SavedCard[]) ?? []);
+    } catch {
+      setCards([]);
+    }
+    setLoading(false);
+  }, [session]);
+
+  useEffect(() => { loadCards(); }, [loadCards]);
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="وسائل الدفع" subtitle="إدارة بطاقاتك وطرق الدفع" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <Text style={[styles.label, { color: colors.foreground }]}>البطاقات المحفوظة</Text>
-        <View style={{ gap: 10 }}>
-          {CARDS.map((c) => (
-            <View key={c.id} style={[styles.card, { backgroundColor: c.color }]}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={styles.cardBrand}>{c.brand.toUpperCase()}</Text>
-                {c.default && (
-                  <View style={styles.defBadge}>
-                    <Text style={styles.defT}>افتراضي</Text>
-                  </View>
-                )}
-              </View>
-              <Text style={styles.cardNum}>**** **** **** {c.last}</Text>
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <View>
-                  <Text style={styles.cardLabel}>اسم حامل البطاقة</Text>
-                  <Text style={styles.cardName}>{c.name}</Text>
+
+        {loading ? (
+          <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 24 }} />
+        ) : cards.length === 0 ? (
+          <View style={[styles.emptyBox, { backgroundColor: colors.card }]}>
+            <Feather name="credit-card" size={32} color={colors.mutedForeground} />
+            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>لا توجد بطاقات محفوظة</Text>
+            <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>أضف بطاقة للدفع السريع</Text>
+          </View>
+        ) : (
+          <View style={{ gap: 10 }}>
+            {cards.map((c) => (
+              <View key={c.id} style={[styles.card, { backgroundColor: BRAND_COLORS[c.brand] ?? BRAND_COLORS.default }]}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <Text style={styles.cardBrand}>{c.brand.toUpperCase()}</Text>
+                  {c.is_default && (
+                    <View style={styles.defBadge}>
+                      <Text style={styles.defT}>افتراضي</Text>
+                    </View>
+                  )}
                 </View>
-                <TouchableOpacity><Feather name="more-horizontal" size={20} color="#FFF" /></TouchableOpacity>
+                <Text style={styles.cardNum}>**** **** **** {c.last4}</Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <View>
+                    <Text style={styles.cardLabel}>اسم حامل البطاقة</Text>
+                    <Text style={styles.cardName}>{c.holder_name}</Text>
+                  </View>
+                  <TouchableOpacity><Feather name="more-horizontal" size={20} color="#FFF" /></TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
 
         <TouchableOpacity style={[styles.addBtn, { borderColor: colors.primary }]} onPress={() => router.push("/payment-form")}>
           <Feather name="plus" size={16} color={colors.primary} />
@@ -92,4 +138,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
   rowT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   icon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  emptyBox: { alignItems: "center", justifyContent: "center", paddingVertical: 32, borderRadius: 18, gap: 8 },
+  emptyText: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
+  emptyHint: { fontFamily: "Tajawal_500Medium", fontSize: 12 },
 });
