@@ -289,6 +289,7 @@ export async function notifyAvailableProviders(
   title: string,
   body: string,
   data?: Record<string, any>,
+  bookingId?: string,
 ) {
   try {
     const { data: provRows } = await supabase
@@ -325,6 +326,7 @@ export async function notifyAvailableProviders(
               body,
               data: data ?? {},
               categoryIdentifier: "new_booking",
+              ...(bookingId ? { bookingId } : {}),
             }),
           }).catch(() => {}),
         ),

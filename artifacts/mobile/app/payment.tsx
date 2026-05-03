@@ -293,7 +293,8 @@ export default function PaymentScreen() {
                 notifyAvailableProviders(
                   `🔔 طلب ${svcTitle} جديد!`,
                   `قيمة الطلب ${svcPrice} ر.س — اضغط قبول للحجز الفوري`,
-                  { bookingId: row.id, type: "booking_created" }
+                  { bookingId: row.id, type: "booking_created" },
+                  row.id
                 );
                 router.replace({ pathname: "/tracking", params: { id: row.id } } as any);
               } else router.replace("/tracking");

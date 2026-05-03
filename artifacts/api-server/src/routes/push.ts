@@ -56,20 +56,48 @@ async function callerIsAdmin(callerId: string): Promise<boolean> {
 }
 
 // ── Authorization: caller must share a booking with target, be admin, or be
-//    notifying an available provider for a new booking ─────────────────────
+//    the booking owner notifying an available provider for that booking ──────
 
 async function callerMayNotify(
   callerId: string,
   targetUserId: string,
   categoryIdentifier?: unknown,
+  bookingId?: unknown,
 ): Promise<boolean> {
   if (callerId === targetUserId) return true;
   if (!SUPABASE_SERVICE_KEY) return false;
 
   if (await callerIsAdmin(callerId)) return true;
 
+  // For new_booking notifications the caller must prove ownership of a real
+  // pending booking.  bookingId is required; we verify user_id === callerId
+  // and status is pending/available, and confirm target is an available provider.
   if (categoryIdentifier === "new_booking") {
-    const provUrl = `${SUPABASE_URL}/rest/v1/providers?select=id&id=eq.${encodeURIComponent(targetUserId)}&available=eq.true&limit=1`;
+    if (typeof bookingId !== "string" || !bookingId) return false;
+    const bookingUrl =
+      `${SUPABASE_URL}/rest/v1/bookings` +
+      `?select=id,status` +
+      `&id=eq.${encodeURIComponent(bookingId)}` +
+      `&user_id=eq.${encodeURIComponent(callerId)}` +
+      `&status=in.(pending,available)` +
+      `&limit=1`;
+    try {
+      const bookingRes = await fetch(bookingUrl, {
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          Accept: "application/json",
+        },
+      });
+      if (!bookingRes.ok) return false;
+      const bookingRows: unknown = await bookingRes.json();
+      if (!Array.isArray(bookingRows) || bookingRows.length === 0) return false;
+    } catch {
+      return false;
+    }
+    const provUrl =
+      `${SUPABASE_URL}/rest/v1/providers` +
+      `?select=id&id=eq.${encodeURIComponent(targetUserId)}&available=eq.true&limit=1`;
     try {
       const provRes = await fetch(provUrl, {
         headers: {
@@ -78,11 +106,12 @@ async function callerMayNotify(
           Accept: "application/json",
         },
       });
-      if (provRes.ok) {
-        const provRows: unknown = await provRes.json();
-        if (Array.isArray(provRows) && provRows.length > 0) return true;
-      }
-    } catch {}
+      if (!provRes.ok) return false;
+      const provRows: unknown = await provRes.json();
+      return Array.isArray(provRows) && provRows.length > 0;
+    } catch {
+      return false;
+    }
   }
 
   const url =
@@ -145,7 +174,7 @@ router.post("/push", async (req: Request, res: Response) => {
     return;
   }
 
-  const { userId, title, body, data, categoryIdentifier, channelId } =
+  const { userId, title, body, data, categoryIdentifier, channelId, bookingId } =
     (req.body ?? {}) as Record<string, unknown>;
 
   if (typeof userId !== "string" || !userId ||
@@ -155,7 +184,7 @@ router.post("/push", async (req: Request, res: Response) => {
     return;
   }
 
-  const allowed = await callerMayNotify(callerId, userId, categoryIdentifier);
+  const allowed = await callerMayNotify(callerId, userId, categoryIdentifier, bookingId);
   if (!allowed) {
     logger.warn({ callerId, targetUserId: userId }, "push: no shared booking — blocked");
     res.status(403).json({ error: "forbidden" });

@@ -18,15 +18,34 @@
 
 ---
 
-## بناء جديد قيد التشغيل (بعد إصلاحات الإشعارات)
+## Build #2 — إصلاحات الإشعارات ✅
 
 | الحقل | القيمة |
 |-------|--------|
 | Build ID | `f5875d74-d9b4-40fd-b667-5d5ff777b572` |
-| Status | **in progress** |
+| Status | **finished** |
+| **تنزيل APK** | **https://expo.dev/artifacts/eas/wjuUSBtbsXAb25kFSxG753.apk** |
 | صفحة الـ Build | https://expo.dev/accounts/clean-beaton/projects/mobile/builds/f5875d74-d9b4-40fd-b667-5d5ff777b572 |
 
-يشمل هذا البناء جميع إصلاحات الإشعارات — ستجد رابط التنزيل في الصفحة أعلاه فور اكتماله.
+---
+
+## آخر Build ناجح — إصلاحات UX (Build #3) ✅
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `6a09d2fb-c4e1-4c23-91b4-4bfebcecb7c0` |
+| Platform | Android |
+| Profile | preview |
+| Status | **finished** |
+| **تنزيل APK** | **https://expo.dev/artifacts/eas/e6ssjwVAqwVzh4nj99Us35.apk** |
+| صفحة الـ Build | https://expo.dev/accounts/clean-beaton/projects/mobile/builds/6a09d2fb-c4e1-4c23-91b4-4bfebcecb7c0 |
+
+### الإصلاحات الإضافية في Build #3
+- لوحة المزود: الطلب يختفي فور الموافقة (optimistic update)
+- الطلبات الجديدة تظهر فوراً بدون تحديث (realtimeStore dep fix)
+- زر GPS يحرّك الخريطة في كل ضغطة (animateTrigger prop)
+- صفحة التتبع: زر الرجوع يوجّه للتبويب الصحيح
+- قائمة الرسائل (عميل + مزود): تُحدَّث عند التركيز وعند وصول رسالة جديدة
 
 ---
 
