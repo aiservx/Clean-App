@@ -187,44 +187,52 @@ export default function ProfileScreen() {
   );
 }
 
+// RTL helper: on first launch isRTL is false (forceRTL needs a full reload to take effect).
+// Using `RTL ? "row" : "row-reverse"` gives correct visual order in BOTH cases:
+//   isRTL=false → "row-reverse" manually creates right-to-left order
+//   isRTL=true  → "row" + the RTL system's automatic reversal = same result
+const RTL = I18nManager.isRTL;
+const rowDir = RTL ? "row" : "row-reverse";
+const colAlign = RTL ? "flex-start" : "flex-end"; // aligns children to visual RIGHT
+
 const s = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 12 },
+  header: { flexDirection: rowDir, alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 12 },
   hIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   notifDot: { position: "absolute", top: 10, end: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: "#3B82F6", borderWidth: 2, borderColor: "#FFF" },
   hCenter: { flex: 1, alignItems: "center" },
   hTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   hSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 2 },
 
-  profileRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 24, marginBottom: 16 },
-  profileInfo: { flex: 1, alignItems: "flex-end", marginEnd: 16 },
-  nameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
+  profileRow: { flexDirection: rowDir, alignItems: "center", paddingHorizontal: 24, marginBottom: 16 },
+  profileInfo: { flex: 1, alignItems: colAlign, marginEnd: 16 },
+  nameRow: { flexDirection: rowDir, alignItems: "center", gap: 6, marginBottom: 4 },
   userName: { fontFamily: "Tajawal_700Bold", fontSize: 20 },
   userDetail: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginBottom: 2 },
-  editBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10, backgroundColor: "#FFF", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: "#E2E8F0" },
+  editBtn: { flexDirection: rowDir, alignItems: "center", gap: 6, marginTop: 10, backgroundColor: "#FFF", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: "#E2E8F0" },
   editBtnText: { fontFamily: "Tajawal_600SemiBold", fontSize: 12 },
   avatarWrap: { position: "relative" },
   avatar: { width: 90, height: 90, borderRadius: 45 },
   cameraBadge: { position: "absolute", bottom: 0, end: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: "#3B82F6", borderWidth: 3, borderColor: "#FFF", alignItems: "center", justifyContent: "center" },
 
-  memberBanner: { marginHorizontal: 16, borderRadius: 20, padding: 18, flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  memberContent: { flex: 1, alignItems: "flex-end", marginEnd: 12 },
+  memberBanner: { marginHorizontal: 16, borderRadius: 20, padding: 18, flexDirection: rowDir, alignItems: "center", marginBottom: 20 },
+  memberContent: { flex: 1, alignItems: colAlign, marginEnd: 12 },
   memberTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
   memberDesc: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "rgba(255,255,255,0.8)", marginTop: 2 },
   memberBtn: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
   memberBtnText: { fontFamily: "Tajawal_600SemiBold", fontSize: 12, color: "#FFF" },
 
-  secHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12 },
-  secTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  secHeader: { flexDirection: rowDir, justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12 },
+  secTitleRow: { flexDirection: rowDir, alignItems: "center", gap: 8 },
   secTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   secIconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  seeAllRow: { flexDirection: "row", alignItems: "center", gap: 2 },
+  seeAllRow: { flexDirection: rowDir, alignItems: "center", gap: 2 },
   seeAll: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#3B82F6" },
 
   addressList: { paddingHorizontal: 16, marginBottom: 20 },
-  addressItem: { flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 18, marginBottom: 10, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
+  addressItem: { flexDirection: rowDir, alignItems: "center", padding: 14, borderRadius: 18, marginBottom: 10, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
   addrIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  addrTextWrap: { flex: 1, alignItems: "flex-end", marginHorizontal: 12 },
+  addrTextWrap: { flex: 1, alignItems: colAlign, marginHorizontal: 12 },
   addrTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   addrSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 2 },
   addrMore: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#94A3B8", paddingHorizontal: 6 },
@@ -235,14 +243,14 @@ const s = StyleSheet.create({
   addAddrText: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#3B82F6" },
 
   menuCard: { marginHorizontal: 16, borderRadius: 22, paddingHorizontal: 16, shadowColor: "#000", shadowOpacity: 0.03, shadowRadius: 8, elevation: 1, marginBottom: 16 },
-  menuItem: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
+  menuItem: { flexDirection: rowDir, alignItems: "center", paddingVertical: 14 },
   menuBorder: { borderBottomWidth: 1, borderBottomColor: "#F1F5F9" },
-  menuTextWrap: { flex: 1, alignItems: "flex-end", marginHorizontal: 14 },
+  menuTextWrap: { flex: 1, alignItems: colAlign, marginHorizontal: 14 },
   menuTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 2 },
   menuSub: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   menuIconWrap: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   signOutBtn: { marginHorizontal: 16, marginTop: 8, marginBottom: 24, borderRadius: 18, borderWidth: 1, borderColor: "#FECACA", backgroundColor: "#FFF5F5", overflow: "hidden", shadowColor: "#EF4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 },
-  signOutInner: { flexDirection: "row", alignItems: "center", paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
+  signOutInner: { flexDirection: rowDir, alignItems: "center", paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
   signOutIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#FEE2E2", alignItems: "center", justifyContent: "center" },
   signOutText: { flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#DC2626" },
 });

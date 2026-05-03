@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Platform, Image, I18nManager } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -315,9 +315,9 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View style={styles.provInfoRow}>
               <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
-              <View style={{ flex: 1, alignItems: "flex-end" }}>
+              <View style={{ flex: 1, alignItems: colAlign }}>
                 <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
+                <View style={{ flexDirection: rowDir, alignItems: "center", gap: 6, marginTop: 2 }}>
                   <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
                   <Text style={styles.provInfoMeta}>{(selectedProvider.rating || 0).toFixed(1)}</Text>
                   <Text style={styles.provInfoMeta}>•</Text>
@@ -605,13 +605,17 @@ export default function HomeScreen() {
   );
 }
 
+const RTL = I18nManager.isRTL;
+const rowDir = RTL ? "row" : "row-reverse";
+const colAlign = RTL ? "flex-start" : "flex-end";
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   mapBg: { start: 0, end: 0, top: 0 },
   topFade: { position: "absolute", top: 0, start: 0, end: 0 },
 
   floatHeader: { position: "absolute", start: 0, end: 0, paddingHorizontal: 14, gap: 12, zIndex: 5 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerRow: { flexDirection: rowDir, alignItems: "center", gap: 8 },
 
   headerIconBtn: { borderRadius: 14, overflow: "hidden" },
   iconBlur: {
@@ -625,14 +629,14 @@ const styles = StyleSheet.create({
   greetingBlur: {
     flex: 1, height: 44, borderRadius: 14, paddingHorizontal: 14, justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(255,255,255,0.5)",
-    alignItems: "flex-end", overflow: "hidden",
+    alignItems: colAlign, overflow: "hidden",
   },
   greetingText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A" },
   greetingSub: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#475569", marginTop: 1 },
 
   searchWrap: { borderRadius: 18, overflow: "hidden" },
   searchBlur: {
-    flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, height: 50, borderRadius: 18,
+    flexDirection: rowDir, alignItems: "center", gap: 10, paddingHorizontal: 14, height: 50, borderRadius: 18,
     backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)",
   },
   searchPlaceholder: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#94A3B8" },
@@ -665,12 +669,12 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   provInfoClose: { position: "absolute", top: 10, start: 10, zIndex: 10 },
-  provInfoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  provInfoRow: { flexDirection: rowDir, alignItems: "center", gap: 12 },
   provInfoAvatar: { width: 52, height: 52, borderRadius: 26 },
   provInfoName: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#0F172A" },
   provInfoMeta: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "#64748B" },
   provInfoBookBtn: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
@@ -698,7 +702,7 @@ const styles = StyleSheet.create({
   sheetGrabber: { width: 38, height: 4, borderRadius: 2, backgroundColor: "#CBD5E1", alignSelf: "center", marginBottom: 14 },
 
   offerCard: { width: 290, height: 110, borderRadius: 20, overflow: "hidden" },
-  offerInner: { flex: 1, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
+  offerInner: { flex: 1, padding: 14, flexDirection: rowDir, alignItems: "center", gap: 12 },
   offerBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, marginBottom: 6 },
   offerBadgeText: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 10 },
   offerTitle: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 3 },
@@ -707,7 +711,7 @@ const styles = StyleSheet.create({
   discountText: { color: "#0F172A", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   offerIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
 
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
+  sectionHeader: { flexDirection: rowDir, justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A" },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
@@ -751,7 +755,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   catGrid: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     flexWrap: "wrap",
     gap: 12,
     justifyContent: "space-between",
@@ -844,7 +848,7 @@ const styles = StyleSheet.create({
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
   provDot: { position: "absolute", bottom: 2, end: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: "#10B981", borderWidth: 2.5, borderColor: "#fff" },
   provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
-  provMeta: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 },
+  provMeta: { flexDirection: rowDir, alignItems: "center", gap: 4, marginBottom: 8 },
   provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
   provDivider: { color: "#CBD5E1", fontSize: 10 },
   provExp: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#64748B" },
@@ -852,10 +856,10 @@ const styles = StyleSheet.create({
   provPriceText: { color: "#16C47F", fontFamily: "Tajawal_700Bold", fontSize: 10 },
 
   botWrap: { marginHorizontal: 16, marginTop: 22, borderRadius: 22, overflow: "hidden", shadowColor: "#7C3AED", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 14, elevation: 5 },
-  botCard: { flexDirection: "row", alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
+  botCard: { flexDirection: rowDir, alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
   botIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" },
-  botContent: { flex: 1, alignItems: "flex-end" },
-  botTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  botContent: { flex: 1, alignItems: colAlign },
+  botTitleRow: { flexDirection: rowDir, alignItems: "center", gap: 8 },
   botBadgeAi: { backgroundColor: "rgba(255,255,255,0.22)", paddingHorizontal: 7, paddingVertical: 2, borderRadius: 100 },
   botBadgeAiText: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 10, letterSpacing: 1 },
   botTitle: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },

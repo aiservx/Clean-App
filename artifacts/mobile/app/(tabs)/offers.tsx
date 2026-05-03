@@ -309,10 +309,14 @@ export default function OffersScreen() {
   );
 }
 
+const RTL = I18nManager.isRTL;
+const rowDir = RTL ? "row" : "row-reverse";
+const colAlign = RTL ? "flex-start" : "flex-end";
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -567,7 +571,7 @@ const styles = StyleSheet.create({
 
   // Section header
   sectionHeader: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -578,7 +582,7 @@ const styles = StyleSheet.create({
 
   // Coupons
   couponCard: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "stretch",
     borderRadius: 20,
     padding: 16,
@@ -592,7 +596,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     minHeight: 96,
   },
-  couponContent: { flex: 1, alignItems: "flex-end", justifyContent: "center", gap: 6 },
+  couponContent: { flex: 1, alignItems: colAlign, justifyContent: "center", gap: 6 },
   couponTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   couponMetaRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   couponMeta: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
@@ -653,12 +657,12 @@ const styles = StyleSheet.create({
     marginTop: 22,
     borderRadius: 24,
     padding: 16,
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     overflow: "hidden",
     minHeight: 130,
   },
-  inviteContent: { flex: 1, alignItems: "flex-end" },
+  inviteContent: { flex: 1, alignItems: colAlign },
   inviteTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 6 },
   inviteBody: {
     fontFamily: "Tajawal_400Regular",
@@ -666,7 +670,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginBottom: 12,
   },
-  inviteActionRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  inviteActionRow: { flexDirection: rowDir, alignItems: "center", gap: 8 },
   inviteBtn: {
     backgroundColor: "#F59E0B",
     paddingHorizontal: 22,

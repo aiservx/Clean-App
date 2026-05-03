@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
-  RefreshControl, Image, Alert,
+  RefreshControl, Image, Alert, I18nManager,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -261,20 +261,24 @@ export default function BookingsScreen() {
   );
 }
 
+const RTL = I18nManager.isRTL;
+const rowDir = RTL ? "row" : "row-reverse";
+const colAlign = RTL ? "flex-start" : "flex-end";
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 16, marginBottom: 12, alignItems: "flex-end" },
-  headerTitleContainer: { alignItems: "flex-end" },
+  header: { paddingHorizontal: 16, marginBottom: 12, alignItems: colAlign },
+  headerTitleContainer: { alignItems: colAlign },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 22 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 14 },
 
-  // RTL filter pills – row-reverse so first pill is on the right
+  // RTL filter pills
   filtersScroll: {
     paddingHorizontal: 16,
     gap: 12,
     marginBottom: 14,
     paddingVertical: 4,
-    flexDirection: "row",
+    flexDirection: rowDir,
   },
   filterPill: {
     paddingHorizontal: 20,
@@ -301,9 +305,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  // RTL card header: title on right, badge on left
   cardHeader: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 14,
@@ -315,27 +318,25 @@ const styles = StyleSheet.create({
 
   divider: { height: 1, marginBottom: 14 },
 
-  // RTL content: avatar on right, price on left
   cardContent: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
   },
-  cleanerInfo: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
+  cleanerInfo: { flexDirection: rowDir, alignItems: "center", gap: 12, flex: 1 },
   cleanerAvatar: { width: 48, height: 48, borderRadius: 24 },
   textWrap: { flex: 1 },
   cleanerName: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2 },
   bookingDate: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
-  addrRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
+  addrRow: { flexDirection: rowDir, alignItems: "center", gap: 4, marginTop: 2 },
 
   priceWrap: { alignItems: "center", marginStart: 8 },
   priceValue: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
   priceLabel: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
 
-  // RTL footer: secondary action on left, primary on right
   cardFooter: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     gap: 10,
     marginTop: 4,
   },
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "row",
+    flexDirection: rowDir,
     gap: 6,
   },
   actionBtnText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },

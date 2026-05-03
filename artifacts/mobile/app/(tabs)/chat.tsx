@@ -290,9 +290,13 @@ function statusColor(status: string): string {
   return map[status] || "#6B7280";
 }
 
+const RTL = I18nManager.isRTL;
+const rowDir = RTL ? "row" : "row-reverse";
+const colAlign = RTL ? "flex-start" : "flex-end";
+
 const s = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 16, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  header: { paddingHorizontal: 16, paddingBottom: 12, flexDirection: rowDir, alignItems: "center", justifyContent: "space-between" },
   hIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   hCenter: { alignItems: "center" },
   hTitle: { fontFamily: "Tajawal_700Bold", fontSize: 20 },
@@ -300,23 +304,23 @@ const s = StyleSheet.create({
 
   aiCard: { borderRadius: 20, overflow: "hidden", marginBottom: 20, marginTop: 8 },
   aiCardBg: { padding: 18 },
-  aiCardRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  aiCardRow: { flexDirection: rowDir, alignItems: "center", gap: 12 },
   aiAvatar: { width: 50, height: 50, borderRadius: 25 },
-  aiInfo: { flex: 1, alignItems: "flex-end" },
+  aiInfo: { flex: 1, alignItems: colAlign },
   aiTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
   aiSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "rgba(255,255,255,0.85)", marginTop: 2 },
-  aiChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
+  aiChips: { flexDirection: rowDir, flexWrap: "wrap", gap: 8, marginTop: 14 },
   aiChip: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   aiChipT: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FFF" },
 
-  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 12 },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 12, textAlign: "right" },
 
   emptyWrap: { alignItems: "center", paddingVertical: 40, gap: 8 },
   emptyTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 8 },
   emptySub: { fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "center" },
 
   convCard: { borderRadius: 16, padding: 14, marginBottom: 10 },
-  convRow: { flexDirection: "row", gap: 12 },
+  convRow: { flexDirection: rowDir, gap: 12 },
   convAvatar: { width: 50, height: 50, borderRadius: 25 },
   avatarBadge: {
     position: "absolute", top: -4, end: -4,
@@ -325,18 +329,18 @@ const s = StyleSheet.create({
     paddingHorizontal: 4, borderWidth: 2, borderColor: "#FFF",
   },
   avatarBadgeT: { color: "#FFF", fontSize: 9, fontFamily: "Tajawal_700Bold" },
-  convInfo: { flex: 1, alignItems: "flex-end" },
-  convNameRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" },
-  convName: { fontSize: 14, flex: 1 },
+  convInfo: { flex: 1, alignItems: colAlign },
+  convNameRow: { flexDirection: rowDir, justifyContent: "space-between", alignItems: "center", width: "100%" },
+  convName: { fontSize: 14, flex: 1, textAlign: "right" },
   convTime: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
-  convMsgRow: { flexDirection: "row", alignItems: "center", width: "100%", marginTop: 4, gap: 6 },
+  convMsgRow: { flexDirection: rowDir, alignItems: "center", width: "100%", marginTop: 4, gap: 6 },
   convMsg: { fontSize: 12 },
   unreadBadge: {
     minWidth: 20, height: 20, borderRadius: 10,
     alignItems: "center", justifyContent: "center", paddingHorizontal: 5,
   },
   unreadBadgeT: { color: "#FFF", fontSize: 10, fontFamily: "Tajawal_700Bold" },
-  convMeta: { flexDirection: "row", gap: 8, marginTop: 6, alignItems: "center", justifyContent: "flex-start" },
+  convMeta: { flexDirection: rowDir, gap: 8, marginTop: 6, alignItems: "center", justifyContent: "flex-start" },
   convStatus: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   convStatusT: { fontFamily: "Tajawal_700Bold", fontSize: 9 },
   convService: { fontFamily: "Tajawal_500Medium", fontSize: 10 },

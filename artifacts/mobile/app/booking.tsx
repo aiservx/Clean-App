@@ -451,10 +451,14 @@ export default function BookingScreen() {
   );
 }
 
+const RTL = I18nManager.isRTL;
+const rowDir = RTL ? "row" : "row-reverse";
+const colAlign = RTL ? "flex-start" : "flex-end";
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -473,7 +477,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  headerTitleContainer: { alignItems: "flex-end" },
+  headerTitleContainer: { alignItems: colAlign },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 13 },
   stepperContainer: {
@@ -495,14 +499,14 @@ const styles = StyleSheet.create({
   stepNumber: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   stepTitle: { fontFamily: "Tajawal_600SemiBold", fontSize: 10 },
   stepLine: { height: 2, flex: 1, marginTop: -16 },
-  typeToggleWrap: { flexDirection: "row", paddingHorizontal: 16, gap: 10, marginBottom: 18 },
+  typeToggleWrap: { flexDirection: rowDir, paddingHorizontal: 16, gap: 10, marginBottom: 18 },
   typeBtn: { flex: 1, padding: 12, borderRadius: 16, alignItems: "center", borderWidth: 1, borderColor: "#E2E8F0", gap: 4 },
   typeT: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 4 },
   typeSub: { fontFamily: "Tajawal_400Regular", fontSize: 10 },
   sectionHeader: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     paddingHorizontal: 16,
     gap: 8,
     marginBottom: 16,
@@ -572,18 +576,18 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   summaryHeader: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 16 },
-  summaryRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
+  summaryRow: { flexDirection: rowDir, justifyContent: "space-between", marginBottom: 12 },
   summaryLabel: { fontFamily: "Tajawal_500Medium", fontSize: 13 },
   summaryValue: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
   divider: { height: 1, marginVertical: 12 },
-  priceRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
+  priceRow: { flexDirection: rowDir, justifyContent: "space-between", marginBottom: 8 },
   priceLabel: { fontFamily: "Tajawal_400Regular", fontSize: 12 },
   priceValue: { fontFamily: "Tajawal_600SemiBold", fontSize: 12 },
-  totalRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 4 },
+  totalRow: { flexDirection: rowDir, justifyContent: "space-between", marginTop: 4 },
   totalLabel: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   totalValue: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   paymentRow: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     justifyContent: "space-between",
     marginHorizontal: 24,
@@ -595,7 +599,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  paymentInfo: { flexDirection: "row", alignItems: "center", gap: 8 },
+  paymentInfo: { flexDirection: rowDir, alignItems: "center", gap: 8 },
   paymentText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14 },
   paymentLabel: { fontFamily: "Tajawal_500Medium", fontSize: 13 },
   bottomBar: {
@@ -616,12 +620,12 @@ const styles = StyleSheet.create({
   confirmBtn: {
     height: 64,
     borderRadius: 20,
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     paddingHorizontal: 20,
     gap: 12,
   },
-  confirmTextContainer: { flex: 1, alignItems: "flex-end" },
+  confirmTextContainer: { flex: 1, alignItems: colAlign },
   confirmTitle: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
   confirmSubtitle: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12 },
 });
