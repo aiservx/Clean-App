@@ -57,19 +57,19 @@ export default function PaymentMethods() {
         <View style={{ gap: 10 }}>
           {OTHER.map((o) => (
             <TouchableOpacity key={o.id} style={[styles.row, { backgroundColor: colors.card }]}>
-              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
-              <Text style={[styles.rowT, { color: colors.foreground, flex: 1, marginHorizontal: 12 }]}>{o.t}</Text>
               <View style={[styles.icon, { backgroundColor: o.c + "22" }]}>
                 {o.id === "apple" ? <FontAwesome name="apple" size={18} color={o.c} /> : <Feather name={o.i as any} size={18} color={o.c} />}
               </View>
+              <Text style={[styles.rowT, { color: colors.foreground, flex: 1, marginHorizontal: 12 }]}>{o.t}</Text>
+              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={[styles.row, { backgroundColor: colors.card }]}>
-            <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
-            <Text style={[styles.rowT, { color: colors.foreground, flex: 1, marginHorizontal: 12 }]}>الدفع عند الاستلام</Text>
             <View style={[styles.icon, { backgroundColor: "#F59E0B22" }]}>
               <MaterialCommunityIcons name="cash" size={20} color="#F59E0B" />
             </View>
+            <Text style={[styles.rowT, { color: colors.foreground, flex: 1, marginHorizontal: 12 }]}>الدفع عند الاستلام</Text>
+            <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
           </TouchableOpacity>
         </View>
       </ScrollView>

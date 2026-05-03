@@ -105,17 +105,17 @@ export default function PaymentScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <View style={[styles.safeBadge, { backgroundColor: colors.successLight }]}>
-          <Feather name="shield" size={12} color={colors.success} />
-          <Text style={[styles.safeBadgeText, { color: colors.success }]}>دفع آمن</Text>
-        </View>
+        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
+        </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>الدفع</Text>
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>اختر طريقة الدفع المناسبة</Text>
         </View>
-        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
-        </TouchableOpacity>
+        <View style={[styles.safeBadge, { backgroundColor: colors.successLight }]}>
+          <Feather name="shield" size={12} color={colors.success} />
+          <Text style={[styles.safeBadgeText, { color: colors.success }]}>دفع آمن</Text>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
@@ -167,14 +167,8 @@ export default function PaymentScreen() {
                   },
                 ]}
               >
-                <View style={styles.radioContainer}>
-                  {isSelected ? (
-                    <View style={[styles.radioActive, { backgroundColor: colors.primary }]}>
-                      <Feather name="check" size={12} color="#FFFFFF" />
-                    </View>
-                  ) : (
-                    <View style={[styles.radioInactive, { borderColor: colors.border }]} />
-                  )}
+                <View style={styles.methodLogoWrap}>
+                  <MethodLogo type={method.type} />
                 </View>
 
                 <View style={styles.methodTextWrap}>
@@ -189,8 +183,14 @@ export default function PaymentScreen() {
                   <Text style={[styles.methodSubtitle, { color: colors.mutedForeground }]}>{method.subtitle}</Text>
                 </View>
 
-                <View style={styles.methodLogoWrap}>
-                  <MethodLogo type={method.type} />
+                <View style={styles.radioContainer}>
+                  {isSelected ? (
+                    <View style={[styles.radioActive, { backgroundColor: colors.primary }]}>
+                      <Feather name="check" size={12} color="#FFFFFF" />
+                    </View>
+                  ) : (
+                    <View style={[styles.radioInactive, { borderColor: colors.border }]} />
+                  )}
                 </View>
               </TouchableOpacity>
             );
@@ -205,28 +205,28 @@ export default function PaymentScreen() {
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.summaryHeader, { color: colors.foreground }]}>ملخص الطلب</Text>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.base} ر.س</Text>
             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>{service.title}</Text>
+            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.base} ر.س</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.fee} ر.س</Text>
             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>رسوم الخدمة</Text>
+            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.fee} ر.س</Text>
           </View>
 
           <View style={[styles.dotDivider, { borderTopColor: colors.border }]} />
 
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.subtotal} ر.س</Text>
             <Text style={[styles.summaryLabel, { color: colors.foreground }]}>المجموع الفرعي</Text>
+            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.subtotal} ر.س</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.vat} ر.س</Text>
             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>ضريبة القيمة المضافة (15%)</Text>
+            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{totals.vat} ر.س</Text>
           </View>
 
           <View style={[styles.totalRow, { backgroundColor: colors.primaryLight + "30" }]}>
-            <Text style={[styles.totalValue, { color: colors.primary }]}>{totals.total} ر.س</Text>
             <Text style={[styles.totalLabel, { color: colors.foreground }]}>الإجمالي الكلي</Text>
+            <Text style={[styles.totalValue, { color: colors.primary }]}>{totals.total} ر.س</Text>
           </View>
         </View>
 

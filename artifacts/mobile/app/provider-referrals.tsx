@@ -28,11 +28,11 @@ export default function ProviderReferrals() {
         <View style={[styles.codeBox, { backgroundColor: colors.card }]}>
           <Text style={[styles.codeL, { color: colors.mutedForeground }]}>كود الدعوة الخاص بك</Text>
           <View style={styles.codeRow}>
+            <Text style={[styles.code, { color: colors.foreground }]}>{code}</Text>
             <TouchableOpacity style={[styles.copy, { backgroundColor: colors.primaryLight }]}>
               <Feather name="copy" size={14} color={colors.primary} />
               <Text style={[styles.copyT, { color: colors.primary }]}>نسخ</Text>
             </TouchableOpacity>
-            <Text style={[styles.code, { color: colors.foreground }]}>{code}</Text>
           </View>
         </View>
 
@@ -58,10 +58,10 @@ export default function ProviderReferrals() {
             { i: "shield", t: "ضمان الجودة مع كل عامل تدعوه", c: "#8B5CF6" },
           ].map((b, i) => (
             <View key={i} style={[styles.benefit, { backgroundColor: colors.card }]}>
-              <Text style={[styles.bT, { color: colors.foreground }]}>{b.t}</Text>
               <View style={[styles.bI, { backgroundColor: b.c + "22" }]}>
                 <Feather name={b.i as any} size={16} color={b.c} />
               </View>
+              <Text style={[styles.bT, { color: colors.foreground }]}>{b.t}</Text>
             </View>
           ))}
         </View>

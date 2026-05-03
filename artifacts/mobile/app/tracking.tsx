@@ -604,10 +604,13 @@ export default function TrackingScreen() {
 
         {/* Other party card */}
         <View style={[styles.partyCard, { backgroundColor: colors.card }]}>
-          <View style={[styles.avatarBox, { backgroundColor: colors.primaryLight }]}>
-            <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{otherInitials || "؟"}</Text>
-          </View>
-          <View style={{ flex: 1, marginEnd: 12, alignItems: "flex-end" }}>
+          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.successLight }]} onPress={callOtherParty}>
+            <Feather name="phone" size={18} color={colors.success} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginStart: 8 }]} onPress={openChat}>
+            <Feather name="message-circle" size={18} color={colors.primary} />
+          </TouchableOpacity>
+          <View style={{ flex: 1, marginHorizontal: 12 }}>
             <Text style={[styles.pName, { color: colors.foreground }]}>
               {otherParty?.full_name || (isProvider ? "العميل" : isPending ? "جاري البحث عن مزود…" : "مزود الخدمة")}
             </Text>
@@ -617,12 +620,9 @@ export default function TrackingScreen() {
                 : (booking.provider_data?.vehicle ? `${booking.provider_data.vehicle} • ${booking.provider_data.plate || ""}` : "")}
             </Text>
           </View>
-          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginStart: 8 }]} onPress={openChat}>
-            <Feather name="message-circle" size={18} color={colors.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.successLight }]} onPress={callOtherParty}>
-            <Feather name="phone" size={18} color={colors.success} />
-          </TouchableOpacity>
+          <View style={[styles.avatarBox, { backgroundColor: colors.primaryLight }]}>
+            <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{otherInitials || "؟"}</Text>
+          </View>
         </View>
 
         {/* Unified Vertical Timeline */}

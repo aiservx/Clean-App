@@ -12,8 +12,8 @@ export function SectionHeader({ title, action }: SectionHeaderProps) {
 
   return (
     <View style={styles.container}>
-      {action && <View style={styles.action}>{action}</View>}
       <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
+      {action && <View style={styles.action}>{action}</View>}
     </View>
   );
 }
