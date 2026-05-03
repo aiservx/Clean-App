@@ -186,15 +186,11 @@ export default function BookingsScreen() {
 
                   {/* Provider + price row */}
                   <View style={styles.cardContent}>
+                    <View style={styles.priceWrap}>
+                      <Text style={[styles.priceValue, { color: colors.primary }]}>{item.total} ر.س</Text>
+                      <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>الإجمالي</Text>
+                    </View>
                     <View style={styles.cleanerInfo}>
-                      <Image
-                        source={
-                          item.provider_avatar
-                            ? { uri: item.provider_avatar }
-                            : require("@/assets/images/default-avatar.png")
-                        }
-                        style={styles.cleanerAvatar}
-                      />
                       <View style={styles.textWrap}>
                         <Text style={[styles.cleanerName, { color: colors.foreground }]}>
                           {item.provider_name || "بانتظار التخصيص"}
@@ -209,10 +205,14 @@ export default function BookingsScreen() {
                           </Text>
                         </View>
                       </View>
-                    </View>
-                    <View style={styles.priceWrap}>
-                      <Text style={[styles.priceValue, { color: colors.primary }]}>{item.total} ر.س</Text>
-                      <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>الإجمالي</Text>
+                      <Image
+                        source={
+                          item.provider_avatar
+                            ? { uri: item.provider_avatar }
+                            : require("@/assets/images/default-avatar.png")
+                        }
+                        style={styles.cleanerAvatar}
+                      />
                     </View>
                   </View>
 

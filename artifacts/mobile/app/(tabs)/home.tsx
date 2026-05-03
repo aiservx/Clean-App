@@ -314,7 +314,6 @@ export default function HomeScreen() {
               <Feather name="x" size={14} color="#64748B" />
             </TouchableOpacity>
             <View style={styles.provInfoRow}>
-              <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
               <View style={{ flex: 1, alignItems: colAlign }}>
                 <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
                 <View style={{ flexDirection: rowDir, alignItems: "center", gap: 6, marginTop: 2 }}>
@@ -340,6 +339,7 @@ export default function HomeScreen() {
                   );
                 })()}
               </View>
+              <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
             </View>
             <TouchableOpacity
               activeOpacity={0.85}
@@ -349,8 +349,8 @@ export default function HomeScreen() {
               }}
               style={[styles.provInfoBookBtn, { backgroundColor: colors.primary }]}
             >
-              <Feather name="calendar" size={14} color="#FFF" />
               <Text style={styles.provInfoBookText}>طلب حجز</Text>
+              <Feather name="calendar" size={14} color="#FFF" />
             </TouchableOpacity>
           </View>
         )}
@@ -511,10 +511,6 @@ export default function HomeScreen() {
                       style={[styles.offerCard, { backgroundColor: p.bg, borderColor: p.border, borderWidth: 1 }]}
                     >
                       <View style={styles.offerInner}>
-                        <View style={[styles.offerIcon, { backgroundColor: p.accent + "22" }]}>
-                          <Feather name="gift" size={26} color={p.accent} />
-                        </View>
-                        <View style={[styles.offerNotch, { backgroundColor: "#F8FAFC" }]} pointerEvents="none" />
                         <View style={{ flex: 1 }}>
                           <View style={[styles.offerBadge, { backgroundColor: p.accent + "22" }]}>
                             <Text style={[styles.offerBadgeText, { color: p.text }]}>عرض</Text>
@@ -526,6 +522,10 @@ export default function HomeScreen() {
                               <Text style={[styles.discountText, { color: "#FFF" }]}>خصم {o.discount}%</Text>
                             </View>
                           )}
+                        </View>
+                        <View style={[styles.offerNotch, { backgroundColor: "#F8FAFC" }]} pointerEvents="none" />
+                        <View style={[styles.offerIcon, { backgroundColor: p.accent + "22" }]}>
+                          <Feather name="gift" size={26} color={p.accent} />
                         </View>
                       </View>
                     </TouchableOpacity>

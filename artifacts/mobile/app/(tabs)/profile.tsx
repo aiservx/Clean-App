@@ -73,36 +73,36 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
         {/* Profile Info */}
         <View style={s.profileRow}>
+          <View style={s.profileInfo}>
+            <View style={s.nameRow}>
+              <MaterialCommunityIcons name="check-decagram" size={18} color="#3B82F6" />
+              <Text style={[s.userName, { color: colors.foreground }]}>{userName}</Text>
+            </View>
+            <Text style={[s.userDetail, { color: colors.mutedForeground }]}>{userPhone}</Text>
+            <Text style={[s.userDetail, { color: colors.mutedForeground }]}>{userEmail}</Text>
+            <TouchableOpacity style={[s.editBtn, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => router.push("/edit-profile")}>
+              <Text style={[s.editBtnText, { color: colors.foreground }]}>تعديل الملف الشخصي</Text>
+              <Feather name="edit-2" size={14} color="#3B82F6" />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity style={s.avatarWrap} onPress={() => router.push("/edit-profile")}>
             <Image source={profile?.avatar_url ? { uri: profile.avatar_url } : require("@/assets/images/default-avatar.png")} style={s.avatar} />
             <View style={s.cameraBadge}>
               <Feather name="camera" size={12} color="#FFF" />
             </View>
           </TouchableOpacity>
-          <View style={s.profileInfo}>
-            <View style={s.nameRow}>
-              <Text style={[s.userName, { color: colors.foreground }]}>{userName}</Text>
-              <MaterialCommunityIcons name="check-decagram" size={18} color="#3B82F6" />
-            </View>
-            <Text style={[s.userDetail, { color: colors.mutedForeground }]}>{userPhone}</Text>
-            <Text style={[s.userDetail, { color: colors.mutedForeground }]}>{userEmail}</Text>
-            <TouchableOpacity style={[s.editBtn, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => router.push("/edit-profile")}>
-              <Feather name="edit-2" size={14} color="#3B82F6" />
-              <Text style={[s.editBtnText, { color: colors.foreground }]}>تعديل الملف الشخصي</Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* Membership Banner */}
         <LinearGradient colors={["#8B5CF6", "#A78BFA"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.memberBanner}>
-          <MaterialCommunityIcons name="star" size={36} color="#FDE68A" />
+          <TouchableOpacity style={s.memberBtn}>
+            <Text style={s.memberBtnText}>عرض المميزات</Text>
+          </TouchableOpacity>
           <View style={s.memberContent}>
             <Text style={s.memberTitle}>عضوية مميزة</Text>
             <Text style={s.memberDesc}>استمتع بخدمات حصرية وعروض خاصة</Text>
           </View>
-          <TouchableOpacity style={s.memberBtn}>
-            <Text style={s.memberBtnText}>عرض المميزات</Text>
-          </TouchableOpacity>
+          <MaterialCommunityIcons name="star" size={36} color="#FDE68A" />
         </LinearGradient>
 
         {/* Saved Addresses */}
@@ -205,7 +205,7 @@ const s = StyleSheet.create({
   hSub: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 2 },
 
   profileRow: { flexDirection: rowDir, alignItems: "center", paddingHorizontal: 24, marginBottom: 16 },
-  profileInfo: { flex: 1, alignItems: colAlign, marginEnd: 16 },
+  profileInfo: { flex: 1, alignItems: colAlign, marginStart: 16 },
   nameRow: { flexDirection: rowDir, alignItems: "center", gap: 6, marginBottom: 4 },
   userName: { fontFamily: "Tajawal_700Bold", fontSize: 20 },
   userDetail: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginBottom: 2 },

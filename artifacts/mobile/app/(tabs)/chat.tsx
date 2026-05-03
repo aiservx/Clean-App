@@ -186,12 +186,12 @@ export default function ChatInboxScreen() {
         >
           <LinearGradient colors={["#7C3AED", "#4F46E5"]} style={s.aiCardBg} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
             <View style={s.aiCardRow}>
-              <Image source={AI_AVATAR} style={s.aiAvatar} />
+              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={20} color="rgba(255,255,255,0.8)" />
               <View style={s.aiInfo}>
                 <Text style={s.aiTitle}>{t("ai_chat")} ✨</Text>
                 <Text style={s.aiSub}>{t("ai_chat_sub")}</Text>
               </View>
-              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={20} color="rgba(255,255,255,0.8)" />
+              <Image source={AI_AVATAR} style={s.aiAvatar} />
             </View>
             <View style={s.aiChips}>
               {["الخدمات والأسعار", "تتبع طلبي", "العروض"].map((label) => (
@@ -231,17 +231,6 @@ export default function ChatInboxScreen() {
               } as any)}
             >
               <View style={s.convRow}>
-                <View style={{ position: "relative" }}>
-                  <Image
-                    source={conv.other_avatar ? { uri: conv.other_avatar } : require("@/assets/images/default-avatar.png")}
-                    style={s.convAvatar}
-                  />
-                  {conv.unread > 0 && (
-                    <View style={[s.avatarBadge, { backgroundColor: colors.primary }]}>
-                      <Text style={s.avatarBadgeT}>{conv.unread > 99 ? "99+" : conv.unread}</Text>
-                    </View>
-                  )}
-                </View>
                 <View style={s.convInfo}>
                   <View style={s.convNameRow}>
                     <Text style={[s.convName, { color: colors.foreground, fontFamily: conv.unread > 0 ? "Tajawal_700Bold" : "Tajawal_500Medium" }]} numberOfLines={1}>
@@ -270,6 +259,17 @@ export default function ChatInboxScreen() {
                     </View>
                     <Text style={[s.convService, { color: colors.mutedForeground }]}>{conv.service_title}</Text>
                   </View>
+                </View>
+                <View style={{ position: "relative" }}>
+                  <Image
+                    source={conv.other_avatar ? { uri: conv.other_avatar } : require("@/assets/images/default-avatar.png")}
+                    style={s.convAvatar}
+                  />
+                  {conv.unread > 0 && (
+                    <View style={[s.avatarBadge, { backgroundColor: colors.primary }]}>
+                      <Text style={s.avatarBadgeT}>{conv.unread > 99 ? "99+" : conv.unread}</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </TouchableOpacity>

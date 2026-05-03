@@ -135,21 +135,21 @@ export default function BookingScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
-        </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>إتمام الحجز</Text>
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
             راجع تفاصيل الحجز وأكد الطلب
           </Text>
         </View>
+        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 140 }} showsVerticalScrollIndicator={false}>
         {/* Stepper */}
         <View style={styles.stepperContainer}>
-          {[...STEPS].reverse().map((step, index) => (
+          {STEPS.map((step, index) => (
             <React.Fragment key={step.id}>
               <View style={styles.stepItem}>
                 <View
@@ -220,8 +220,8 @@ export default function BookingScreen() {
           <>
             {/* Date Selection */}
             <View style={styles.sectionHeader}>
-              <Feather name="calendar" size={18} color={colors.foreground} />
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>اختر التاريخ</Text>
+              <Feather name="calendar" size={18} color={colors.foreground} />
             </View>
             <ScrollView
               horizontal
@@ -253,8 +253,8 @@ export default function BookingScreen() {
 
             {/* Time Selection */}
             <View style={styles.sectionHeader}>
-              <Feather name="clock" size={18} color={colors.foreground} />
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>اختر الوقت</Text>
+              <Feather name="clock" size={18} color={colors.foreground} />
             </View>
             <ScrollView
               horizontal
@@ -287,10 +287,10 @@ export default function BookingScreen() {
 
         {/* Provider Selection — REAL from DB */}
         <View style={styles.sectionHeader}>
-          <Feather name="user" size={18} color={colors.foreground} />
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             {bookingType === "instant" ? "أقرب فني متاح" : "اختر الفني"}
           </Text>
+          <Feather name="user" size={18} color={colors.foreground} />
         </View>
 
         {loadingProvs ? (
@@ -346,56 +346,56 @@ export default function BookingScreen() {
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.summaryHeader, { color: colors.foreground }]}>ملخص الطلب</Text>
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الخدمة</Text>
             <Text style={[styles.summaryValue, { color: colors.foreground }]}>{service.title}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الخدمة</Text>
           </View>
           {bookingType === "scheduled" && selectedDate && (
             <>
               <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>التاريخ</Text>
                 <Text style={[styles.summaryValue, { color: colors.foreground }]}>
                   {selectedDate.day}، {selectedDate.num} {selectedDate.month}
                 </Text>
+                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>التاريخ</Text>
               </View>
               <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الوقت</Text>
                 <Text style={[styles.summaryValue, { color: colors.foreground }]}>{selectedTime.range}</Text>
+                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الوقت</Text>
               </View>
             </>
           )}
           {bookingType === "instant" && (
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الموعد</Text>
               <Text style={[styles.summaryValue, { color: colors.primary }]}>الآن (خلال دقائق)</Text>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الموعد</Text>
             </View>
           )}
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الفني</Text>
             <Text style={[styles.summaryValue, { color: colors.foreground }]}>
               {selectedProvider?.full_name || "أقرب فني متاح"}
             </Text>
+            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الفني</Text>
           </View>
 
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <View style={styles.priceRow}>
-            <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.base} ر.س</Text>
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>السعر الأساسي</Text>
+            <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.base} ر.س</Text>
           </View>
           <View style={styles.priceRow}>
-            <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.fee} ر.س</Text>
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>رسوم الخدمة</Text>
+            <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.fee} ر.س</Text>
           </View>
           <View style={styles.priceRow}>
-            <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.vat} ر.س</Text>
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>ضريبة القيمة المضافة (15%)</Text>
+            <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.vat} ر.س</Text>
           </View>
 
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <View style={styles.totalRow}>
-            <Text style={[styles.totalValue, { color: colors.primary }]}>{totals.total} ر.س</Text>
             <Text style={[styles.totalLabel, { color: colors.foreground }]}>الإجمالي</Text>
+            <Text style={[styles.totalValue, { color: colors.primary }]}>{totals.total} ر.س</Text>
           </View>
         </View>
 
@@ -405,14 +405,14 @@ export default function BookingScreen() {
           onPress={() => router.push("/payment")}
           activeOpacity={0.8}
         >
-          <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={20} color={colors.mutedForeground} />
+          <Text style={[styles.paymentLabel, { color: colors.mutedForeground }]}>طريقة الدفع</Text>
           <View style={styles.paymentInfo}>
+            <MaterialCommunityIcons name="credit-card" size={20} color={colors.accent} />
             <Text style={[styles.paymentText, { color: colors.foreground }]}>
               {booking.paymentMethodId === "3" ? "نقدي عند الاستلام" : "بطاقة ائتمانية"}
             </Text>
-            <MaterialCommunityIcons name="credit-card" size={20} color={colors.accent} />
           </View>
-          <Text style={[styles.paymentLabel, { color: colors.mutedForeground }]}>طريقة الدفع</Text>
+          <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={20} color={colors.mutedForeground} />
         </TouchableOpacity>
       </ScrollView>
 
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 13 },
   stepperContainer: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
