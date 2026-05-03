@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -118,7 +118,7 @@ export default function ProviderWallet() {
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
         <Text style={[styles.hT, { color: colors.foreground }]}>المحفظة</Text>
         <TouchableOpacity onPress={() => router.push("/statement")}>
@@ -180,8 +180,8 @@ export default function ProviderWallet() {
         </View>
 
         <View style={styles.sectionH}>
-          <TouchableOpacity onPress={() => router.push("/statement")}><Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text></TouchableOpacity>
           <Text style={[styles.sectionT, { color: colors.foreground }]}>الحركات الأخيرة</Text>
+          <TouchableOpacity onPress={() => router.push("/statement")}><Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text></TouchableOpacity>
         </View>
 
         {loading ? (
@@ -197,21 +197,21 @@ export default function ProviderWallet() {
           <View style={{ paddingHorizontal: 16, gap: 8 }}>
             {tx.slice(0, 10).map((t) => (
               <View key={t.id} style={[styles.txRow, { backgroundColor: colors.card }]}>
-                <Text style={[styles.txP, { color: t.inc ? colors.success : colors.danger }]}>
-                  {t.inc ? "+" : "-"}{t.amount.toLocaleString("ar-SA", { maximumFractionDigits: 2 })} ر.س
-                </Text>
-                <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 10 }}>
-                  <Text style={[styles.txT, { color: colors.foreground }]}>{t.title}</Text>
-                  <View style={{ flexDirection: "row-reverse", gap: 6, alignItems: "center", marginTop: 2 }}>
-                    <View style={[styles.txStPill, { backgroundColor: t.inc ? colors.successLight : t.status === "تم التحويل" ? colors.successLight : t.status === "فشل" ? colors.dangerLight : colors.muted }]}>
-                      <Text style={[styles.txStT, { color: t.inc ? colors.success : t.status === "تم التحويل" ? colors.success : t.status === "فشل" ? colors.danger : colors.mutedForeground }]}>{t.status}</Text>
-                    </View>
-                    <Text style={[styles.txDate, { color: colors.mutedForeground }]}>{t.date}</Text>
-                  </View>
-                </View>
                 <View style={[styles.txIcon, { backgroundColor: t.inc ? colors.successLight : colors.dangerLight }]}>
                   <Feather name={t.icon as any} size={16} color={t.inc ? colors.success : colors.danger} />
                 </View>
+                <View style={{ flex: 1, marginHorizontal: 10 }}>
+                  <Text style={[styles.txT, { color: colors.foreground }]}>{t.title}</Text>
+                  <View style={{ flexDirection: "row", gap: 6, alignItems: "center", marginTop: 2 }}>
+                    <Text style={[styles.txDate, { color: colors.mutedForeground }]}>{t.date}</Text>
+                    <View style={[styles.txStPill, { backgroundColor: t.inc ? colors.successLight : t.status === "تم التحويل" ? colors.successLight : t.status === "فشل" ? colors.dangerLight : colors.muted }]}>
+                      <Text style={[styles.txStT, { color: t.inc ? colors.success : t.status === "تم التحويل" ? colors.success : t.status === "فشل" ? colors.danger : colors.mutedForeground }]}>{t.status}</Text>
+                    </View>
+                  </View>
+                </View>
+                <Text style={[styles.txP, { color: t.inc ? colors.success : colors.danger }]}>
+                  {t.inc ? "+" : "-"}{t.amount.toLocaleString("ar-SA", { maximumFractionDigits: 2 })} ر.س
+                </Text>
               </View>
             ))}
           </View>
@@ -223,26 +223,26 @@ export default function ProviderWallet() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 14 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 14 },
   hT: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   balCard: { marginHorizontal: 16, padding: 20, borderRadius: 22, marginBottom: 14 },
-  balL: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "right" },
-  balV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 32, textAlign: "right", marginTop: 4 },
-  balRow: { flexDirection: "row-reverse", marginTop: 16, gap: 12, justifyContent: "space-between" },
+  balL: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12 },
+  balV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 32, marginTop: 4 },
+  balRow: { flexDirection: "row", marginTop: 16, gap: 12, justifyContent: "space-between" },
   balItem: { flex: 1 },
-  balIL: { color: "rgba(255,255,255,0.7)", fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right" },
-  balIV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginTop: 2 },
-  actions: { flexDirection: "row-reverse", gap: 10, marginBottom: 14 },
-  actBtn: { flex: 1, height: 46, borderRadius: 14, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
+  balIL: { color: "rgba(255,255,255,0.7)", fontFamily: "Tajawal_500Medium", fontSize: 10 },
+  balIV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 2 },
+  actions: { flexDirection: "row", gap: 10, marginBottom: 14 },
+  actBtn: { flex: 1, height: 46, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   actT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  miniRow: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
+  miniRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
   miniC: { flex: 1, padding: 12, borderRadius: 14, alignItems: "flex-end" },
   miniV: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 4 },
   miniL: { fontFamily: "Tajawal_500Medium", fontSize: 9 },
-  sectionH: { flexDirection: "row-reverse", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 10 },
+  sectionH: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 10 },
   sectionT: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  txRow: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14 },
+  txRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
   txT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   txP: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   txStPill: { paddingHorizontal: 6, paddingVertical: 1, borderRadius: 100 },

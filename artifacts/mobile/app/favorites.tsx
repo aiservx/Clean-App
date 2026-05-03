@@ -33,7 +33,7 @@ export default function FavoritesScreen() {
                 </View>
                 <Text style={[styles.exp, { color: colors.mutedForeground }]}>خبرة {f.e} سنوات</Text>
                 <View style={styles.dotSep} />
-                <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 3 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
                   <Feather name="star" size={11} color={colors.warning} />
                   <Text style={[styles.exp, { color: colors.foreground, fontFamily: "Tajawal_700Bold" }]}>{f.r}</Text>
                 </View>
@@ -59,9 +59,9 @@ export default function FavoritesScreen() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  card: { padding: 12, borderRadius: 18, flexDirection: "row-reverse", alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  card: { padding: 12, borderRadius: 18, flexDirection: "row", alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   n: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
-  statsRow: { flexDirection: "row-reverse", alignItems: "center", gap: 6, marginTop: 4, marginBottom: 8 },
+  statsRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4, marginBottom: 8 },
   exp: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   dotSep: { width: 3, height: 3, borderRadius: 2, backgroundColor: "#CBD5E1" },
   statusPill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 100 },

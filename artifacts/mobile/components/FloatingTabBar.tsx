@@ -86,8 +86,8 @@ const s = StyleSheet.create({
   bar: {
     position: "absolute",
     bottom: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     paddingTop: 8,
     flexDirection: "row",
     alignItems: "flex-start",
@@ -107,7 +107,7 @@ const s = StyleSheet.create({
   badge: {
     position: "absolute",
     top: -4,
-    right: -4,
+    end: -4,
     minWidth: 16,
     height: 16,
     borderRadius: 8,

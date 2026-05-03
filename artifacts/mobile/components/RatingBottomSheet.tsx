@@ -378,8 +378,8 @@ const styles = StyleSheet.create({
   sheet: {
     position: "absolute",
     bottom: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     backgroundColor: "#FFF",
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
 
   // Header
   headerRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
     marginBottom: 16,
@@ -412,14 +412,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 8,
+    marginStart: 8,
   },
 
   // Provider
   providerCard: {
     borderRadius: 20,
     padding: 16,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
     gap: 12,
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   providerName: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#1E293B" },
   providerRole: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B", marginTop: 2 },
   completedBadge: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
     backgroundColor: "#DCFCE7",
@@ -464,19 +464,18 @@ const styles = StyleSheet.create({
     fontFamily: "Tajawal_700Bold",
     fontSize: 14,
     color: "#1E293B",
-    textAlign: "right",
     marginBottom: 10,
   },
 
   // Tags
   tagsGrid: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
     marginBottom: 20,
   },
   tagChip: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 12,

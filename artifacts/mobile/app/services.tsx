@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Image , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -113,7 +113,7 @@ export default function ServicesScreen() {
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>{t("pick_service")}</Text>
         </View>
         <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.card }]} onPress={() => router.back()}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -187,23 +187,23 @@ export default function ServicesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
   iconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   headerTitleContainer: { alignItems: "flex-end" },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 12 },
   categoriesScroll: { paddingHorizontal: 16, gap: 10, marginBottom: 14, paddingVertical: 4 },
-  categoryPill: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1, gap: 6, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
+  categoryPill: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1, gap: 6, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   categoryText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  grid: { flexDirection: "row-reverse", flexWrap: "wrap", paddingHorizontal: 12, gap: 12 },
+  grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 12 },
   serviceCard: { width: "47%", borderRadius: 22, overflow: "hidden", padding: 0, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 3 },
   imageWrap: { width: "100%", height: 130, position: "relative", backgroundColor: "#F1F5F9" },
   img: { width: "100%", height: "100%" },
-  categoryIndicator: { position: "absolute", top: 10, left: 10, width: 30, height: 30, borderRadius: 12, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
+  categoryIndicator: { position: "absolute", top: 10, start: 10, width: 30, height: 30, borderRadius: 12, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
   cardContent: { padding: 12, alignItems: "flex-end" },
   serviceTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 4 },
-  serviceDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginBottom: 10, textAlign: "right", minHeight: 28 },
-  cardFooter: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", width: "100%" },
+  serviceDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginBottom: 10, minHeight: 28 },
+  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%" },
   arrowBtn: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   priceText: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
 });

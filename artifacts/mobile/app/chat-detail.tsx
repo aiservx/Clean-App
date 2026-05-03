@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Animated,
-} from "react-native";
+, I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -48,7 +48,7 @@ function TypingDots({ color }: { color: string }) {
 }
 
 const td = StyleSheet.create({
-  row: { flexDirection: "row-reverse", gap: 4, alignItems: "center", paddingVertical: 2 },
+  row: { flexDirection: "row", gap: 4, alignItems: "center", paddingVertical: 2 },
   dot: { width: 7, height: 7, borderRadius: 4 },
 });
 
@@ -201,7 +201,7 @@ export default function ChatDetail() {
           </Text>
         </View>
         <TouchableOpacity onPress={() => router.back()}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -276,7 +276,7 @@ export default function ChatDetail() {
 const s = StyleSheet.create({
   c: { flex: 1 },
   header: {
-    flexDirection: "row-reverse", alignItems: "center",
+    flexDirection: "row", alignItems: "center",
     paddingHorizontal: 14, paddingBottom: 12, gap: 10,
     borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)",
   },
@@ -286,14 +286,14 @@ const s = StyleSheet.create({
   emptyT: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginTop: 14, textAlign: "center" },
   emptyS: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 6, textAlign: "center" },
   bubble: { maxWidth: "78%", padding: 10, borderRadius: 16, gap: 4 },
-  bubbleT: { fontFamily: "Tajawal_500Medium", fontSize: 13, textAlign: "right" },
-  bubbleTime: { fontFamily: "Tajawal_400Regular", fontSize: 9, textAlign: "right" },
+  bubbleT: { fontFamily: "Tajawal_500Medium", fontSize: 13 },
+  bubbleTime: { fontFamily: "Tajawal_400Regular", fontSize: 9 },
   typingBubble: {
     padding: 12, paddingHorizontal: 16, borderRadius: 16,
     maxWidth: "28%", marginBottom: 4,
   },
   inputBar: {
-    flexDirection: "row-reverse", alignItems: "center",
+    flexDirection: "row", alignItems: "center",
     padding: 10, gap: 10,
     borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.05)",
   },

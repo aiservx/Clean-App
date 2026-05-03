@@ -107,7 +107,7 @@ export default function ProviderNotifications() {
             </Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity style={{ marginRight: "auto" }} onPress={markAllRead}>
+        <TouchableOpacity style={{ marginEnd: "auto" }} onPress={markAllRead}>
           <Text style={[styles.markAll, { color: colors.primary }]}>تعليم الكل كمقروء</Text>
         </TouchableOpacity>
       </View>
@@ -152,15 +152,15 @@ export default function ProviderNotifications() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  tabs: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 8, marginBottom: 12, alignItems: "center" },
+  tabs: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 12, alignItems: "center" },
   tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100, backgroundColor: "#FFF" },
   tabT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   markAll: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
-  row: { flexDirection: "row-reverse", alignItems: "center", borderRadius: 16, padding: 14, gap: 10, position: "relative" },
-  dot: { position: "absolute", top: 14, left: 14, width: 8, height: 8, borderRadius: 4 },
+  row: { flexDirection: "row", alignItems: "center", borderRadius: 16, padding: 14, gap: 10, position: "relative" },
+  dot: { position: "absolute", top: 14, start: 14, width: 8, height: 8, borderRadius: 4 },
   text: { flex: 1, alignItems: "flex-end", gap: 2 },
-  t: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
-  b: { fontFamily: "Tajawal_400Regular", fontSize: 11, textAlign: "right" },
+  t: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
+  b: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   tm: { fontFamily: "Tajawal_400Regular", fontSize: 10, marginTop: 2 },
   iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   emptyT: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 16, textAlign: "center" },

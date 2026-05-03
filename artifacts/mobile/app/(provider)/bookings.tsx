@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -82,7 +82,7 @@ export default function ProviderBookings() {
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity onPress={() => router.back()}><Feather name="chevron-right" size={22} color={colors.foreground} /></TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()}><Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} /></TouchableOpacity>
         <View style={{ alignItems: "center", flex: 1 }}>
           <Text style={[styles.hT, { color: colors.foreground }]}>طلباتي</Text>
           <Text style={[styles.hS, { color: colors.mutedForeground }]}>إدارة جميع الطلبات</Text>
@@ -119,33 +119,33 @@ export default function ProviderBookings() {
             return (
               <TouchableOpacity key={o.id} style={[styles.card, { backgroundColor: colors.card }]} onPress={() => router.push(`/(provider)/booking-details?id=${o.id}` as any)} activeOpacity={0.92}>
                 <View style={styles.cardTop}>
+                  <Text style={[styles.cardT, { color: colors.foreground }]}>{o.services?.title_ar || "خدمة"}</Text>
                   <View style={[styles.stBadge, { backgroundColor: stColor + "22" }]}>
                     <Text style={[styles.stT, { color: stColor }]}>{statusLabel(o.status)}</Text>
                   </View>
-                  <Text style={[styles.cardT, { color: colors.foreground }]}>{o.services?.title_ar || "خدمة"}</Text>
                 </View>
                 <View style={[styles.divider, { backgroundColor: colors.border }]} />
                 <View style={{ gap: 6 }}>
                   <View style={styles.infoRow}>
-                    <Text style={[styles.infoV, { color: colors.foreground }]}>{o.profiles?.full_name || "عميل"}</Text>
                     <Feather name="user" size={12} color={colors.mutedForeground} />
+                    <Text style={[styles.infoV, { color: colors.foreground }]}>{o.profiles?.full_name || "عميل"}</Text>
                   </View>
                   <View style={styles.infoRow}>
-                    <Text style={[styles.infoV, { color: colors.foreground }]}>{fmtTime(o.scheduled_at)}</Text>
                     <Feather name="clock" size={12} color={colors.mutedForeground} />
+                    <Text style={[styles.infoV, { color: colors.foreground }]}>{fmtTime(o.scheduled_at)}</Text>
                   </View>
                   <View style={styles.infoRow}>
-                    <Text style={[styles.infoV, { color: colors.foreground }]} numberOfLines={1}>{addr}</Text>
                     <Feather name="map-pin" size={12} color={colors.mutedForeground} />
+                    <Text style={[styles.infoV, { color: colors.foreground }]} numberOfLines={1}>{addr}</Text>
                   </View>
                 </View>
                 <View style={styles.cardFoot}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.priceV, { color: colors.primary }]}>{o.total} ر.س</Text>
+                  </View>
                   <TouchableOpacity style={[styles.primBtn, { backgroundColor: colors.primary }]} onPress={() => router.push(`/(provider)/booking-details?id=${o.id}` as any)}>
                     <Text style={styles.primT}>عرض التفاصيل</Text>
                   </TouchableOpacity>
-                  <View style={{ flex: 1, alignItems: "flex-end" }}>
-                    <Text style={[styles.priceV, { color: colors.primary }]}>{o.total} ر.س</Text>
-                  </View>
                 </View>
               </TouchableOpacity>
             );
@@ -158,21 +158,21 @@ export default function ProviderBookings() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  header: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, gap: 10 },
+  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, gap: 10 },
   hT: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   hS: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
-  tabs: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 8, marginBottom: 12 },
+  tabs: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 12 },
   tab: { flex: 1, paddingVertical: 9, borderRadius: 100, alignItems: "center", backgroundColor: "#FFFFFF" },
   tabT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   card: { padding: 14, borderRadius: 18 },
-  cardTop: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  cardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   cardT: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   stBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100 },
   stT: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
   divider: { height: 1, marginBottom: 10 },
-  infoRow: { flexDirection: "row-reverse", alignItems: "center", gap: 6 },
-  infoV: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1, textAlign: "right" },
-  cardFoot: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginTop: 12 },
+  infoRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  infoV: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1 },
+  cardFoot: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 },
   primBtn: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 100 },
   primT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   priceV: { fontFamily: "Tajawal_700Bold", fontSize: 14 },

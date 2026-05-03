@@ -67,8 +67,8 @@ export default function Help() {
         <View style={{ gap: 8 }}>
           {FAQ.map((f, i) => (
             <TouchableOpacity key={i} style={[styles.faq, { backgroundColor: colors.card }]} onPress={() => setOpen(open === i ? null : i)}>
-              <View style={{ flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={[styles.faqQ, { color: colors.foreground, flex: 1, textAlign: "right" }]}>{f.q}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Text style={[styles.faqQ, { color: colors.foreground, flex: 1 }]}>{f.q}</Text>
                 <Feather name={open === i ? "chevron-up" : "chevron-down"} size={18} color={colors.mutedForeground} />
               </View>
               {open === i && <Text style={[styles.faqA, { color: colors.mutedForeground }]}>{f.a}</Text>}
@@ -82,17 +82,17 @@ export default function Help() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  label: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 10 },
-  grid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 },
+  label: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 10 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   cBtn: { width: "48%", padding: 14, borderRadius: 16, alignItems: "center" },
   cIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 8 },
   cT: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2 },
   cS: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   faq: { padding: 14, borderRadius: 14 },
   faqQ: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  faqA: { fontFamily: "Tajawal_400Regular", fontSize: 12, textAlign: "right", lineHeight: 18, marginTop: 8 },
+  faqA: { fontFamily: "Tajawal_400Regular", fontSize: 12, lineHeight: 18, marginTop: 8 },
   aiCard: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     padding: 18,
     borderRadius: 20,

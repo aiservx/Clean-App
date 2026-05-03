@@ -189,7 +189,7 @@ export default function RootLayout() {
       const TextAny = Text as any;
       TextAny.defaultProps = TextAny.defaultProps || {};
       TextAny.defaultProps.style = [
-        { fontFamily: "Tajawal_400Regular", writingDirection: "rtl" },
+        { fontFamily: "Tajawal_400Regular" },
         TextAny.defaultProps.style,
       ];
       SplashScreen.hideAsync().catch(() => {});

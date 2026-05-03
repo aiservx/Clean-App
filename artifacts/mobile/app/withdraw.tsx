@@ -145,7 +145,7 @@ export default function Withdraw() {
             <Text style={[styles.l, { color: colors.foreground }]}>رقم الـ IBAN</Text>
             <View style={[styles.amountInput, { backgroundColor: colors.card, paddingVertical: 14 }]}>
               <TextInput
-                style={{ fontFamily: "Tajawal_700Bold", fontSize: 14, color: colors.foreground, flex: 1, textAlign: "right" }}
+                style={{ fontFamily: "Tajawal_700Bold", fontSize: 14, color: colors.foreground, flex: 1 }}
                 value={iban}
                 onChangeText={setIban}
                 placeholder="SA00 0000 0000 0000 0000"
@@ -185,24 +185,24 @@ const styles = StyleSheet.create({
   balCard: { padding: 18, borderRadius: 18, alignItems: "flex-end", marginBottom: 14 },
   balL: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 11 },
   balV: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 30, marginTop: 4 },
-  l: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginBottom: 8, marginTop: 6 },
-  amountInput: { borderRadius: 16, paddingVertical: 18, paddingHorizontal: 20, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 },
+  l: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 8, marginTop: 6 },
+  amountInput: { borderRadius: 16, paddingVertical: 18, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 12 },
   amount: { fontFamily: "Tajawal_700Bold", fontSize: 36, minWidth: 100 },
   curr: { fontFamily: "Tajawal_500Medium", fontSize: 14 },
-  quickRow: { flexDirection: "row-reverse", gap: 6, marginBottom: 4 },
+  quickRow: { flexDirection: "row", gap: 6, marginBottom: 4 },
   qBtn: { flex: 1, paddingVertical: 8, borderRadius: 100, alignItems: "center" },
   qT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
-  mRow: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14, borderWidth: 1.5 },
+  mRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14, borderWidth: 1.5 },
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, alignItems: "center", justifyContent: "center" },
   radioDot: { width: 10, height: 10, borderRadius: 5 },
   mL: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   mS: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 1 },
   mIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   summary: { padding: 14, borderRadius: 14, marginTop: 14, gap: 8 },
-  sRow: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" },
+  sRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   sL: { fontSize: 11 },
   sV: {},
-  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24 },
-  btn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 8 },
+  bottom: { position: "absolute", bottom: 0, start: 0, end: 0, padding: 14, paddingBottom: 24 },
+  btn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   btnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });

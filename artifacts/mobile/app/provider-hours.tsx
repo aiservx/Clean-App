@@ -48,7 +48,7 @@ export default function ProviderHours() {
                   trackColor={{ true: colors.primary, false: "#E5E7EB" }}
                   thumbColor="#FFF"
                 />
-                <View style={{ flex: 1, alignItems: "center", flexDirection: "row-reverse", justifyContent: "center", gap: 8 }}>
+                <View style={{ flex: 1, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 8 }}>
                   {s.active ? (
                     <>
                       <View style={[styles.timeBox, { backgroundColor: colors.muted }]}>
@@ -92,17 +92,17 @@ export default function ProviderHours() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  tipBox: { padding: 12, borderRadius: 12, flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 14 },
-  tipT: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1, textAlign: "right" },
-  dayRow: { padding: 12, borderRadius: 14, flexDirection: "row-reverse", alignItems: "center", gap: 10 },
-  dayL: { fontFamily: "Tajawal_700Bold", fontSize: 13, width: 70, textAlign: "right" },
+  tipBox: { padding: 12, borderRadius: 12, flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14 },
+  tipT: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1 },
+  dayRow: { padding: 12, borderRadius: 14, flexDirection: "row", alignItems: "center", gap: 10 },
+  dayL: { fontFamily: "Tajawal_700Bold", fontSize: 13, width: 70 },
   timeBox: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   timeT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   dash: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
   summaryBox: { marginTop: 14, padding: 14, borderRadius: 14, alignItems: "flex-end" },
   sumL: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
   sumV: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 4 },
-  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24 },
+  bottom: { position: "absolute", bottom: 0, start: 0, end: 0, padding: 14, paddingBottom: 24 },
   saveBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   saveT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });

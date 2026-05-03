@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, I18nManager } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -44,7 +44,7 @@ export default function ScreenHeader({
           style={[styles.iconCircle, { backgroundColor: colors.card }]}
           onPress={onBack ?? (() => router.back())}
         >
-          <Feather name="chevron-right" size={20} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={20} color={colors.foreground} />
         </TouchableOpacity>
       ) : (
         <View style={{ width: 40 }} />
@@ -55,7 +55,7 @@ export default function ScreenHeader({
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,

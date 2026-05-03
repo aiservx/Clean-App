@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
 
   // RTL tabs row: mark-all on left, filter pills on right
   tabs: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     paddingHorizontal: 16,
     gap: 8,
     marginBottom: 12,
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   tabT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  markAll: { marginRight: "auto" },
+  markAll: { marginEnd: "auto" },
   markAllT: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
 
   // RTL row: icon on left end, text block on right
   row: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     padding: 14,
     borderRadius: 16,
@@ -241,14 +241,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     position: "absolute",
     top: 12,
-    left: 12,
+    start: 12,
   },
   rowText: { flex: 1, alignItems: "flex-end" },
-  rowTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 3, textAlign: "right" },
+  rowTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 3 },
   rowBody: {
     fontFamily: "Tajawal_400Regular",
     fontSize: 11,
-    textAlign: "right",
     lineHeight: 17,
     marginBottom: 4,
   },

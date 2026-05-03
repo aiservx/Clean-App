@@ -124,8 +124,8 @@ export default function NearbyProviderToast({ provider, onDismiss, onPress }: Pr
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    left: 16,
-    right: 16,
+    start: 16,
+    end: 16,
     borderRadius: 18,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   inner: {
     padding: 14,
-    paddingRight: 36,
+    paddingEnd: 36,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   closeBtn: {
     position: "absolute",
     top: 10,
-    right: 10,
+    end: 10,
     zIndex: 10,
   },
   icon: {

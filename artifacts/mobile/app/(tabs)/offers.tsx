@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -74,7 +74,7 @@ export default function OffersScreen() {
         <View style={{ width: 44 }} />
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>العروض والخصومات</Text>
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -312,7 +312,7 @@ export default function OffersScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   heroDiscountBadge: {
     position: "absolute",
     top: 12,
-    left: 12,
+    start: 12,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -372,13 +372,13 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 14,
     bottom: 14,
-    left: 14,
+    start: 14,
     width: "58%",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
   heroBadge: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
     paddingHorizontal: 9,
@@ -390,7 +390,6 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontFamily: "Tajawal_700Bold",
     fontSize: 15,
-    textAlign: "right",
     lineHeight: 19,
     textShadowColor: "rgba(0,0,0,0.22)",
     textShadowOffset: { width: 0, height: 1 },
@@ -399,7 +398,6 @@ const styles = StyleSheet.create({
   heroSub: {
     fontFamily: "Tajawal_500Medium",
     fontSize: 10,
-    textAlign: "right",
     lineHeight: 14,
     marginTop: 2,
     textShadowColor: "rgba(0,0,0,0.2)",
@@ -407,12 +405,12 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   heroCtaRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
   heroCta: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 12,
@@ -437,7 +435,7 @@ const styles = StyleSheet.create({
 
   // "عرض الكل" toggle pill
   seeAllChip: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 4,
     paddingHorizontal: 8,
@@ -460,7 +458,7 @@ const styles = StyleSheet.create({
   featuredDiscountBadge: {
     position: "absolute",
     top: 12,
-    left: 12,
+    start: 12,
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -480,7 +478,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 14,
     bottom: 14,
-    left: 14,
+    start: 14,
     width: "58%",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -495,7 +493,6 @@ const styles = StyleSheet.create({
   featuredTitle: {
     fontFamily: "Tajawal_700Bold",
     fontSize: 15,
-    textAlign: "right",
     lineHeight: 19,
     marginTop: 4,
     textShadowColor: "rgba(0,0,0,0.18)",
@@ -505,17 +502,16 @@ const styles = StyleSheet.create({
   featuredSub: {
     fontFamily: "Tajawal_500Medium",
     fontSize: 10,
-    textAlign: "right",
     lineHeight: 14,
     marginTop: 1,
   },
   featuredCtaRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
   featuredCta: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 12,
@@ -541,7 +537,7 @@ const styles = StyleSheet.create({
 
   // Stats row
   statsRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     paddingHorizontal: 16,
     gap: 8,
     marginBottom: 22,
@@ -571,7 +567,7 @@ const styles = StyleSheet.create({
 
   // Section header
   sectionHeader: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -582,11 +578,11 @@ const styles = StyleSheet.create({
 
   // Coupons
   couponCard: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "stretch",
     borderRadius: 20,
     padding: 16,
-    paddingRight: 96,
+    paddingEnd: 96,
     overflow: "visible",
     position: "relative",
     shadowColor: "#0F172A",
@@ -597,14 +593,14 @@ const styles = StyleSheet.create({
     minHeight: 96,
   },
   couponContent: { flex: 1, alignItems: "flex-end", justifyContent: "center", gap: 6 },
-  couponTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
-  couponMetaRow: { flexDirection: "row-reverse", alignItems: "center", gap: 5 },
+  couponTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
+  couponMetaRow: { flexDirection: "row", alignItems: "center", gap: 5 },
   couponMeta: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   couponCodeColumn: {
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    marginLeft: 12,
+    marginStart: 12,
     minWidth: 90,
   },
   couponCodeBox: {
@@ -618,12 +614,12 @@ const styles = StyleSheet.create({
   copyCodeText: { fontFamily: "Tajawal_600SemiBold", fontSize: 11 },
   couponTag: {
     position: "absolute",
-    right: 0,
+    end: 0,
     top: 0,
     bottom: 0,
     width: 80,
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
+    borderTopEndRadius: 20,
+    borderBottomEndRadius: 20,
     alignItems: "center",
     justifyContent: "center",
     padding: 8,
@@ -636,7 +632,7 @@ const styles = StyleSheet.create({
   },
   couponNotchTop: {
     position: "absolute",
-    right: 72,
+    end: 72,
     top: -8,
     width: 16,
     height: 16,
@@ -644,7 +640,7 @@ const styles = StyleSheet.create({
   },
   couponNotchBottom: {
     position: "absolute",
-    right: 72,
+    end: 72,
     bottom: -8,
     width: 16,
     height: 16,
@@ -657,21 +653,20 @@ const styles = StyleSheet.create({
     marginTop: 22,
     borderRadius: 24,
     padding: 16,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     overflow: "hidden",
     minHeight: 130,
   },
   inviteContent: { flex: 1, alignItems: "flex-end" },
-  inviteTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, textAlign: "right", marginBottom: 6 },
+  inviteTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 6 },
   inviteBody: {
     fontFamily: "Tajawal_400Regular",
     fontSize: 11,
-    textAlign: "right",
     lineHeight: 16,
     marginBottom: 12,
   },
-  inviteActionRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+  inviteActionRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   inviteBtn: {
     backgroundColor: "#F59E0B",
     paddingHorizontal: 22,
@@ -696,6 +691,6 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 16,
-    marginLeft: 8,
+    marginStart: 8,
   },
 });

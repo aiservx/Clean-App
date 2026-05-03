@@ -203,10 +203,10 @@ export default function BookingsScreen() {
                           {fmtDate(item.scheduled_at)}
                         </Text>
                         <View style={styles.addrRow}>
+                          <Feather name="map-pin" size={10} color={colors.mutedForeground} />
                           <Text style={[styles.bookingDate, { color: colors.mutedForeground }]} numberOfLines={1}>
                             {item.addr_text}
                           </Text>
-                          <Feather name="map-pin" size={10} color={colors.mutedForeground} />
                         </View>
                       </View>
                     </View>
@@ -218,12 +218,6 @@ export default function BookingsScreen() {
 
                   {/* Footer actions – RTL */}
                   <View style={styles.cardFooter}>
-                    <TouchableOpacity
-                      style={[styles.reorderBtn, { backgroundColor: colors.primaryLight }]}
-                      onPress={() => reorder(item.service_title)}
-                    >
-                      <Text style={[styles.reorderBtnText, { color: colors.primary }]}>إعادة طلب</Text>
-                    </TouchableOpacity>
                     {isActive ? (
                       <TouchableOpacity
                         style={[styles.actionBtn, { backgroundColor: colors.primary }]}
@@ -248,6 +242,12 @@ export default function BookingsScreen() {
                         <Text style={[styles.actionBtnText, { color: colors.foreground }]}>عرض التفاصيل</Text>
                       </TouchableOpacity>
                     )}
+                    <TouchableOpacity
+                      style={[styles.reorderBtn, { backgroundColor: colors.primaryLight }]}
+                      onPress={() => reorder(item.service_title)}
+                    >
+                      <Text style={[styles.reorderBtnText, { color: colors.primary }]}>إعادة طلب</Text>
+                    </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
               );
@@ -265,8 +265,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { paddingHorizontal: 16, marginBottom: 12, alignItems: "flex-end" },
   headerTitleContainer: { alignItems: "flex-end" },
-  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 22, textAlign: "right" },
-  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 14, textAlign: "right" },
+  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 22 },
+  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 14 },
 
   // RTL filter pills – row-reverse so first pill is on the right
   filtersScroll: {
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 14,
     paddingVertical: 4,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
   },
   filterPill: {
     paddingHorizontal: 20,
@@ -303,13 +303,13 @@ const styles = StyleSheet.create({
 
   // RTL card header: title on right, badge on left
   cardHeader: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 14,
     gap: 10,
   },
-  serviceName: { fontFamily: "Tajawal_700Bold", fontSize: 15, flex: 1, textAlign: "right" },
+  serviceName: { fontFamily: "Tajawal_700Bold", fontSize: 15, flex: 1 },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 100 },
   statusText: { fontFamily: "Tajawal_600SemiBold", fontSize: 11 },
 
@@ -317,25 +317,25 @@ const styles = StyleSheet.create({
 
   // RTL content: avatar on right, price on left
   cardContent: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
   },
-  cleanerInfo: { flexDirection: "row-reverse", alignItems: "center", gap: 12, flex: 1 },
+  cleanerInfo: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
   cleanerAvatar: { width: 48, height: 48, borderRadius: 24 },
-  textWrap: { alignItems: "flex-end", flex: 1 },
-  cleanerName: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2, textAlign: "right" },
-  bookingDate: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "right" },
-  addrRow: { flexDirection: "row-reverse", alignItems: "center", gap: 4, marginTop: 2 },
+  textWrap: { flex: 1 },
+  cleanerName: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2 },
+  bookingDate: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
+  addrRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 },
 
-  priceWrap: { alignItems: "center", marginLeft: 8 },
+  priceWrap: { alignItems: "center", marginStart: 8 },
   priceValue: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
   priceLabel: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
 
   // RTL footer: secondary action on left, primary on right
   cardFooter: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: 10,
     marginTop: 4,
   },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     gap: 6,
   },
   actionBtnText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },

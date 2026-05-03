@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Linking, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Linking, Platform , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -246,7 +246,7 @@ export default function ProviderBookingDetails() {
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => router.back()} style={[styles.iconBtn, { backgroundColor: colors.card }]}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: "center" }}>
           <Text style={[styles.hT, { color: colors.foreground }]}>تفاصيل الطلب</Text>
@@ -257,17 +257,17 @@ export default function ProviderBookingDetails() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 160, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={[stColor, stColor + "DD"]} style={styles.statusHero}>
-          <View style={{ flex: 1, alignItems: "flex-end" }}>
-            <Text style={styles.statusHeroLabel}>الحالة الحالية</Text>
-            <Text style={styles.statusHeroTitle}>{STATUS_AR[booking.status]}</Text>
-            <Text style={styles.statusHeroSub}>{booking.services?.title_ar}</Text>
-          </View>
           <View style={styles.statusHeroIcon}>
             <MaterialCommunityIcons
               name={booking.status === "completed" ? "check-decagram" : booking.status === "in_progress" ? "broom" : booking.status === "on_the_way" ? "car" : "clipboard-list"}
               size={44}
               color="#FFF"
             />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.statusHeroLabel}>الحالة الحالية</Text>
+            <Text style={styles.statusHeroTitle}>{STATUS_AR[booking.status]}</Text>
+            <Text style={styles.statusHeroSub}>{booking.services?.title_ar}</Text>
           </View>
         </LinearGradient>
 
@@ -299,23 +299,23 @@ export default function ProviderBookingDetails() {
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>بيانات العميل</Text>
           <View style={styles.row}>
-            <View style={styles.rowAvatar}>
-              <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 18 }}>
-                {(booking.profiles?.full_name || "ع").charAt(0)}
-              </Text>
-            </View>
-            <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 12 }}>
+            <TouchableOpacity onPress={callClient} style={[styles.iconCircle, { backgroundColor: colors.successLight }]}>
+              <Feather name="phone" size={16} color={colors.success} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={openChat} style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginEnd: 6 }]}>
+              <Feather name="message-circle" size={16} color={colors.primary} />
+            </TouchableOpacity>
+            <View style={{ flex: 1, marginHorizontal: 12 }}>
               <Text style={[styles.rowTitle, { color: colors.foreground }]}>{booking.profiles?.full_name || "عميل"}</Text>
               {booking.profiles?.phone && (
                 <Text style={[styles.rowSub, { color: colors.mutedForeground }]}>{booking.profiles.phone}</Text>
               )}
             </View>
-            <TouchableOpacity onPress={openChat} style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginLeft: 6 }]}>
-              <Feather name="message-circle" size={16} color={colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={callClient} style={[styles.iconCircle, { backgroundColor: colors.successLight }]}>
-              <Feather name="phone" size={16} color={colors.success} />
-            </TouchableOpacity>
+            <View style={styles.rowAvatar}>
+              <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 18 }}>
+                {(booking.profiles?.full_name || "ع").charAt(0)}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -330,8 +330,8 @@ export default function ProviderBookingDetails() {
             { l: "طريقة الدفع", v: booking.payment_method === "cash" ? "نقدي عند الوصول" : booking.payment_method === "card" ? "بطاقة" : booking.payment_method || "نقدي" },
           ].map((d) => (
             <View key={d.l} style={styles.dRow}>
-              <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
               <Text style={[styles.dL, { color: colors.mutedForeground }]}>{d.l}</Text>
+              <Text style={[styles.dV, { color: colors.foreground }]}>{d.v}</Text>
             </View>
           ))}
         </View>
@@ -339,12 +339,12 @@ export default function ProviderBookingDetails() {
         <View style={[styles.section, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>الأرباح</Text>
           <View style={styles.dRow}>
-            <Text style={[styles.dV, { color: colors.primary, fontSize: 18 }]}>{Number(booking.total).toFixed(2)} ر.س</Text>
             <Text style={[styles.dL, { color: colors.mutedForeground }]}>قيمة الطلب</Text>
+            <Text style={[styles.dV, { color: colors.primary, fontSize: 18 }]}>{Number(booking.total).toFixed(2)} ر.س</Text>
           </View>
           <View style={styles.dRow}>
-            <Text style={[styles.dV, { color: colors.success }]}>{(Number(booking.total) * 0.85).toFixed(2)} ر.س</Text>
             <Text style={[styles.dL, { color: colors.mutedForeground }]}>صافي حصتك (85%)</Text>
+            <Text style={[styles.dV, { color: colors.success }]}>{(Number(booking.total) * 0.85).toFixed(2)} ر.س</Text>
           </View>
         </View>
       </ScrollView>
@@ -381,35 +381,35 @@ export default function ProviderBookingDetails() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  header: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, marginBottom: 14, gap: 10 },
+  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, marginBottom: 14, gap: 10 },
   iconBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   hT: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   hS: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
-  statusHero: { padding: 18, borderRadius: 22, flexDirection: "row-reverse", alignItems: "center", marginBottom: 14, minHeight: 110 },
+  statusHero: { padding: 18, borderRadius: 22, flexDirection: "row", alignItems: "center", marginBottom: 14, minHeight: 110 },
   statusHeroLabel: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 11 },
   statusHeroTitle: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 22, marginTop: 4 },
   statusHeroSub: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 12, marginTop: 4 },
-  statusHeroIcon: { width: 70, height: 70, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.18)", borderRadius: 18, marginLeft: 12 },
+  statusHeroIcon: { width: 70, height: 70, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.18)", borderRadius: 18, marginStart: 12 },
   mapBox: { height: 220, borderRadius: 18, overflow: "hidden", marginBottom: 14, position: "relative" },
-  mapOverlay: { position: "absolute", top: 12, right: 12, left: 12 },
-  distChip: { flexDirection: "row-reverse", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100, alignSelf: "flex-end", shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
+  mapOverlay: { position: "absolute", top: 12, end: 12, start: 12 },
+  distChip: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100, alignSelf: "flex-end", shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
   distChipT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  navBtn: { position: "absolute", bottom: 12, right: 12, flexDirection: "row-reverse", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 100 },
+  navBtn: { position: "absolute", bottom: 12, end: 12, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 100 },
   navBtnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   section: { padding: 14, borderRadius: 16, marginBottom: 14 },
-  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 12 },
-  row: { flexDirection: "row-reverse", alignItems: "center" },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 12 },
+  row: { flexDirection: "row", alignItems: "center" },
   rowAvatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#16C47F22", alignItems: "center", justifyContent: "center" },
-  rowTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right" },
-  rowSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2, textAlign: "right" },
+  rowTitle: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
+  rowSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
   iconCircle: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-  dRow: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "flex-start", paddingVertical: 6, gap: 12 },
-  dL: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "right" },
-  dV: { fontFamily: "Tajawal_700Bold", fontSize: 12, textAlign: "right", flex: 1 },
-  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingTop: 12, flexDirection: "row-reverse", gap: 10 },
-  cta: { flex: 1, height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 8 },
+  dRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", paddingVertical: 6, gap: 12 },
+  dL: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
+  dV: { fontFamily: "Tajawal_700Bold", fontSize: 12, flex: 1 },
+  bottom: { position: "absolute", bottom: 0, start: 0, end: 0, paddingHorizontal: 16, paddingTop: 12, flexDirection: "row", gap: 10 },
+  cta: { flex: 1, height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   ctaT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
   ctaSec: { paddingHorizontal: 18, height: 50, borderRadius: 16, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   ctaSecT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  completedBox: { flex: 1, height: 50, borderRadius: 16, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
+  completedBox: { flex: 1, height: 50, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
 });

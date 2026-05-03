@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
   Animated, Platform, KeyboardAvoidingView, ActivityIndicator, Alert, Image,
-} from "react-native";
+, I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -675,7 +675,7 @@ export default function ChatScreen() {
       <LinearGradient colors={["#7C3AED", "#4F46E5"]} style={[s.header, { paddingTop: insets.top + 8 }]}>
         <View style={s.headerRow}>
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 6 }}>
-            <Feather name="chevron-right" size={22} color="#FFF" />
+            <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color="#FFF" />
           </TouchableOpacity>
           <Image source={AI_AVATAR_LIGHT} style={{ width: 44, height: 44, borderRadius: 22 }} />
           <View style={s.headerInfo}>
@@ -720,8 +720,8 @@ export default function ChatScreen() {
                 <Image source={AI_AVATAR_LIGHT} style={s.botAvatarSmall} />
                 <View style={s.typingBubble}>
                   <Animated.View style={[s.typingDot, { opacity: typingAnim }]} />
-                  <Animated.View style={[s.typingDot, { opacity: typingAnim, marginLeft: 6 }]} />
-                  <Animated.View style={[s.typingDot, { opacity: typingAnim, marginLeft: 6 }]} />
+                  <Animated.View style={[s.typingDot, { opacity: typingAnim, marginStart: 6 }]} />
+                  <Animated.View style={[s.typingDot, { opacity: typingAnim, marginStart: 6 }]} />
                 </View>
               </View>
             )}
@@ -770,7 +770,7 @@ const s = StyleSheet.create({
   container: { flex: 1 },
 
   header: { paddingBottom: 14, paddingHorizontal: 16 },
-  headerRow: { flexDirection: "row-reverse", alignItems: "center", gap: 10 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   botAvatarHeader: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
   headerInfo: { flex: 1, alignItems: "flex-end" },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#FFF" },
@@ -779,24 +779,24 @@ const s = StyleSheet.create({
   headerBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FFF" },
 
   messagesContent: { padding: 16, paddingBottom: 20, gap: 12 },
-  botMsgWrap: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 8 },
-  userMsgWrap: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 8 },
+  botMsgWrap: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  userMsgWrap: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   botAvatarSmall: { width: 28, height: 28, borderRadius: 14, marginTop: 4 },
-  botBubble: { backgroundColor: "#F1F5F9", borderRadius: 18, borderTopRightRadius: 4, paddingHorizontal: 14, paddingVertical: 10 },
-  userBubble: { backgroundColor: "#7C3AED", borderRadius: 18, borderTopLeftRadius: 4, paddingHorizontal: 14, paddingVertical: 10, alignSelf: "flex-end" },
-  botText: { fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#0F172A", textAlign: "right", lineHeight: 22 },
-  userText: { fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#FFF", textAlign: "right", lineHeight: 22 },
+  botBubble: { backgroundColor: "#F1F5F9", borderRadius: 18, borderTopStartRadius: 4, paddingHorizontal: 14, paddingVertical: 10 },
+  userBubble: { backgroundColor: "#7C3AED", borderRadius: 18, borderTopEndRadius: 4, paddingHorizontal: 14, paddingVertical: 10, alignSelf: "flex-end" },
+  botText: { fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#0F172A", lineHeight: 22 },
+  userText: { fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#FFF", lineHeight: 22 },
 
-  typingBubble: { flexDirection: "row-reverse", backgroundColor: "#F1F5F9", borderRadius: 18, paddingHorizontal: 16, paddingVertical: 12 },
+  typingBubble: { flexDirection: "row", backgroundColor: "#F1F5F9", borderRadius: 18, paddingHorizontal: 16, paddingVertical: 12 },
   typingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#94A3B8" },
 
   // Quick action chips
-  qaWrap: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8, marginTop: 6 },
-  qaChip: { flexDirection: "row-reverse", alignItems: "center", gap: 6, backgroundColor: "#FFF", borderWidth: 1, borderColor: "#EDE9FE", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },
+  qaWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
+  qaChip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFF", borderWidth: 1, borderColor: "#EDE9FE", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },
   qaChipT: { fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#7C3AED" },
 
   // Service grid
-  svcGrid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8, marginTop: 6 },
+  svcGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
   svcCardGrid: { width: "31%", borderRadius: 16, padding: 10, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   svcIconBox: { width: 48, height: 48, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 8 },
   svcCardTitle: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A", textAlign: "center", marginBottom: 4 },
@@ -808,29 +808,29 @@ const s = StyleSheet.create({
   provAvatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#EDE9FE", alignItems: "center", justifyContent: "center", marginBottom: 8 },
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#7C3AED" },
   provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
-  provRow: { flexDirection: "row-reverse", alignItems: "center", gap: 4, marginBottom: 4 },
+  provRow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 4 },
   provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
   provDist: { fontFamily: "Tajawal_400Regular", fontSize: 10, color: "#64748B" },
   provRate: { fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#7C3AED" },
 
   // Confirm address/phone inline
   confirmInline: { backgroundColor: "#F8FAFC", borderRadius: 14, padding: 12, marginTop: 8, gap: 10 },
-  confirmInlineRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
-  confirmInlineT: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", flex: 1, textAlign: "right" },
-  confirmInlineBtns: { flexDirection: "row-reverse", gap: 8 },
+  confirmInlineRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  confirmInlineT: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", flex: 1 },
+  confirmInlineBtns: { flexDirection: "row", gap: 8 },
   confirmInlineBtn: { flex: 1, paddingVertical: 10, borderRadius: 100, alignItems: "center" },
   confirmInlineBtnT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
   invoiceCard: { borderRadius: 20, overflow: "hidden", marginTop: 8, backgroundColor: "#FFF", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
-  invoiceHeader: { flexDirection: "row-reverse", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 14 },
+  invoiceHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 14 },
   invoiceHeaderText: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
   invoiceBody: { padding: 16, gap: 10 },
-  invoiceRow: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" },
+  invoiceRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   invoiceLabel: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B" },
-  invoiceVal: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#0F172A", textAlign: "right", maxWidth: "60%" },
+  invoiceVal: { fontFamily: "Tajawal_600SemiBold", fontSize: 13, color: "#0F172A", maxWidth: "60%" },
   invoiceDivider: { borderBottomWidth: 1, borderColor: "#F1F5F9" },
   invoiceActions: { padding: 16, paddingTop: 0 },
-  confirmBtn: { backgroundColor: "#7C3AED", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 20, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
+  confirmBtn: { backgroundColor: "#7C3AED", borderRadius: 14, paddingVertical: 14, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   confirmBtnText: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#FFF" },
 
   confirmationCard: { borderRadius: 20, overflow: "hidden", marginTop: 8, backgroundColor: "#FFF", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
@@ -838,12 +838,12 @@ const s = StyleSheet.create({
   confirmIconWrap: { width: 64, height: 64, borderRadius: 32, backgroundColor: "rgba(255,255,255,0.25)", alignItems: "center", justifyContent: "center", marginBottom: 4 },
   confirmTitle: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#FFF" },
   confirmSub: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "rgba(255,255,255,0.9)" },
-  newBookingBtn: { padding: 14, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8 },
+  newBookingBtn: { padding: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   newBookingBtnText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#7C3AED" },
 
   inputBar: { paddingHorizontal: 12, paddingTop: 8 },
-  inputRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8, backgroundColor: "#FFF", borderRadius: 100, paddingHorizontal: 8, paddingVertical: 6, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
-  textInput: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#0F172A", paddingHorizontal: 12, paddingVertical: 8, textAlign: "right" },
+  inputRow: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFF", borderRadius: 100, paddingHorizontal: 8, paddingVertical: 6, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  textInput: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#0F172A", paddingHorizontal: 12, paddingVertical: 8 },
   sendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#7C3AED", alignItems: "center", justifyContent: "center" },
   micBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#EDE9FE", alignItems: "center", justifyContent: "center" },
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, ActivityIndicator , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -142,7 +142,7 @@ export default function BookingScreen() {
           </Text>
         </View>
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Feather name="chevron-right" size={24} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -405,7 +405,7 @@ export default function BookingScreen() {
           onPress={() => router.push("/payment")}
           activeOpacity={0.8}
         >
-          <Feather name="chevron-left" size={20} color={colors.mutedForeground} />
+          <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={20} color={colors.mutedForeground} />
           <View style={styles.paymentInfo}>
             <Text style={[styles.paymentText, { color: colors.foreground }]}>
               {booking.paymentMethodId === "3" ? "نقدي عند الاستلام" : "بطاقة ائتمانية"}
@@ -454,7 +454,7 @@ export default function BookingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 13 },
   stepperContainer: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
@@ -495,12 +495,12 @@ const styles = StyleSheet.create({
   stepNumber: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   stepTitle: { fontFamily: "Tajawal_600SemiBold", fontSize: 10 },
   stepLine: { height: 2, flex: 1, marginTop: -16 },
-  typeToggleWrap: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 10, marginBottom: 18 },
+  typeToggleWrap: { flexDirection: "row", paddingHorizontal: 16, gap: 10, marginBottom: 18 },
   typeBtn: { flex: 1, padding: 12, borderRadius: 16, alignItems: "center", borderWidth: 1, borderColor: "#E2E8F0", gap: 4 },
   typeT: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 4 },
   typeSub: { fontFamily: "Tajawal_400Regular", fontSize: 10 },
   sectionHeader: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     paddingHorizontal: 16,
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   cleanerCheck: {
     position: "absolute",
     top: 8,
-    right: 8,
+    end: 8,
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   },
   cleanerAvatar: { width: 56, height: 56, borderRadius: 28, marginBottom: 8 },
   cleanerName: { fontFamily: "Tajawal_600SemiBold", fontSize: 12, marginBottom: 4, textAlign: "center" },
-  ratingRow: { flexDirection: "row-reverse", alignItems: "center", gap: 2 },
+  ratingRow: { flexDirection: "row", alignItems: "center", gap: 2 },
   ratingText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   emptyProv: { marginHorizontal: 16, padding: 24, borderRadius: 18, alignItems: "center", marginBottom: 18, gap: 6 },
   emptyProvT: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 6 },
@@ -571,19 +571,19 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  summaryHeader: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 16, textAlign: "right" },
-  summaryRow: { flexDirection: "row-reverse", justifyContent: "space-between", marginBottom: 12 },
+  summaryHeader: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 16 },
+  summaryRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
   summaryLabel: { fontFamily: "Tajawal_500Medium", fontSize: 13 },
   summaryValue: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
   divider: { height: 1, marginVertical: 12 },
-  priceRow: { flexDirection: "row-reverse", justifyContent: "space-between", marginBottom: 8 },
+  priceRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
   priceLabel: { fontFamily: "Tajawal_400Regular", fontSize: 12 },
   priceValue: { fontFamily: "Tajawal_600SemiBold", fontSize: 12 },
-  totalRow: { flexDirection: "row-reverse", justifyContent: "space-between", marginTop: 4 },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 4 },
   totalLabel: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   totalValue: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   paymentRow: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginHorizontal: 24,
@@ -595,14 +595,14 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
-  paymentInfo: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+  paymentInfo: { flexDirection: "row", alignItems: "center", gap: 8 },
   paymentText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14 },
   paymentLabel: { fontFamily: "Tajawal_500Medium", fontSize: 13 },
   bottomBar: {
     position: "absolute",
     bottom: 0,
-    left: 0,
-    right: 0,
+    start: 0,
+    end: 0,
     paddingHorizontal: 16,
     paddingTop: 16,
     borderTopLeftRadius: 32,
@@ -616,7 +616,7 @@ const styles = StyleSheet.create({
   confirmBtn: {
     height: 64,
     borderRadius: 20,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
     gap: 12,

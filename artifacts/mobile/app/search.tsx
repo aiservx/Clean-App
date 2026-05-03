@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image , I18nManager} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -72,10 +72,10 @@ export default function SearchScreen() {
         <View style={{ gap: 10 }}>
           {PROVIDERS.map((p) => (
             <TouchableOpacity key={p.id} style={[styles.prov, { backgroundColor: colors.card }]} onPress={() => router.push(`/provider/${p.id}`)}>
-              <Feather name="chevron-left" size={18} color={colors.mutedForeground} />
+              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
               <View style={{ flex: 1, alignItems: "flex-end", marginHorizontal: 10 }}>
                 <Text style={[styles.provN, { color: colors.foreground }]}>{p.n}</Text>
-                <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                   <Feather name="star" size={11} color={colors.warning} />
                   <Text style={[styles.provR, { color: colors.mutedForeground }]}>{p.r}</Text>
                 </View>
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     paddingHorizontal: 16,
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 10,
     shadowColor: "#0F172A",
@@ -107,15 +107,15 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13 },
-  label: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 8 },
-  tags: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8 },
-  tag: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 12, paddingVertical: 7, borderRadius: 100, gap: 6 },
+  label: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 8 },
+  tags: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  tag: { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingVertical: 7, borderRadius: 100, gap: 6 },
   tagT: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
-  popGrid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 },
-  popCard: { width: "48%", padding: 12, borderRadius: 16, flexDirection: "row-reverse", alignItems: "center", gap: 10 },
+  popGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  popCard: { width: "48%", padding: 12, borderRadius: 16, flexDirection: "row", alignItems: "center", gap: 10 },
   popIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  popT: { fontFamily: "Tajawal_700Bold", fontSize: 12, flex: 1, textAlign: "right" },
-  prov: { flexDirection: "row-reverse", alignItems: "center", padding: 10, borderRadius: 16 },
+  popT: { fontFamily: "Tajawal_700Bold", fontSize: 12, flex: 1 },
+  prov: { flexDirection: "row", alignItems: "center", padding: 10, borderRadius: 16 },
   provN: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 2 },
   provR: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
 });

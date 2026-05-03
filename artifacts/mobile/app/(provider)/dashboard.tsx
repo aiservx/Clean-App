@@ -263,17 +263,17 @@ export default function ProviderHome() {
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+        <Image source={profile?.avatar_url ? { uri: profile.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.avatar} />
+        <View style={{ flex: 1, alignItems: "center" }}>
+          <Text style={[styles.greet, { color: colors.mutedForeground }]}>أهلاً 👋</Text>
+          <Text style={[styles.name, { color: colors.foreground }]}>{firstName}</Text>
+        </View>
         <TouchableOpacity onPress={() => router.push("/provider-notifications")}>
           <View style={[styles.icon, { backgroundColor: colors.card }]}>
             <Feather name="bell" size={18} color={colors.foreground} />
             {orders.length > 0 && <View style={[styles.notifDot, { backgroundColor: colors.danger }]} />}
           </View>
         </TouchableOpacity>
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Text style={[styles.greet, { color: colors.mutedForeground }]}>أهلاً 👋</Text>
-          <Text style={[styles.name, { color: colors.foreground }]}>{firstName}</Text>
-        </View>
-        <Image source={profile?.avatar_url ? { uri: profile.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.avatar} />
       </View>
 
       <ScrollView
@@ -353,10 +353,10 @@ export default function ProviderHome() {
         )}
 
         <View style={styles.sectionH}>
+          <Text style={[styles.sectionT, { color: colors.foreground }]}>طلبات قريبة منك</Text>
           <TouchableOpacity onPress={() => router.push("/(provider)/bookings" as any)}>
             <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
           </TouchableOpacity>
-          <Text style={[styles.sectionT, { color: colors.foreground }]}>طلبات قريبة منك</Text>
         </View>
 
         {loading ? (
@@ -381,6 +381,7 @@ export default function ProviderHome() {
                 style={[styles.order, { backgroundColor: colors.card }]}
               >
                 <View style={styles.oTop}>
+                  <Text style={[styles.oTitle, { color: colors.foreground }]}>{o.service_title}</Text>
                   {o.d_km != null ? (
                     <View style={[styles.distBadge, { backgroundColor: colors.accentLight }]}>
                       <MaterialCommunityIcons name="map-marker-distance" size={10} color={colors.accent} />
@@ -391,41 +392,40 @@ export default function ProviderHome() {
                       <Text style={[styles.distT, { color: colors.mutedForeground }]}>—</Text>
                     </View>
                   )}
-                  <Text style={[styles.oTitle, { color: colors.foreground }]}>{o.service_title}</Text>
                 </View>
 
                 <View style={{ gap: 6 }}>
                   <View style={styles.infoRow}>
-                    <Text style={[styles.oS, { color: colors.foreground }]}>{o.client_name}</Text>
                     <Feather name="user" size={11} color={colors.mutedForeground} />
+                    <Text style={[styles.oS, { color: colors.foreground }]}>{o.client_name}</Text>
                   </View>
                   <View style={styles.infoRow}>
-                    <Text style={[styles.oS, { color: colors.foreground }]}>{fmtTime(o.scheduled_at)}</Text>
                     <Feather name="clock" size={11} color={colors.mutedForeground} />
+                    <Text style={[styles.oS, { color: colors.foreground }]}>{fmtTime(o.scheduled_at)}</Text>
                   </View>
                   <View style={styles.infoRow}>
-                    <Text style={[styles.oS, { color: colors.foreground }]} numberOfLines={1}>{o.addr_text}</Text>
                     <Feather name="map-pin" size={11} color={colors.mutedForeground} />
+                    <Text style={[styles.oS, { color: colors.foreground }]} numberOfLines={1}>{o.addr_text}</Text>
                   </View>
                   {o.eta_min != null && (
                     <View style={styles.infoRow}>
-                      <Text style={[styles.oS, { color: colors.warning }]}>~ {o.eta_min} دقيقة بالسيارة</Text>
                       <MaterialCommunityIcons name="car-clock" size={11} color={colors.warning} />
+                      <Text style={[styles.oS, { color: colors.warning }]}>~ {o.eta_min} دقيقة بالسيارة</Text>
                     </View>
                   )}
                 </View>
 
                 <View style={styles.oBot}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.priceV, { color: colors.primary }]}>{o.total} ر.س</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => reject(o.id)} style={[styles.rejectBtn, { borderColor: colors.danger }]}>
+                    <Text style={[styles.rejectT, { color: colors.danger }]}>رفض</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => accept(o.id)} style={[styles.acceptBtn, { backgroundColor: colors.primary }]}>
                     <Feather name="check" size={12} color="#FFF" />
                     <Text style={styles.acceptT}>قبول</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => reject(o.id)} style={[styles.rejectBtn, { borderColor: colors.danger }]}>
-                    <Text style={[styles.rejectT, { color: colors.danger }]}>رفض</Text>
-                  </TouchableOpacity>
-                  <View style={{ flex: 1, alignItems: "flex-end" }}>
-                    <Text style={[styles.priceV, { color: colors.primary }]}>{o.total} ر.س</Text>
-                  </View>
                 </View>
               </TouchableOpacity>
             ))}
@@ -438,38 +438,38 @@ export default function ProviderHome() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  header: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, marginBottom: 14, gap: 10 },
+  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, marginBottom: 14, gap: 10 },
   icon: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  notifDot: { position: "absolute", top: 8, left: 9, width: 8, height: 8, borderRadius: 4 },
+  notifDot: { position: "absolute", top: 8, start: 9, width: 8, height: 8, borderRadius: 4 },
   greet: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
   name: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   avatar: { width: 40, height: 40, borderRadius: 20 },
-  statusBox: { marginHorizontal: 16, padding: 16, borderRadius: 18, flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
+  statusBox: { marginHorizontal: 16, padding: 16, borderRadius: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 12 },
   statusL: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
   statusS: { color: "rgba(255,255,255,0.85)", fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
-  statsRow: { flexDirection: "row-reverse", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
+  statsRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
   statC: { flex: 1, padding: 12, borderRadius: 14, alignItems: "center" },
   statI: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   statV: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   statL: { fontFamily: "Tajawal_500Medium", fontSize: 9, marginTop: 1, textAlign: "center" },
   mapWrap: { marginHorizontal: 16, height: 200, borderRadius: 18, overflow: "hidden", marginBottom: 14, position: "relative" },
-  mapBadge: { position: "absolute", top: 10, right: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100, flexDirection: "row-reverse", alignItems: "center", gap: 6 },
+  mapBadge: { position: "absolute", top: 10, end: 10, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100, flexDirection: "row", alignItems: "center", gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
   mapBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
 
-  sectionH: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 10 },
+  sectionH: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 10 },
   sectionT: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   order: { padding: 12, borderRadius: 16, gap: 10 },
-  oTop: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" },
-  oTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
-  distBadge: { flexDirection: "row-reverse", alignItems: "center", gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100 },
+  oTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  oTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
+  distBadge: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100 },
   distT: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
-  infoRow: { flexDirection: "row-reverse", alignItems: "center", gap: 6 },
-  oS: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "right" },
-  oBot: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginTop: 4 },
+  infoRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  oS: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
+  oBot: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 },
   priceV: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
-  acceptBtn: { flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
+  acceptBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
   acceptT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   rejectBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1 },
   rejectT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   gpsRefreshBtn: {
     position: "absolute",
     bottom: 10,
-    left: 10,
+    start: 10,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   locInfo: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     gap: 8,
     marginHorizontal: 16,

@@ -145,7 +145,7 @@ function WebMap({ region, style, markers, polyline, scrollEnabled = true, zoomEn
             style: {
               position: "absolute",
               top: 0,
-              left: 0,
+              start: 0,
               width: containerW,
               height: containerH,
               pointerEvents: "none",
