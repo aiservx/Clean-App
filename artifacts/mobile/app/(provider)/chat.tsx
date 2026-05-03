@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
@@ -47,7 +47,6 @@ export default function ProviderChat() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => { markRead(); }, []);
 
   const load = useCallback(async () => {
     if (!session?.user) { setLoading(false); return; }
@@ -98,6 +97,26 @@ export default function ProviderChat() {
   }, [session]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Reload + clear badge every time the screen comes into focus (e.g. returning from a chat)
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      markRead();
+    }, [load, markRead])
+  );
+
+  // Realtime: new message → reload room list instantly
+  useEffect(() => {
+    if (!session?.user) return;
+    const userId = session.user.id;
+    const topic = `provider-chat-inbox-live-${userId}-${Math.random().toString(36).slice(2, 8)}`;
+    const ch = supabase.channel(topic);
+    ch.on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => {
+      load();
+    }).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [session, load]);
 
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 

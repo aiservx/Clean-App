@@ -468,7 +468,13 @@ export default function TrackingScreen() {
                 : isProvider ? "متابعة طلب العميل" : "متابعة الطلب"}
           </Text>
         </View>
-        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={[styles.iconCircle, { backgroundColor: colors.muted }]}
+          onPress={() => isProvider
+            ? router.replace("/(provider)/dashboard" as any)
+            : router.replace("/(tabs)/bookings" as any)
+          }
+        >
           <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
       </View>

@@ -6,7 +6,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -61,8 +61,6 @@ export default function ChatInboxScreen() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => { markRead(); }, []);
 
   const loadConversations = useCallback(async () => {
     if (!session?.user) { setLoading(false); return; }
@@ -145,6 +143,26 @@ export default function ChatInboxScreen() {
   }, [session, profile]);
 
   useEffect(() => { loadConversations(); }, [loadConversations]);
+
+  // Reload + clear badge every time the screen comes into focus (e.g. returning from a chat)
+  useFocusEffect(
+    useCallback(() => {
+      loadConversations();
+      markRead();
+    }, [loadConversations, markRead])
+  );
+
+  // Realtime: new message anywhere → reload conversation list instantly
+  useEffect(() => {
+    if (!session?.user) return;
+    const userId = session.user.id;
+    const topic = `chat-inbox-live-${userId}-${Math.random().toString(36).slice(2, 8)}`;
+    const ch = supabase.channel(topic);
+    ch.on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => {
+      loadConversations();
+    }).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [session, loadConversations]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

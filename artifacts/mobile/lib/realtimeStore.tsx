@@ -424,7 +424,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     subscribe(uid);
     getAlreadyRated().then((s) => { ratedSetRef.current = s; });
     return () => { removeAllChannels(); };
-  }, [uid, isCustomer]);
+  }, [uid, isCustomer, subscribe]);
 
   // ── Public API ──────────────────────────────────────────────────────────
 

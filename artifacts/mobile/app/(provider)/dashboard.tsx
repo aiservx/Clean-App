@@ -47,6 +47,7 @@ export default function ProviderHome() {
   const [orders, setOrders] = useState<NearbyOrder[]>([]);
   const [stats, setStats] = useState({ today: 0, earnings: 0, rating: 0 });
   const [myLoc, setMyLoc] = useState<ResolvedAddress | null>(null);
+  const [mapAnimTrigger, setMapAnimTrigger] = useState(0);
 
   const loadAll = useCallback(async () => {
     if (!session?.user) {
@@ -130,19 +131,54 @@ export default function ProviderHome() {
     loadAll();
   }, [loadAll]);
 
-  // ── Live refresh via global event dispatcher (no extra channel needed) ──
+  const refreshOrders = useCallback(async () => {
+    if (!session?.user) return;
+    const uid = session.user.id;
+    try {
+      const { data: pendingRows } = await supabase
+        .from("bookings")
+        .select("id, status, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
+        .or(`provider_id.is.null,provider_id.eq.${uid}`)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      const ref = myLoc ? { lat: myLoc.lat, lng: myLoc.lng } : null;
+      const mapped: NearbyOrder[] = (pendingRows ?? []).map((b: any) => {
+        const addr = b.addresses;
+        const lat = addr?.lat ?? null;
+        const lng = addr?.lng ?? null;
+        const d = ref && lat && lng ? distanceKm(ref, { lat, lng }) : null;
+        return {
+          id: b.id,
+          service_title: b.services?.title_ar || "خدمة",
+          client_name: b.profiles?.full_name || "عميل",
+          client_phone: b.profiles?.phone || null,
+          scheduled_at: b.scheduled_at,
+          total: Number(b.total || 0),
+          notes: b.notes,
+          addr_lat: lat,
+          addr_lng: lng,
+          addr_text: [addr?.district, addr?.city].filter(Boolean).join("، ") || addr?.street || "—",
+          d_km: d,
+          eta_min: d != null ? Math.max(5, Math.round((d / 30) * 60)) : null,
+        };
+      });
+      setOrders(mapped);
+    } catch {}
+  }, [session, myLoc]);
+
+  // ── Live refresh via global event dispatcher ───────────────────────────
   useRealtimeEvents(
     (event) => {
       if (event.type === "provider_order_updated" || event.type === "new_booking") {
         console.log("[provider-dashboard] realtime event:", event.type, (event as any).bookingId);
-        loadAll();
+        refreshOrders();
       }
     },
-    [loadAll],
+    [refreshOrders],
   );
 
   // T020 — Live location broadcast every 5s while provider is online.
-  // Customer map + tracking page subscribe via Supabase Realtime to providers table.
   useEffect(() => {
     if (!online || !session?.user) return;
     let cancelled = false;
@@ -153,11 +189,9 @@ export default function ProviderHome() {
         if (cancelled || !r) return;
         await supabase.from("providers").update({ current_lat: r.lat, current_lng: r.lng }).eq("id", uid);
         setMyLoc(r);
-      } catch (e) {
-        // swallow — next tick will retry
-      }
+      } catch {}
     };
-    tick(); // immediate
+    tick();
     const id = setInterval(tick, 5000);
     return () => { cancelled = true; clearInterval(id); };
   }, [online, session]);
@@ -173,7 +207,6 @@ export default function ProviderHome() {
     setOnline(v);
     if (!session?.user) return;
     if (v) {
-      // When going online: grab GPS location and publish it immediately
       const loc = await getCurrentResolved();
       await supabase.from("providers").update({
         available: true,
@@ -181,7 +214,6 @@ export default function ProviderHome() {
         current_lng: loc?.lng ?? null,
       }).eq("id", session.user.id);
     } else {
-      // When going offline: clear location so provider disappears from customer map
       await supabase.from("providers").update({
         available: false,
         current_lat: null,
@@ -193,20 +225,24 @@ export default function ProviderHome() {
   const accept = async (id: string) => {
     if (!session?.user) return;
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Optimistically remove from list immediately
+    setOrders((prev) => prev.filter((o) => o.id !== id));
     const { error } = await supabase
       .from("bookings")
       .update({ provider_id: session.user.id, status: "accepted" })
       .eq("id", id)
       .in("status", ["pending"]);
-    if (error) return Alert.alert("خطأ", error.message);
+    if (error) {
+      Alert.alert("خطأ", error.message);
+      loadAll(); // restore on error
+      return;
+    }
     await Promise.all([
       supabase.from("booking_status_log").insert({ booking_id: id, status: "accepted", note: "قبل المزود الطلب" }),
-      // Hide provider from customer main map once they accept a booking
       supabase.from("providers").update({ available: false }).eq("id", session.user.id),
     ]);
     setOnline(false);
     Alert.alert("✓ تم القبول", "تم تخصيص الطلب لك");
-    loadAll();
   };
 
   const reject = async (id: string) => {
@@ -320,6 +356,7 @@ export default function ProviderHome() {
             style={StyleSheet.absoluteFill}
             region={region}
             markers={markers}
+            animateTrigger={mapAnimTrigger}
           />
           <View style={[styles.mapBadge, { backgroundColor: "#FFF" }]}>
             <View style={[styles.dot, { backgroundColor: orders.length > 0 ? colors.success : colors.mutedForeground }]} />
@@ -333,8 +370,8 @@ export default function ProviderHome() {
               const loc = await getCurrentResolved();
               if (loc) {
                 setMyLoc(loc);
+                setMapAnimTrigger((t) => t + 1);
                 await supabase.from("providers").update({ current_lat: loc.lat, current_lng: loc.lng }).eq("id", session.user.id);
-                Alert.alert("تم", "تم تحديث موقعك بنجاح");
               } else {
                 Alert.alert("خطأ", "تعذر الحصول على الموقع — تأكد من تفعيل GPS");
               }

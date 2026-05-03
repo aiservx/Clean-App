@@ -20,6 +20,7 @@ type Props = {
   zoomEnabled?: boolean;
   pointerEvents?: any;
   onMarkerPress?: (id: string) => void;
+  animateTrigger?: number;
 };
 
 function deltaToZoom(delta: number) {

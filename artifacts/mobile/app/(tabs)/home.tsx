@@ -191,6 +191,8 @@ export default function HomeScreen() {
     return () => clearInterval(id);
   }, []);
 
+  const [mapAnimTrigger, setMapAnimTrigger] = useState(0);
+
   const requestLocation = async () => {
     setLocating(true);
     if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.geolocation) {
@@ -202,13 +204,17 @@ export default function HomeScreen() {
             street: null, district: null, city: null, region: null, country: null,
             formatted: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`,
           });
+          setMapAnimTrigger((t) => t + 1);
         },
         () => {},
         { timeout: 6000, maximumAge: 60000 }
       );
     }
     const r = await getCurrentResolved();
-    if (r) setLoc(r);
+    if (r) {
+      setLoc(r);
+      setMapAnimTrigger((t) => t + 1);
+    }
     setLocating(false);
   };
 
@@ -279,6 +285,7 @@ export default function HomeScreen() {
           region={region}
           scrollEnabled={true}
           zoomEnabled={true}
+          animateTrigger={mapAnimTrigger}
           markers={nearbyProviders
             .filter((p) => p.current_lat && p.current_lng)
             .map((p) => ({

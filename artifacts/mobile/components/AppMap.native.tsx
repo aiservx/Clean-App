@@ -23,6 +23,8 @@ type Props = {
   zoomEnabled?: boolean;
   pointerEvents?: any;
   onMarkerPress?: (id: string) => void;
+  /** Increment this number to force the map to animate to `region` even if lat/lng didn't change */
+  animateTrigger?: number;
 };
 
 // ── Animated marker that smoothly moves to new coordinates ─────────────────
@@ -119,6 +121,7 @@ export default function AppMap({
   zoomEnabled = true,
   pointerEvents,
   onMarkerPress,
+  animateTrigger,
 }: Props) {
   const mapRef = useRef<MapView>(null);
   const isFirstRender = useRef(true);
@@ -129,7 +132,7 @@ export default function AppMap({
       return;
     }
     mapRef.current?.animateToRegion(region, 600);
-  }, [region.latitude, region.longitude]);
+  }, [region.latitude, region.longitude, animateTrigger]);
 
   return (
     <View style={[styles.wrap, style]} pointerEvents={pointerEvents}>
