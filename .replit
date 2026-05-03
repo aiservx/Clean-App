@@ -144,7 +144,7 @@ externalPort = 3001
 [userenv.shared]
 EXPO_PUBLIC_SUPABASE_URL = "https://mffdpjwtwseftaqrslgx.supabase.co"
 EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D"
-EXPO_TOKEN = "acyVVoIgjk-jsB4Sf32bkhWf_7xnkkf8islfv3Yy"
+EXPO_TOKEN = "RwG93MQMv8Ljb2_-R9Pjm4IDoP3cwfD41PtVbEFU"
 SUPABASE_URL = "https://mffdpjwtwseftaqrslgx.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8"
 
