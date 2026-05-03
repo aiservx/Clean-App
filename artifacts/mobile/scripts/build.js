@@ -145,7 +145,12 @@ async function startMetro(expoPublicDomain, expoPublicReplId) {
     ...process.env,
     EXPO_PUBLIC_DOMAIN: expoPublicDomain,
     EXPO_PUBLIC_REPL_ID: expoPublicReplId,
+    // Run Metro anonymously during static build — EXPO_TOKEN is only needed
+    // for EAS cloud operations (build/submit/update), not for local bundling.
+    // Keeping it causes ApiV2Error when expo-updates is installed.
+    EXPO_OFFLINE: "1",
   };
+  delete env.EXPO_TOKEN;
 
   if (expoPublicReplId) {
     console.log(`Setting EXPO_PUBLIC_REPL_ID=${expoPublicReplId}`);
