@@ -208,54 +208,8 @@ export async function sendPushNotification(
       return;
     }
 
-    // ── Fallback: direct Supabase query ─────────────────────────────────
-    // NOTE: This will silently return 0 tokens if the push_tokens table has
-    // RLS enabled (Supabase default). Fix: set EXPO_PUBLIC_API_URL above.
-    console.log("[notifications] EXPO_PUBLIC_API_URL not set — using direct Supabase fallback");
-    const { data: tokens } = await supabase
-      .from("push_tokens")
-      .select("token")
-      .eq("user_id", userId);
-
-    if (!tokens?.length) {
-      console.log("[notifications] sendPush: no tokens for user", userId);
-      return;
-    }
-
-    const resolvedChannel =
-      channelId ??
-      (categoryIdentifier === "new_booking"
-        ? "new_booking"
-        : categoryIdentifier === "booking_update"
-        ? "booking_status"
-        : "default");
-
-    const messages = tokens.map((t: any) => ({
-      to: t.token,
-      title,
-      body,
-      data: data ?? {},
-      sound: "default",
-      priority: "high",
-      channelId: resolvedChannel,
-      ...(categoryIdentifier ? { categoryId: categoryIdentifier } : {}),
-    }));
-
-    const res = await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Accept-Encoding": "gzip, deflate",
-      },
-      body: JSON.stringify(messages),
-    });
-
-    const json = await res.json().catch(() => null);
-    console.log(
-      `[notifications] sendPush direct to ${tokens.length} device(s):`,
-      json?.data?.[0]?.status ?? res.status,
-    );
+    // No API URL configured — push cannot be sent without server relay
+    console.warn("[notifications] EXPO_PUBLIC_API_URL not set — push skipped. Set it in eas.json and rebuild.");
   } catch (e) {
     console.log("[notifications] sendPush failed:", (e as Error).message);
   }
@@ -332,41 +286,7 @@ export async function notifyAvailableProviders(
         ),
       );
     } else {
-      // Fallback: batch direct
-      const { data: tokenRows } = await supabase
-        .from("push_tokens")
-        .select("token, user_id")
-        .in("user_id", providerIds);
-
-      if (!tokenRows?.length) {
-        console.log("[notifications] notifyProviders: no push tokens found");
-      } else {
-        const messages = tokenRows.map((t: any) => ({
-          to: t.token,
-          title,
-          body,
-          data: data ?? {},
-          sound: "default",
-          priority: "high",
-          channelId: "new_booking",
-          categoryId: "new_booking",
-          ttl: 300,
-        }));
-
-        const res = await fetch("https://exp.host/--/api/v2/push/send", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "Accept-Encoding": "gzip, deflate",
-          },
-          body: JSON.stringify(messages),
-        });
-
-        const json = await res.json().catch(() => null);
-        const successCount = (json?.data ?? []).filter((d: any) => d?.status === "ok").length;
-        console.log(`[notifications] notifyProviders: ${successCount}/${messages.length} delivered`);
-      }
+      console.warn("[notifications] notifyAvailableProviders: EXPO_PUBLIC_API_URL not set — push skipped. Set it in eas.json and rebuild.");
     }
 
     // Save in-app notification records for all providers (non-blocking)

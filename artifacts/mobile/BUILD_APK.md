@@ -29,7 +29,35 @@
 
 ---
 
-## آخر Build ناجح — إصلاحات UX (Build #3) ✅
+## آخر Build ناجح — إصلاحات إنتاجية شاملة (Build #5) ✅
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `aa4b7db0-e5a7-4d65-84b0-0aea411804bd` |
+| Platform | Android |
+| Profile | preview |
+| Status | **finished** |
+| **تنزيل APK** | **https://expo.dev/artifacts/eas/n2EFfmjpkzGPfEpk5YzLRc.apk** |
+| صفحة الـ Build | https://expo.dev/accounts/clean-beaton/projects/mobile/builds/aa4b7db0-e5a7-4d65-84b0-0aea411804bd |
+
+### الإصلاحات في Build #5
+- `EXPO_PUBLIC_API_URL` ثابت لجميع البيئات (dev/preview/production): `https://clean-app--create43.replit.app`
+- إزالة fallback Supabase من notifications.ts — كل الإشعارات عبر API Server فقط
+- RTL يُفعَّل فوراً عند أول تثبيت بدون الحاجة لإعادة تشغيل ثانية (expo-updates reload)
+- Onboarding: `inverted={I18nManager.isRTL}` لبدء الشرائح من اليمين
+- Push retry: 3 محاولات مع exponential backoff في api-server
+- API Server deployed on stable infrastructure: `https://clean-app--create43.replit.app`
+
+## Build #4 — فشل البناء (errored)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `5fc311a9-e4e8-4de8-8d30-36029b56698d` |
+| Status | **errored** — `newArchEnabled: false` غير متوافق مع RN 0.81 |
+
+---
+
+## آخر Build مكتمل — إصلاحات UX (Build #3) ✅
 
 | الحقل | القيمة |
 |-------|--------|

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ViewToken } from "react-native";
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Platform, ViewToken, I18nManager } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
@@ -51,6 +51,7 @@ export default function OnboardingScreen() {
         data={SLIDES}
         horizontal
         pagingEnabled
+        inverted={I18nManager.isRTL}
         showsHorizontalScrollIndicator={false}
         onViewableItemsChanged={onViewRef.current}
         viewabilityConfig={viewConfigRef.current}

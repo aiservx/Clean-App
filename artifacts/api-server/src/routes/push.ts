@@ -163,6 +163,57 @@ async function fetchPushTokens(userId: string): Promise<string[]> {
     .filter((t): t is string => typeof t === "string" && t.length > 0);
 }
 
+// ── Send to Expo Push API with up to `maxAttempts` retries ────────────────
+
+type ExpoMessage = {
+  to: string;
+  title: unknown;
+  body: unknown;
+  data: Record<string, unknown>;
+  sound: string;
+  priority: string;
+  channelId: string;
+  categoryId?: string;
+};
+
+async function sendToExpoWithRetry(messages: ExpoMessage[], maxAttempts: number): Promise<number> {
+  let attempt = 0;
+  while (attempt < maxAttempts) {
+    attempt++;
+    try {
+      const pushRes = await fetch("https://exp.host/--/api/v2/push/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Accept-Encoding": "gzip, deflate",
+        },
+        body: JSON.stringify(messages),
+      });
+      if (!pushRes.ok) {
+        logger.warn({ status: pushRes.status, attempt }, "push: Expo API non-OK, retrying");
+        if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 500 * attempt));
+        continue;
+      }
+      const pushJson: unknown = await pushRes.json().catch(() => null);
+      const results =
+        typeof pushJson === "object" &&
+        pushJson !== null &&
+        "data" in pushJson &&
+        Array.isArray((pushJson as Record<string, unknown>).data)
+          ? ((pushJson as Record<string, unknown>).data as unknown[])
+          : [];
+      return results.filter(
+        (d) => typeof d === "object" && d !== null && (d as Record<string, unknown>).status === "ok",
+      ).length;
+    } catch (e) {
+      logger.warn({ err: e, attempt }, "push: Expo API error, retrying");
+      if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 500 * attempt));
+    }
+  }
+  return 0;
+}
+
 // ── POST /api/push ─────────────────────────────────────────────────────────
 // Requires: Authorization: Bearer <supabase-access-token>
 // Caller must share a booking with the target userId.
@@ -221,27 +272,7 @@ router.post("/push", async (req: Request, res: Response) => {
         : {}),
     }));
 
-    const pushRes = await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Accept-Encoding": "gzip, deflate",
-      },
-      body: JSON.stringify(messages),
-    });
-
-    const pushJson: unknown = await pushRes.json().catch(() => null);
-    const results =
-      typeof pushJson === "object" &&
-      pushJson !== null &&
-      "data" in pushJson &&
-      Array.isArray((pushJson as Record<string, unknown>).data)
-        ? ((pushJson as Record<string, unknown>).data as unknown[])
-        : [];
-    const successCount = results.filter(
-      (d) => typeof d === "object" && d !== null && (d as Record<string, unknown>).status === "ok",
-    ).length;
+    const successCount = await sendToExpoWithRetry(messages, 3);
 
     logger.info(
       { callerId, targetUserId: userId, sent: successCount, total: tokens.length },

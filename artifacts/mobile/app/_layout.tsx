@@ -136,15 +136,24 @@ function PushRegistrar() {
   return null;
 }
 
-// ── RTL: default to Arabic RTL at module scope ──
-// On first install isRTL is false; we set forceRTL(true) so the *next* launch
-// renders RTL.  The I18nProvider (i18n.tsx) reconciles this on mount: it reads
-// the stored language from AsyncStorage and calls forceRTL(lang==="ar") — which
-// overwrites whatever we set here.  Because forceRTL only affects the *next*
-// launch and the I18nProvider runs *after* this module-scope code, the provider
-// always has the last word on what gets persisted.
+// ── RTL: force Arabic RTL from the very first launch ──────────────────────
+// forceRTL only takes effect on the NEXT JS reload. If the app started without
+// RTL (fresh install), we apply it immediately and trigger a JS-level reload
+// via expo-updates so the user never sees an LTR layout.
 I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+if (!I18nManager.isRTL) {
+  I18nManager.forceRTL(true);
+  // Dynamically require expo-updates to avoid crashes on web/Expo Go
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Updates = require("expo-updates");
+    if (typeof Updates?.reloadAsync === "function") {
+      Updates.reloadAsync().catch(() => {});
+    }
+  } catch {
+    // expo-updates unavailable (web / Expo Go) — RTL will apply on next cold start
+  }
+}
 
 // Web: direction is handled by I18nProvider via DOM
 if (typeof document !== "undefined") {

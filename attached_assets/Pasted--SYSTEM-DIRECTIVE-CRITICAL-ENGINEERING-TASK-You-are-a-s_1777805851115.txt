@@ -1,0 +1,241 @@
+# SYSTEM DIRECTIVE — CRITICAL ENGINEERING TASK
+
+You are a senior production engineer operating on a live mobile application (React Native + Expo + Supabase).
+You are NOT allowed to provide partial fixes, temporary workarounds, or explanations without implementation.
+
+Your task is to **fully fix, validate, and productionize** the system based on the following audit.
+
+---
+
+# 🔴 PRIMARY OBJECTIVE
+
+Resolve ALL critical system failures with production-grade solutions:
+
+1. App crash on APK launch
+2. Push notifications not working in production
+3. RTL inconsistency and onboarding bug
+4. Infrastructure gaps (API server reliability)
+
+You must deliver:
+
+* Working APK build (no crash)
+* Fully functional push notifications (user ↔ provider)
+* Correct RTL behavior from first launch
+* Stable backend infrastructure (no temporary hosting)
+
+---
+
+# 🚫 NON-NEGOTIABLE RULES
+
+* No mock fixes
+* No "try this" suggestions
+* No skipping steps
+* No assumptions without verification
+* Every fix must be TESTED and VERIFIED
+* You must MODIFY FILES directly
+* You must simulate production conditions
+
+---
+
+# 🧩 TASK BREAKDOWN
+
+## TASK 1 — FIX CRASH (CRITICAL)
+
+### ACTIONS:
+
+1. Open: app.config.ts
+2. Locate:
+   newArchEnabled: true
+3. CHANGE TO:
+   newArchEnabled: false
+
+### THEN:
+
+* Clear cache
+* Rebuild APK (production profile)
+* Ensure app launches successfully on real device
+
+### VALIDATION:
+
+* App opens without crash
+* No native exceptions in logs
+
+---
+
+## TASK 2 — FIX PUSH NOTIFICATIONS (CRITICAL)
+
+### STEP A — FIX ENVIRONMENT
+
+Open: eas.json
+Add inside production.env:
+
+"EXPO_PUBLIC_API_URL": "https://your-production-server.com"
+
+---
+
+### STEP B — DEPLOY BACKEND (MANDATORY)
+
+You MUST deploy a persistent backend (NO Replit free instance).
+
+Choose ONE:
+
+* Railway (preferred)
+* Render
+* Supabase Edge Functions (best option)
+
+---
+
+### STEP C — IMPLEMENT SECURE PUSH SERVICE
+
+Backend must:
+
+1. Use SUPABASE_SERVICE_ROLE_KEY
+2. Call RPC:
+   get_push_tokens_for_users
+3. Send notifications via Expo Push API
+
+---
+
+### STEP D — REMOVE CLIENT FALLBACK
+
+In notifications.ts:
+
+❌ REMOVE:
+Direct Supabase query fallback for push_tokens
+
+✅ ENSURE:
+All push requests go through API server ONLY
+
+---
+
+### VALIDATION:
+
+* User A creates booking
+* Provider B receives push while app CLOSED
+* Notification includes:
+
+  * sound = default
+  * correct channel
+  * correct payload
+
+---
+
+## TASK 3 — FIX RTL (FOUNDATIONAL)
+
+### STEP A — FORCE RTL SAFELY
+
+In root layout:
+
+IF (I18nManager.isRTL === false):
+call forceRTL(true)
+trigger app reload (expo-updates)
+
+---
+
+### STEP B — ENSURE CONSISTENT LAYOUT
+
+Audit all components:
+
+* Replace hardcoded:
+  flexDirection: "row"
+
+WITH:
+dynamic RTL-safe logic OR rely on RN auto-mirroring
+
+---
+
+### VALIDATION:
+
+* First launch is RTL (no second restart needed)
+* All screens aligned correctly
+
+---
+
+## TASK 4 — FIX ONBOARDING FLOW
+
+Open: onboarding.tsx
+
+Modify FlatList:
+
+ADD:
+inverted={I18nManager.isRTL}
+
+---
+
+### VALIDATION:
+
+* First slide appears correctly in Arabic
+* Swiping direction is natural
+
+---
+
+## TASK 5 — INFRASTRUCTURE HARDENING
+
+### MUST IMPLEMENT:
+
+* Move API server to stable host
+* Add environment variables securely
+* Ensure server never sleeps
+* Add retry logic for push sending
+
+---
+
+## TASK 6 — FULL SYSTEM TEST
+
+You MUST simulate:
+
+1. New user signup
+2. Booking creation
+3. Provider receives:
+
+   * realtime update ✅
+   * push notification ✅
+4. Status update:
+
+   * user receives push ✅
+5. Chat message:
+
+   * realtime + push ✅
+
+---
+
+# ✅ ACCEPTANCE CRITERIA (STRICT)
+
+You are NOT DONE until ALL are TRUE:
+
+✔ APK does NOT crash on launch
+✔ Push notifications work when app is CLOSED
+✔ No reliance on client-side token fetching
+✔ RTL works from FIRST launch
+✔ Onboarding starts from first slide
+✔ Backend is deployed on stable infra
+✔ No console errors in production
+
+---
+
+# 📦 FINAL OUTPUT REQUIRED
+
+You must provide:
+
+1. List of modified files
+2. Exact code changes
+3. Deployment URL of backend
+4. Test results (step-by-step proof)
+5. Confirmation that all acceptance criteria passed
+
+---
+
+# ⚠️ FAILURE CONDITIONS
+
+If you:
+
+* Skip backend deployment
+* Keep Replit temporary server
+* Leave fallback logic
+* Do not test push in CLOSED state
+
+→ TASK IS FAILED
+
+---
+
+# EXECUTE NOW
