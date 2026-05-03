@@ -331,20 +331,34 @@ $$;
 -- =========== TRIGGERS ===========
 create or replace function public.handle_new_user()
 returns trigger as $$
-declare _role role_t;
+declare
+  _role_text text;
+  _role      role_t;
 begin
-  _role := coalesce((new.raw_user_meta_data->>'role')::role_t, 'user'::role_t);
+  -- Safely extract role, defaulting to 'user' on any issue
+  _role_text := coalesce(nullif(trim(coalesce(new.raw_user_meta_data->>'role', '')), ''), 'user');
+  if _role_text not in ('user', 'provider', 'admin') then
+    _role_text := 'user';
+  end if;
+  _role := _role_text::role_t;
+
   insert into public.profiles (id, full_name, phone, email, role)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'full_name', ''),
-    coalesce(new.raw_user_meta_data->>'phone', new.phone),
+    nullif(trim(coalesce(new.raw_user_meta_data->>'full_name', '')), ''),
+    nullif(trim(coalesce(new.raw_user_meta_data->>'phone', '')), ''),
     new.email,
     _role
   ) on conflict (id) do nothing;
+
   if _role = 'provider' then
     insert into public.providers (id) values (new.id) on conflict (id) do nothing;
   end if;
+
+  return new;
+exception when others then
+  -- Never block auth even if profile creation fails
+  raise warning 'handle_new_user failed for uid=%: %', new.id, sqlerrm;
   return new;
 end;
 $$ language plpgsql security definer;
