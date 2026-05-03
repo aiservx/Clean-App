@@ -180,19 +180,19 @@ export default function ProviderEdit() {
 
         {/* Basic info */}
         <Text style={[s.l, { color: colors.foreground }]}>الاسم الكامل</Text>
-        <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground }]} value={name} onChangeText={setName} textAlign="right" />
+        <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground }]} value={name} onChangeText={setName} />
 
         <Text style={[s.l, { color: colors.foreground }]}>نبذة عنك</Text>
-        <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground, height: 80, paddingTop: 12 }]} value={bio} onChangeText={setBio} multiline textAlign="right" />
+        <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground, height: 80, paddingTop: 12 }]} value={bio} onChangeText={setBio} multiline />
 
         <View style={{ flexDirection: "row", gap: 10 }}>
           <View style={{ flex: 1 }}>
             <Text style={[s.l, { color: colors.foreground }]}>سنوات الخبرة</Text>
-            <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground }]} value={exp} onChangeText={setExp} keyboardType="numeric" textAlign="right" />
+            <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground }]} value={exp} onChangeText={setExp} keyboardType="numeric" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[s.l, { color: colors.foreground }]}>السعر/الساعة (ر.س)</Text>
-            <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground }]} value={price} onChangeText={setPrice} keyboardType="numeric" textAlign="right" />
+            <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground }]} value={price} onChangeText={setPrice} keyboardType="numeric" />
           </View>
         </View>
 

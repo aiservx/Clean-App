@@ -285,4 +285,130 @@ router.post("/push", async (req: Request, res: Response) => {
   }
 });
 
+// ── POST /api/push/batch ──────────────────────────────────────────────────
+// Send push notifications to multiple users in a single request.
+// Body: { userIds: string[], title, body, data?, categoryIdentifier?, channelId?, bookingId? }
+
+router.post("/push/batch", async (req: Request, res: Response) => {
+  const callerId = await verifyJwt(req.headers.authorization);
+  if (!callerId) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+
+  const { userIds, title, body, data, categoryIdentifier, channelId, bookingId } =
+    (req.body ?? {}) as Record<string, unknown>;
+
+  if (!Array.isArray(userIds) || !userIds.length ||
+      typeof title !== "string" || !title ||
+      typeof body !== "string" || !body) {
+    res.status(400).json({ error: "userIds[], title, and body are required" });
+    return;
+  }
+
+  const validIds = userIds.filter((id): id is string => typeof id === "string" && id.length > 0);
+  if (!validIds.length) {
+    res.json({ sent: 0, total: 0 });
+    return;
+  }
+
+  // Authorize: for new_booking, verify the booking belongs to caller
+  if (categoryIdentifier === "new_booking" && typeof bookingId === "string") {
+    const bookingUrl =
+      `${SUPABASE_URL}/rest/v1/bookings` +
+      `?select=id,status` +
+      `&id=eq.${encodeURIComponent(bookingId)}` +
+      `&user_id=eq.${encodeURIComponent(callerId)}` +
+      `&status=in.(pending,available)` +
+      `&limit=1`;
+    try {
+      const bookingRes = await fetch(bookingUrl, {
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          Accept: "application/json",
+        },
+      });
+      if (!bookingRes.ok) {
+        res.status(403).json({ error: "forbidden" });
+        return;
+      }
+      const bookingRows: unknown = await bookingRes.json();
+      if (!Array.isArray(bookingRows) || bookingRows.length === 0) {
+        res.status(403).json({ error: "forbidden" });
+        return;
+      }
+    } catch {
+      res.status(403).json({ error: "forbidden" });
+      return;
+    }
+  } else {
+    const isAdmin = await callerIsAdmin(callerId);
+    if (!isAdmin) {
+      res.status(403).json({ error: "forbidden — batch requires admin or new_booking proof" });
+      return;
+    }
+  }
+
+  try {
+    // Fetch tokens for all users in one query
+    const idsParam = validIds.map(encodeURIComponent).join(",");
+    const url = `${SUPABASE_URL}/rest/v1/push_tokens?select=token,user_id&user_id=in.(${idsParam})`;
+    const tokRes = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        Accept: "application/json",
+      },
+    });
+    if (!tokRes.ok) {
+      logger.error({ status: tokRes.status }, "push/batch: token fetch failed");
+      res.status(500).json({ error: "token fetch failed" });
+      return;
+    }
+    const rows: unknown = await tokRes.json();
+    const tokens = Array.isArray(rows)
+      ? rows.filter((r): r is Record<string, unknown> => typeof r === "object" && r !== null)
+            .map((r) => r.token)
+            .filter((t): t is string => typeof t === "string" && t.length > 0)
+      : [];
+
+    if (!tokens.length) {
+      res.json({ sent: 0, total: 0, message: "no tokens" });
+      return;
+    }
+
+    const resolvedChannel =
+      typeof channelId === "string" && channelId
+        ? channelId
+        : categoryIdentifier === "new_booking"
+        ? "new_booking"
+        : "default";
+
+    const messages = tokens.map((token) => ({
+      to: token,
+      title,
+      body,
+      data: (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>,
+      sound: "default",
+      priority: "high",
+      channelId: resolvedChannel,
+      ...(typeof categoryIdentifier === "string" && categoryIdentifier
+        ? { categoryId: categoryIdentifier }
+        : {}),
+    }));
+
+    const successCount = await sendToExpoWithRetry(messages, 3);
+
+    logger.info(
+      { callerId, userCount: validIds.length, sent: successCount, total: tokens.length },
+      "push/batch: delivered",
+    );
+    res.json({ sent: successCount, total: tokens.length });
+  } catch (e) {
+    logger.error({ err: e }, "push/batch: send failed");
+    res.status(500).json({ error: "push send failed" });
+  }
+});
+
 export default router;

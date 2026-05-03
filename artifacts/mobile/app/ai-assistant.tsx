@@ -754,7 +754,6 @@ export default function ChatScreen() {
                   "اكتب رسالتك أو اضغط على المايك..."
                 }
                 placeholderTextColor="#94A3B8"
-                textAlign="right"
                 onSubmitEditing={handleSendText}
                 returnKeyType="send"
               />

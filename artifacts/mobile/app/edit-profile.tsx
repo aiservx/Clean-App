@@ -106,7 +106,6 @@ export default function EditProfile() {
                 style={[styles.input, { color: colors.foreground }]}
                 value={f.v}
                 onChangeText={f.s}
-                textAlign="right"
                 editable={!(f as any).disabled}
               />
               <Feather name={f.i as any} size={16} color={colors.mutedForeground} />

@@ -121,7 +121,11 @@ function PushRegistrar() {
 
       // ── User taps the notification body (no action button) ─────────────
       try {
-        if (bookingId) {
+        if (type === "chat_message") {
+          const roomId = data?.roomId || data?.room_id;
+          const senderName = data?.senderName || data?.name || "";
+          router.push({ pathname: "/chat-detail", params: { roomId, bookingId, name: senderName } } as any);
+        } else if (bookingId) {
           if (type === "booking_created") {
             router.push(`/(provider)/booking-details?id=${bookingId}` as any);
           } else {

@@ -60,13 +60,26 @@ export function ChatBadgeProvider({ children }: { children: React.ReactNode }) {
     setUnreadCount(0);
   }, [userId]);
 
+  // Track user's room IDs for filtering realtime messages
+  const roomIdsRef = useRef<Set<string>>(new Set());
+
+  const loadRoomIds = useCallback(async () => {
+    if (!userId) return;
+    const { data: rooms } = await supabase
+      .from("chat_rooms")
+      .select("id")
+      .or(`user_id.eq.${userId},provider_id.eq.${userId}`);
+    roomIdsRef.current = new Set((rooms ?? []).map((r: any) => r.id));
+  }, [userId]);
+
   useEffect(() => {
     if (!userId) {
       setUnreadCount(0);
+      roomIdsRef.current = new Set();
       return;
     }
 
-    refresh();
+    loadRoomIds().then(() => refresh());
 
     const topic = `chat-badge-${userId}-${Math.random().toString(36).slice(2, 8)}`;
     const ch = supabase.channel(topic);
@@ -76,17 +89,30 @@ export function ChatBadgeProvider({ children }: { children: React.ReactNode }) {
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "messages" },
       (payload: any) => {
-        if (payload.new?.sender_id && payload.new.sender_id !== userId) {
-          setUnreadCount((prev) => prev + 1);
-        }
+        const msg = payload.new;
+        if (!msg?.sender_id || msg.sender_id === userId) return;
+        if (msg.room_id && !roomIdsRef.current.has(msg.room_id)) return;
+        setUnreadCount((prev) => prev + 1);
+      }
+    ).subscribe();
+
+    // Also listen for new chat_rooms to update room list
+    const roomCh = supabase.channel(`chat-rooms-${userId}-${Math.random().toString(36).slice(2, 8)}`);
+    roomCh.on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "chat_rooms" },
+      (payload: any) => {
+        const room = payload.new;
+        if (room?.id) roomIdsRef.current.add(room.id);
       }
     ).subscribe();
 
     return () => {
       supabase.removeChannel(ch);
+      supabase.removeChannel(roomCh);
       channelRef.current = null;
     };
-  }, [userId, refresh]);
+  }, [userId, refresh, loadRoomIds]);
 
   return (
     <Ctx.Provider value={{ unreadCount, markRead }}>

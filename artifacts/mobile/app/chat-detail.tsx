@@ -309,7 +309,6 @@ export default function ChatDetail() {
           placeholderTextColor={colors.mutedForeground}
           value={text}
           onChangeText={handleChangeText}
-          textAlign="right"
           multiline
         />
       </View>

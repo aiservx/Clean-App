@@ -15,6 +15,7 @@ import { useRealtimeEvents } from "@/lib/realtimeStore";
 
 type NearbyOrder = {
   id: string;
+  status: string;
   service_title: string;
   client_name: string;
   client_phone: string | null;
@@ -63,10 +64,9 @@ export default function ProviderHome() {
         supabase
           .from("bookings")
           .select("id, status, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
-          .or(`provider_id.is.null,provider_id.eq.${uid}`)
-          .eq("status", "pending")
+          .or(`and(provider_id.is.null,status.eq.pending),and(provider_id.eq.${uid},status.in.(pending,accepted,on_the_way,in_progress))`)
           .order("created_at", { ascending: false })
-          .limit(20),
+          .limit(30),
         supabase
           .from("bookings")
           .select("total, status, created_at")
@@ -95,6 +95,7 @@ export default function ProviderHome() {
         const d = ref && lat && lng ? distanceKm(ref, { lat, lng }) : null;
         return {
           id: b.id,
+          status: b.status || "pending",
           service_title: b.services?.title_ar || "خدمة",
           client_name: b.profiles?.full_name || "عميل",
           client_phone: b.profiles?.phone || null,
@@ -138,10 +139,9 @@ export default function ProviderHome() {
       const { data: pendingRows } = await supabase
         .from("bookings")
         .select("id, status, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
-        .or(`provider_id.is.null,provider_id.eq.${uid}`)
-        .eq("status", "pending")
+        .or(`and(provider_id.is.null,status.eq.pending),and(provider_id.eq.${uid},status.in.(pending,accepted,on_the_way,in_progress))`)
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
       const ref = myLoc ? { lat: myLoc.lat, lng: myLoc.lng } : null;
       const mapped: NearbyOrder[] = (pendingRows ?? []).map((b: any) => {
         const addr = b.addresses;
@@ -150,6 +150,7 @@ export default function ProviderHome() {
         const d = ref && lat && lng ? distanceKm(ref, { lat, lng }) : null;
         return {
           id: b.id,
+          status: b.status || "pending",
           service_title: b.services?.title_ar || "خدمة",
           client_name: b.profiles?.full_name || "عميل",
           client_phone: b.profiles?.phone || null,
@@ -410,7 +411,11 @@ export default function ProviderHome() {
           </View>
         ) : (
           <View style={{ paddingHorizontal: 16, gap: 10 }}>
-            {orders.map((o) => (
+            {orders.map((o) => {
+              const statusLabels: Record<string, string> = { pending: "بانتظار القبول", accepted: "تم القبول", on_the_way: "في الطريق", in_progress: "جاري التنفيذ" };
+              const statusColors: Record<string, string> = { pending: colors.warning, accepted: colors.primary, on_the_way: "#2F80ED", in_progress: "#8B5CF6" };
+              const isPending = o.status === "pending";
+              return (
               <TouchableOpacity
                 key={o.id}
                 activeOpacity={0.92}
@@ -419,16 +424,23 @@ export default function ProviderHome() {
               >
                 <View style={styles.oTop}>
                   <Text style={[styles.oTitle, { color: colors.foreground }]}>{o.service_title}</Text>
-                  {o.d_km != null ? (
-                    <View style={[styles.distBadge, { backgroundColor: colors.accentLight }]}>
-                      <MaterialCommunityIcons name="map-marker-distance" size={10} color={colors.accent} />
-                      <Text style={[styles.distT, { color: colors.accent }]}>{o.d_km < 1 ? `${Math.round(o.d_km * 1000)} م` : `${o.d_km.toFixed(1)} كم`}</Text>
-                    </View>
-                  ) : (
-                    <View style={[styles.distBadge, { backgroundColor: colors.muted }]}>
-                      <Text style={[styles.distT, { color: colors.mutedForeground }]}>—</Text>
-                    </View>
-                  )}
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    {!isPending && (
+                      <View style={[styles.distBadge, { backgroundColor: (statusColors[o.status] || colors.primary) + "18" }]}>
+                        <Text style={[styles.distT, { color: statusColors[o.status] || colors.primary }]}>{statusLabels[o.status] || o.status}</Text>
+                      </View>
+                    )}
+                    {o.d_km != null ? (
+                      <View style={[styles.distBadge, { backgroundColor: colors.accentLight }]}>
+                        <MaterialCommunityIcons name="map-marker-distance" size={10} color={colors.accent} />
+                        <Text style={[styles.distT, { color: colors.accent }]}>{o.d_km < 1 ? `${Math.round(o.d_km * 1000)} م` : `${o.d_km.toFixed(1)} كم`}</Text>
+                      </View>
+                    ) : (
+                      <View style={[styles.distBadge, { backgroundColor: colors.muted }]}>
+                        <Text style={[styles.distT, { color: colors.mutedForeground }]}>—</Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
 
                 <View style={{ gap: 6 }}>
@@ -456,16 +468,26 @@ export default function ProviderHome() {
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.priceV, { color: colors.primary }]}>{o.total} ر.س</Text>
                   </View>
-                  <TouchableOpacity onPress={() => reject(o.id)} style={[styles.rejectBtn, { borderColor: colors.danger }]}>
-                    <Text style={[styles.rejectT, { color: colors.danger }]}>رفض</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => accept(o.id)} style={[styles.acceptBtn, { backgroundColor: colors.primary }]}>
-                    <Feather name="check" size={12} color="#FFF" />
-                    <Text style={styles.acceptT}>قبول</Text>
-                  </TouchableOpacity>
+                  {isPending ? (
+                    <>
+                      <TouchableOpacity onPress={() => reject(o.id)} style={[styles.rejectBtn, { borderColor: colors.danger }]}>
+                        <Text style={[styles.rejectT, { color: colors.danger }]}>رفض</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => accept(o.id)} style={[styles.acceptBtn, { backgroundColor: colors.primary }]}>
+                        <Feather name="check" size={12} color="#FFF" />
+                        <Text style={styles.acceptT}>قبول</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <TouchableOpacity onPress={() => router.push(`/(provider)/booking-details?id=${o.id}` as any)} style={[styles.acceptBtn, { backgroundColor: statusColors[o.status] || colors.primary }]}>
+                      <Feather name="arrow-left" size={12} color="#FFF" />
+                      <Text style={styles.acceptT}>التفاصيل</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </TouchableOpacity>
-            ))}
+              );
+            })}
           </View>
         )}
       </ScrollView>

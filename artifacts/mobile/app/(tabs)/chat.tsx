@@ -331,7 +331,7 @@ const s = StyleSheet.create({
   aiChip: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   aiChipT: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FFF" },
 
-  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 12, textAlign: "right" },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 12 },
 
   emptyWrap: { alignItems: "center", paddingVertical: 40, gap: 8 },
   emptyTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 8 },
@@ -349,7 +349,7 @@ const s = StyleSheet.create({
   avatarBadgeT: { color: "#FFF", fontSize: 9, fontFamily: "Tajawal_700Bold" },
   convInfo: { flex: 1, alignItems: colAlign },
   convNameRow: { flexDirection: rowDir, justifyContent: "space-between", alignItems: "center", width: "100%" },
-  convName: { fontSize: 14, flex: 1, textAlign: "right" },
+  convName: { fontSize: 14, flex: 1 },
   convTime: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   convMsgRow: { flexDirection: rowDir, alignItems: "center", width: "100%", marginTop: 4, gap: 6 },
   convMsg: { fontSize: 12 },
