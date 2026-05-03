@@ -3,6 +3,8 @@ import * as Device from "expo-device";
 import { Platform } from "react-native";
 import { supabase } from "./supabase";
 
+const PUSH_API_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+
 // ── Foreground handler: always show alert + sound + badge ──────────────────
 if (Platform.OS !== "web") {
   try {
@@ -21,14 +23,9 @@ if (Platform.OS !== "web") {
 }
 
 // ── Android Notification Channels ─────────────────────────────────────────
-// Must be created before registering for push. Each channel controls
-// sound/vibration/importance independently so different event types
-// can have different behaviours.
-
 async function createAndroidChannels() {
   if (Platform.OS !== "android") return;
   try {
-    // Default channel — general notifications
     await Notifications.setNotificationChannelAsync("default", {
       name: "الإشعارات العامة",
       importance: Notifications.AndroidImportance.HIGH,
@@ -37,8 +34,6 @@ async function createAndroidChannels() {
       sound: "default",
       description: "إشعارات عامة من تطبيق نظافة",
     });
-
-    // New booking alert — MAX importance for providers
     await Notifications.setNotificationChannelAsync("new_booking", {
       name: "طلبات جديدة",
       importance: Notifications.AndroidImportance.MAX,
@@ -49,8 +44,6 @@ async function createAndroidChannels() {
       enableVibrate: true,
       showBadge: true,
     });
-
-    // Booking status updates
     await Notifications.setNotificationChannelAsync("booking_status", {
       name: "تحديثات الطلب",
       importance: Notifications.AndroidImportance.HIGH,
@@ -59,8 +52,6 @@ async function createAndroidChannels() {
       sound: "default",
       description: "تحديثات حالة الحجوزات",
     });
-
-    // Chat messages
     await Notifications.setNotificationChannelAsync("chat", {
       name: "رسائل المحادثة",
       importance: Notifications.AndroidImportance.HIGH,
@@ -69,8 +60,6 @@ async function createAndroidChannels() {
       sound: "default",
       description: "رسائل المحادثة بين العملاء والمزودين",
     });
-
-    // Promotions / offers — LOW importance (non-intrusive)
     await Notifications.setNotificationChannelAsync("promotions", {
       name: "العروض والتخفيضات",
       importance: Notifications.AndroidImportance.LOW,
@@ -78,18 +67,15 @@ async function createAndroidChannels() {
       lightColor: "#EC4899",
       description: "عروض خاصة وتخفيضات",
     });
-
     console.log("[notifications] Android channels created ✓");
   } catch (e) {
     console.log("[notifications] createAndroidChannels error:", (e as Error).message);
   }
 }
 
-// ── Notification Categories (iOS action buttons + Android) ─────────────────
-
+// ── Notification Categories ────────────────────────────────────────────────
 async function registerCategories() {
   try {
-    // Provider: accept/reject new booking from notification
     await Notifications.setNotificationCategoryAsync("new_booking", [
       {
         identifier: "accept",
@@ -102,8 +88,6 @@ async function registerCategories() {
         options: { isDestructive: true, isAuthenticationRequired: false },
       },
     ]);
-
-    // Customer: track booking from notification
     await Notifications.setNotificationCategoryAsync("booking_update", [
       {
         identifier: "track",
@@ -111,8 +95,6 @@ async function registerCategories() {
         options: { isDestructive: false, isAuthenticationRequired: false },
       },
     ]);
-
-    // Review prompt
     await Notifications.setNotificationCategoryAsync("review_request", [
       {
         identifier: "rate",
@@ -125,7 +107,6 @@ async function registerCategories() {
         options: { isDestructive: false, isAuthenticationRequired: false },
       },
     ]);
-
     console.log("[notifications] categories registered ✓");
   } catch (e) {
     console.log("[notifications] registerCategories error:", (e as Error).message);
@@ -133,7 +114,6 @@ async function registerCategories() {
 }
 
 // ── Token registration ─────────────────────────────────────────────────────
-
 export async function registerForPush(userId: string): Promise<string | null> {
   if (!Device.isDevice) {
     console.log("[notifications] registerForPush: not a physical device, skipping");
@@ -142,10 +122,7 @@ export async function registerForPush(userId: string): Promise<string | null> {
   if (Platform.OS === "web") return null;
 
   try {
-    // Create channels first (Android-only, no-op on iOS)
     await createAndroidChannels();
-
-    // Register action categories
     await registerCategories();
 
     const { status: existing } = await Notifications.getPermissionsAsync();
@@ -181,7 +158,15 @@ export async function registerForPush(userId: string): Promise<string | null> {
   }
 }
 
-// ── Send push via Expo Push API ────────────────────────────────────────────
+// ── Send push via API server (bypasses Supabase RLS) ──────────────────────
+//
+// EXPO_PUBLIC_API_URL must point to the deployed API server, e.g.:
+//   https://your-repl.username.repl.co
+//
+// Set it in eas.json → build → preview/production → env, then rebuild the APK.
+//
+// If not configured, falls back to direct Supabase query (may fail due to RLS
+// if push_tokens has row-level security enabled — which is the default).
 
 export async function sendPushNotification(
   userId: string,
@@ -192,6 +177,24 @@ export async function sendPushNotification(
   channelId?: string,
 ) {
   try {
+    // ── Preferred: route through API server (bypasses RLS) ──────────────
+    if (PUSH_API_URL) {
+      const res = await fetch(`${PUSH_API_URL}/api/push`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, title, body, data, categoryIdentifier, channelId }),
+      });
+      const json = await res.json().catch(() => null);
+      console.log(
+        `[notifications] sendPush via server → sent=${json?.sent ?? "?"}/${json?.total ?? "?"}`,
+      );
+      return;
+    }
+
+    // ── Fallback: direct Supabase query ─────────────────────────────────
+    // NOTE: This will silently return 0 tokens if the push_tokens table has
+    // RLS enabled (Supabase default). Fix: set EXPO_PUBLIC_API_URL above.
+    console.log("[notifications] EXPO_PUBLIC_API_URL not set — using direct Supabase fallback");
     const { data: tokens } = await supabase
       .from("push_tokens")
       .select("token")
@@ -202,7 +205,6 @@ export async function sendPushNotification(
       return;
     }
 
-    // Map category to channel for Android
     const resolvedChannel =
       channelId ??
       (categoryIdentifier === "new_booking"
@@ -233,14 +235,16 @@ export async function sendPushNotification(
     });
 
     const json = await res.json().catch(() => null);
-    console.log(`[notifications] sendPush to ${tokens.length} device(s):`, json?.data?.[0]?.status ?? res.status);
+    console.log(
+      `[notifications] sendPush direct to ${tokens.length} device(s):`,
+      json?.data?.[0]?.status ?? res.status,
+    );
   } catch (e) {
     console.log("[notifications] sendPush failed:", (e as Error).message);
   }
 }
 
 // ── Create in-app notification record ─────────────────────────────────────
-
 export async function createNotification(
   userId: string,
   type: string,
@@ -264,7 +268,6 @@ export async function createNotification(
 }
 
 // ── Notify all available providers — batched single API call ───────────────
-
 export async function notifyAvailableProviders(
   title: string,
   body: string,
@@ -285,43 +288,60 @@ export async function notifyAvailableProviders(
     const providerIds = provRows.map((p: any) => p.id);
     console.log(`[notifications] notifying ${providerIds.length} available providers`);
 
-    // Fetch ALL push tokens in one query
-    const { data: tokenRows } = await supabase
-      .from("push_tokens")
-      .select("token, user_id")
-      .in("user_id", providerIds);
+    if (PUSH_API_URL) {
+      // Send individually through API server so each benefits from RLS bypass
+      await Promise.all(
+        providerIds.map((id: string) =>
+          fetch(`${PUSH_API_URL}/api/push`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: id,
+              title,
+              body,
+              data: data ?? {},
+              categoryIdentifier: "new_booking",
+            }),
+          }).catch(() => {}),
+        ),
+      );
+    } else {
+      // Fallback: batch direct
+      const { data: tokenRows } = await supabase
+        .from("push_tokens")
+        .select("token, user_id")
+        .in("user_id", providerIds);
 
-    if (!tokenRows?.length) {
-      console.log("[notifications] notifyProviders: no push tokens found");
-      return;
+      if (!tokenRows?.length) {
+        console.log("[notifications] notifyProviders: no push tokens found");
+      } else {
+        const messages = tokenRows.map((t: any) => ({
+          to: t.token,
+          title,
+          body,
+          data: data ?? {},
+          sound: "default",
+          priority: "high",
+          channelId: "new_booking",
+          categoryId: "new_booking",
+          ttl: 300,
+        }));
+
+        const res = await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "Accept-Encoding": "gzip, deflate",
+          },
+          body: JSON.stringify(messages),
+        });
+
+        const json = await res.json().catch(() => null);
+        const successCount = (json?.data ?? []).filter((d: any) => d?.status === "ok").length;
+        console.log(`[notifications] notifyProviders: ${successCount}/${messages.length} delivered`);
+      }
     }
-
-    // Build one batch of messages for Expo Push API
-    const messages = tokenRows.map((t: any) => ({
-      to: t.token,
-      title,
-      body,
-      data: data ?? {},
-      sound: "default",
-      priority: "high",
-      channelId: "new_booking",
-      categoryId: "new_booking",
-      ttl: 300, // 5 min — stale booking alerts are useless
-    }));
-
-    const res = await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Accept-Encoding": "gzip, deflate",
-      },
-      body: JSON.stringify(messages),
-    });
-
-    const json = await res.json().catch(() => null);
-    const successCount = (json?.data ?? []).filter((d: any) => d?.status === "ok").length;
-    console.log(`[notifications] notifyProviders: ${successCount}/${messages.length} delivered`);
 
     // Save in-app notification records for all providers (non-blocking)
     Promise.all(
@@ -335,7 +355,6 @@ export async function notifyAvailableProviders(
 }
 
 // ── Badge sync ─────────────────────────────────────────────────────────────
-
 export async function syncBadge(count: number) {
   if (Platform.OS === "web") return;
   try {

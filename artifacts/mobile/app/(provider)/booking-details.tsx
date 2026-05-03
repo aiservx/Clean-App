@@ -140,7 +140,7 @@ export default function ProviderBookingDetails() {
         : flow.next === "in_progress" ? "booking_started"
         : flow.next === "completed" ? "booking_completed"
         : "booking_accepted";
-      sendPushNotification(booking.user_id, notif.title, notif.body, { bookingId: booking.id });
+      sendPushNotification(booking.user_id, notif.title, notif.body, { bookingId: booking.id }, "booking_update");
       createNotification(booking.user_id, notifType, notif.title, notif.body, { bookingId: booking.id });
     }
 

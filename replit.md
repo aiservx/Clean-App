@@ -46,7 +46,8 @@ The artifact-specific workflows (artifacts/mobile: expo, artifacts/admin: web, a
 - **URL**: `https://ppokdtzlisaxsrmtwlrb.supabase.co`
 - **Env vars**: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (in `.replit` userenv)
 - **Auth**: email/password; roles stored in `profiles.role` (user/provider/admin)
-- **Key tables**: `profiles`, `providers`, `bookings`, `services`, `addresses`, `payouts`, `notifications`, `reviews`
+- **Key tables**: `profiles`, `providers`, `bookings`, `services`, `addresses`, `payouts`, `notifications`, `reviews`, `push_tokens`
+- **Push notifications**: Routed through API server (`POST /api/push`) to bypass Supabase RLS on `push_tokens`. Requires `SUPABASE_SERVICE_ROLE_KEY` secret + `EXPO_PUBLIC_API_URL` in eas.json (set to deployed app URL before building APK).
 - **Admin check**: `is_admin()` function in DB, RLS policies for all tables
 
 ## Mobile App Structure
