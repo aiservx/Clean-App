@@ -319,7 +319,7 @@ function ChannelCards() {
 // ── Info card ──────────────────────────────────────────────────────────────
 function InfoCard() {
   return (
-    <Card className="p-5 mb-4" style={{ background: "linear-gradient(135deg,#EDE9FE,#F5F3FF)", border: "none" }}>
+    <div className="rounded-lg p-5 mb-4 border-none" style={{ background: "linear-gradient(135deg,#EDE9FE,#F5F3FF)" }}>
       <div className="flex gap-3 items-start">
         <span className="text-2xl">💡</span>
         <div>
@@ -333,7 +333,7 @@ function InfoCard() {
           </ul>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
