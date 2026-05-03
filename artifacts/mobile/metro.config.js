@@ -3,15 +3,14 @@ const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
-// Exclude expo-updates postinstall temp directories.
-// During `pnpm install`, expo-updates creates `expo-updates_tmp_XXXX` dirs
-// for native code generation then immediately deletes them.
+// Exclude pnpm postinstall temp directories.
+// During `pnpm install`, some packages (expo-updates, ajv, etc.) create
+// `<pkg>_tmp_XXXX` dirs for postinstall work then immediately delete them.
 // Metro's watcher crashes when it can't find these already-deleted paths.
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const tmpPattern = new RegExp(
-  escape(path.join(__dirname, "../../node_modules/.pnpm")) +
-    ".*expo-updates_tmp_\\d+"
-);
+const pnpmStore = escape(path.join(__dirname, "../../node_modules/.pnpm"));
+const tmpPattern = new RegExp(pnpmStore + ".*_tmp_\\d+");
+
 config.resolver.blockList = [tmpPattern];
 
 module.exports = config;
