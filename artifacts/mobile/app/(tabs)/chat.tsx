@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Image,
   RefreshControl, ActivityIndicator,
-} from "react-native";
+, I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -158,14 +158,14 @@ export default function ChatInboxScreen() {
     <View style={[s.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/notifications")}>
-          <Feather name="bell" size={20} color={colors.foreground} />
-        </TouchableOpacity>
+        <View style={{ width: 44 }} />
         <View style={s.hCenter}>
           <Text style={[s.hTitle, { color: colors.foreground }]}>{t("messages")}</Text>
           <Text style={[s.hSub, { color: colors.mutedForeground }]}>{t("messages_sub")}</Text>
         </View>
-        <View style={{ width: 44 }} />
+        <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/notifications")}>
+          <Feather name="bell" size={20} color={colors.foreground} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -186,7 +186,7 @@ export default function ChatInboxScreen() {
                 <Text style={s.aiTitle}>{t("ai_chat")} ✨</Text>
                 <Text style={s.aiSub}>{t("ai_chat_sub")}</Text>
               </View>
-              <Feather name="chevron-left" size={20} color="rgba(255,255,255,0.8)" />
+              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={20} color="rgba(255,255,255,0.8)" />
             </View>
             <View style={s.aiChips}>
               {["الخدمات والأسعار", "تتبع طلبي", "العروض"].map((label) => (
@@ -232,8 +232,8 @@ export default function ChatInboxScreen() {
                   <Image source={conv.other_avatar ? { uri: conv.other_avatar } : require("@/assets/images/default-avatar.png")} style={s.convAvatar} />
                   <View style={s.convInfo}>
                     <View style={s.convNameRow}>
-                      <Text style={[s.convTime, { color: colors.mutedForeground }]}>{fmtTime(conv.last_at)}</Text>
                       <Text style={[s.convName, { color: colors.foreground }]} numberOfLines={1}>{conv.other_name}</Text>
+                      <Text style={[s.convTime, { color: colors.mutedForeground }]}>{fmtTime(conv.last_at)}</Text>
                     </View>
                     <Text style={[s.convMsg, { color: colors.mutedForeground }]} numberOfLines={1}>{conv.last_message}</Text>
                     <View style={s.convMeta}>
@@ -265,7 +265,7 @@ function statusColor(status: string): string {
 
 const s = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 16, paddingBottom: 12, flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between" },
+  header: { paddingHorizontal: 16, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   hIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   hCenter: { alignItems: "center" },
   hTitle: { fontFamily: "Tajawal_700Bold", fontSize: 20 },
@@ -273,30 +273,30 @@ const s = StyleSheet.create({
 
   aiCard: { borderRadius: 20, overflow: "hidden", marginBottom: 20, marginTop: 8 },
   aiCardBg: { padding: 18 },
-  aiCardRow: { flexDirection: "row-reverse", alignItems: "center", gap: 12 },
+  aiCardRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   aiAvatar: { width: 50, height: 50, borderRadius: 25 },
   aiInfo: { flex: 1, alignItems: "flex-end" },
-  aiTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF", textAlign: "right" },
-  aiSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "rgba(255,255,255,0.85)", marginTop: 2, textAlign: "right" },
-  aiChips: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8, marginTop: 14 },
+  aiTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
+  aiSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "rgba(255,255,255,0.85)", marginTop: 2 },
+  aiChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
   aiChip: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   aiChipT: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FFF" },
 
-  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, textAlign: "right", marginBottom: 12 },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginBottom: 12 },
 
   emptyWrap: { alignItems: "center", paddingVertical: 40, gap: 8 },
   emptyTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 8 },
   emptySub: { fontFamily: "Tajawal_500Medium", fontSize: 12, textAlign: "center" },
 
   convCard: { borderRadius: 16, padding: 14, marginBottom: 10 },
-  convRow: { flexDirection: "row-reverse", gap: 12 },
+  convRow: { flexDirection: "row", gap: 12 },
   convAvatar: { width: 50, height: 50, borderRadius: 25 },
   convInfo: { flex: 1, alignItems: "flex-end" },
-  convNameRow: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" },
-  convName: { fontFamily: "Tajawal_700Bold", fontSize: 14, flex: 1, textAlign: "right" },
+  convNameRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  convName: { fontFamily: "Tajawal_700Bold", fontSize: 14, flex: 1 },
   convTime: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
-  convMsg: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 4, textAlign: "right" },
-  convMeta: { flexDirection: "row-reverse", gap: 8, marginTop: 6, alignItems: "center", justifyContent: "flex-start" },
+  convMsg: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginTop: 4 },
+  convMeta: { flexDirection: "row", gap: 8, marginTop: 6, alignItems: "center", justifyContent: "flex-start" },
   convStatus: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   convStatusT: { fontFamily: "Tajawal_700Bold", fontSize: 9 },
   convService: { fontFamily: "Tajawal_500Medium", fontSize: 10 },

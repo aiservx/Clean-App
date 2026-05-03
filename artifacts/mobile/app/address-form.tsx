@@ -120,8 +120,8 @@ export default function AddressForm() {
           <View style={[styles.detected, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
             <Feather name="map-pin" size={14} color={colors.primary} />
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 11, color: colors.mutedForeground, textAlign: "right" }}>{t("detected_address")}</Text>
-              <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.foreground, textAlign: "right" }} numberOfLines={2}>{resolved.formatted}</Text>
+              <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 11, color: colors.mutedForeground }}>{t("detected_address")}</Text>
+              <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.foreground }} numberOfLines={2}>{resolved.formatted}</Text>
             </View>
           </View>
         ) : null}
@@ -177,20 +177,20 @@ export default function AddressForm() {
 const styles = StyleSheet.create({
   c: { flex: 1 },
   mapWrap: { height: 220, borderRadius: 18, overflow: "hidden", marginBottom: 10, position: "relative" },
-  pin: { position: "absolute", top: "50%", left: "50%", marginLeft: -21, marginTop: -36 },
-  gpsBtn: { position: "absolute", bottom: 10, left: 10, width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  detected: { flexDirection: "row-reverse", alignItems: "center", gap: 8, padding: 10, borderRadius: 12, borderWidth: 1, marginBottom: 10 },
-  autoBtn: { borderWidth: 1, borderRadius: 12, paddingVertical: 10, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 6, marginBottom: 14, borderStyle: "dashed" },
+  pin: { position: "absolute", top: "50%", start: "50%", marginStart: -21, marginTop: -36 },
+  gpsBtn: { position: "absolute", bottom: 10, start: 10, width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  detected: { flexDirection: "row", alignItems: "center", gap: 8, padding: 10, borderRadius: 12, borderWidth: 1, marginBottom: 10 },
+  autoBtn: { borderWidth: 1, borderRadius: 12, paddingVertical: 10, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6, marginBottom: 14, borderStyle: "dashed" },
   autoT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  label: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginBottom: 6, marginTop: 8 },
-  typesGrid: { flexDirection: "row-reverse", gap: 8 },
+  label: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 6, marginTop: 8 },
+  typesGrid: { flexDirection: "row", gap: 8 },
   typeCard: { flex: 1, paddingVertical: 14, borderRadius: 14, alignItems: "center", borderWidth: 1, gap: 4 },
   typeT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   input: { height: 48, borderRadius: 12, paddingHorizontal: 14, fontFamily: "Tajawal_500Medium", fontSize: 13 },
-  defRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginTop: 12 },
+  defRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 },
   checkBox: { width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   defT: { fontFamily: "Tajawal_500Medium", fontSize: 12 },
-  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 24 },
+  bottom: { position: "absolute", bottom: 0, start: 0, end: 0, padding: 14, paddingBottom: 24 },
   saveBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   saveT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -47,7 +47,7 @@ export default function SignupScreen() {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
         <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: colors.card }]}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
         <View style={[styles.logo, { backgroundColor: colors.primary }]}>
           <MaterialCommunityIcons name="broom" size={32} color="#FFF" />
@@ -131,16 +131,16 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20 },
   backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", marginBottom: 16 },
   logo: { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center", alignSelf: "flex-end", marginBottom: 12 },
-  title: { fontFamily: "Tajawal_700Bold", fontSize: 24, textAlign: "right", marginBottom: 4 },
-  sub: { fontFamily: "Tajawal_500Medium", fontSize: 13, textAlign: "right", marginBottom: 18 },
-  roleRow: { flexDirection: "row-reverse", gap: 12, marginBottom: 16 },
-  roleC: { flex: 1, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8, padding: 14, borderRadius: 16, borderWidth: 1.5 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 24, marginBottom: 4 },
+  sub: { fontFamily: "Tajawal_500Medium", fontSize: 13, marginBottom: 18 },
+  roleRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
+  roleC: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, padding: 14, borderRadius: 16, borderWidth: 1.5 },
   roleT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  field: { flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 16, height: 54, borderRadius: 16, marginBottom: 10, gap: 10 },
+  field: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 54, borderRadius: 16, marginBottom: 10, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14 },
-  genderLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right", marginBottom: 8 },
-  genderRow: { flexDirection: "row-reverse", gap: 12, marginBottom: 16 },
-  genderBtn: { flex: 1, flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 16, borderWidth: 1.5 },
+  genderLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 8 },
+  genderRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
+  genderBtn: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 16, borderWidth: 1.5 },
   genderT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   btn: { height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   btnT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },

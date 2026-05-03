@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Image,
   Platform, ActivityIndicator, Linking, Alert, Share,
-} from "react-native";
+, I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -220,7 +220,7 @@ export default function ProviderDetail() {
             </TouchableOpacity>
             <View style={{ flex: 1 }} />
             <TouchableOpacity style={[s.icon, { backgroundColor: "#FFF" }]} onPress={() => router.back()}>
-              <Feather name="chevron-right" size={20} color={colors.foreground} />
+              <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={20} color={colors.foreground} />
             </TouchableOpacity>
           </View>
 
@@ -241,7 +241,7 @@ export default function ProviderDetail() {
             {/* Stats row */}
             <View style={[s.statsRow, { backgroundColor: "#FFF", shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 }]}>
               <View style={s.statBox}>
-                <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 2 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
                   <MaterialCommunityIcons name="star" size={14} color="#F59E0B" />
                   <Text style={[s.statV, { color: colors.foreground }]}>{p.rating > 0 ? p.rating.toFixed(1) : "جديد"}</Text>
                 </View>
@@ -264,14 +264,14 @@ export default function ProviderDetail() {
         {/* Distance & ETA */}
         {distance != null && (
           <View style={[s.distRow, { backgroundColor: colors.card, marginHorizontal: 16, marginTop: 12 }]}>
-            <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 6 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               <View style={[s.distIcon, { backgroundColor: colors.accentLight }]}>
                 <MaterialCommunityIcons name="map-marker-distance" size={16} color={colors.accent} />
               </View>
               <Text style={[s.distT, { color: colors.accent }]}>{distance < 1 ? `${Math.round(distance * 1000)} م` : `${distance.toFixed(1)} كم`}</Text>
             </View>
             {eta != null && (
-              <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 6 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                 <View style={[s.distIcon, { backgroundColor: colors.accentPurpleLight }]}>
                   <MaterialCommunityIcons name="clock-outline" size={16} color={colors.accentPurple} />
                 </View>
@@ -333,10 +333,10 @@ export default function ProviderDetail() {
 
         {/* Reviews section */}
         <View style={s.section}>
-          <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <Text style={[s.sectionTitle, { color: colors.foreground, marginBottom: 0 }]}>آراء العملاء</Text>
             {reviews.length > 0 && (
-              <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 4, backgroundColor: "#FEF3C7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#FEF3C7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100 }}>
                 <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
                 <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#92600A" }}>{p.rating.toFixed(1)}</Text>
               </View>
@@ -350,14 +350,14 @@ export default function ProviderDetail() {
           ) : (
             reviews.map((rv) => (
               <View key={rv.id} style={[s.review, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={{ flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 8 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                     <View style={[s.reviewAvatar, { backgroundColor: colors.primaryLight }]}>
                       <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 12 }}>{rv.reviewer_name.charAt(0)}</Text>
                     </View>
                     <Text style={[s.rN, { color: colors.foreground }]}>{rv.reviewer_name}</Text>
                   </View>
-                  <View style={{ flexDirection: "row-reverse", gap: 2 }}>
+                  <View style={{ flexDirection: "row", gap: 2 }}>
                     {[1, 2, 3, 4, 5].map((st) => (
                       <MaterialCommunityIcons key={st} name={st <= rv.rating ? "star" : "star-outline"} size={12} color={st <= rv.rating ? "#F59E0B" : colors.border} />
                     ))}
@@ -374,7 +374,7 @@ export default function ProviderDetail() {
       <View style={[s.bottomBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.card }]}>
         <View style={s.priceWrap}>
           <Text style={[s.priceL, { color: colors.mutedForeground }]}>ابتداءً من</Text>
-          <View style={{ flexDirection: "row-reverse", alignItems: "baseline", gap: 3 }}>
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 3 }}>
             <Text style={[s.priceV, { color: colors.foreground }]}>{p.hourly_rate}</Text>
             <Text style={[s.priceCurr, { color: colors.mutedForeground }]}>ر.س</Text>
           </View>
@@ -398,7 +398,7 @@ export default function ProviderDetail() {
 const s = StyleSheet.create({
   c: { flex: 1 },
   heroBg: { paddingHorizontal: 16, paddingBottom: 20 },
-  topRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 14 },
+  topRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14 },
   icon: {
     width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center",
     shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 6, elevation: 3,
@@ -406,11 +406,11 @@ const s = StyleSheet.create({
   heroContent: { alignItems: "center" },
   avatarWrap: { position: "relative", marginBottom: 10 },
   avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 4, borderColor: "#FFFFFF" },
-  verifyBadge: { position: "absolute", bottom: 2, right: 0, backgroundColor: "#16C47F", borderRadius: 12, padding: 2, borderWidth: 2, borderColor: "#FFF" },
+  verifyBadge: { position: "absolute", bottom: 2, end: 0, backgroundColor: "#16C47F", borderRadius: 12, padding: 2, borderWidth: 2, borderColor: "#FFF" },
   name: { fontFamily: "Tajawal_700Bold", fontSize: 20, textAlign: "center" },
   title: { fontFamily: "Tajawal_500Medium", fontSize: 12, marginTop: 3 },
   statsRow: {
-    flexDirection: "row-reverse", alignItems: "center", gap: 14, marginTop: 14,
+    flexDirection: "row", alignItems: "center", gap: 14, marginTop: 14,
     paddingHorizontal: 18, paddingVertical: 12, borderRadius: 18,
   },
   statBox: { alignItems: "center", minWidth: 60 },
@@ -418,22 +418,22 @@ const s = StyleSheet.create({
   statL: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 2 },
   statSep: { width: 1, height: 26 },
 
-  distRow: { flexDirection: "row-reverse", justifyContent: "center", gap: 28, padding: 12, borderRadius: 16 },
+  distRow: { flexDirection: "row", justifyContent: "center", gap: 28, padding: 12, borderRadius: 16 },
   distIcon: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   distT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
 
-  actRow: { flexDirection: "row-reverse", gap: 10 },
+  actRow: { flexDirection: "row", gap: 10 },
   actBtn: {
-    flexDirection: "row-reverse", alignItems: "center", justifyContent: "center",
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
     padding: 12, borderRadius: 16, gap: 6,
     shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
   },
   actT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
   section: { paddingHorizontal: 16, marginTop: 18 },
-  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, textAlign: "right", marginBottom: 12 },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 12 },
 
-  servicesGrid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 },
+  servicesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   serviceCard: {
     width: "47%", padding: 14, borderRadius: 18, alignItems: "center", gap: 8,
     borderWidth: 1,
@@ -448,11 +448,11 @@ const s = StyleSheet.create({
   review: { padding: 14, borderRadius: 16, marginBottom: 10, borderWidth: 1 },
   reviewAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   rN: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  rT: { fontFamily: "Tajawal_400Regular", fontSize: 12, textAlign: "right", lineHeight: 18 },
+  rT: { fontFamily: "Tajawal_400Regular", fontSize: 12, lineHeight: 18 },
 
   bottomBar: {
-    position: "absolute", bottom: 0, left: 0, right: 0,
-    flexDirection: "row-reverse", alignItems: "center",
+    position: "absolute", bottom: 0, start: 0, end: 0,
+    flexDirection: "row", alignItems: "center",
     paddingHorizontal: 16, paddingTop: 14,
     borderTopWidth: 1, borderTopColor: "#F1F5F9",
     shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.06, shadowRadius: 12, elevation: 8,
@@ -463,7 +463,7 @@ const s = StyleSheet.create({
   priceV: { fontFamily: "Tajawal_700Bold", fontSize: 20 },
   priceCurr: { fontFamily: "Tajawal_500Medium", fontSize: 12 },
   bookBtn: {
-    flex: 1, height: 52, borderRadius: 18, flexDirection: "row-reverse",
+    flex: 1, height: 52, borderRadius: 18, flexDirection: "row",
     alignItems: "center", justifyContent: "center", gap: 8,
   },
   bookBtnT: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#FFF" },

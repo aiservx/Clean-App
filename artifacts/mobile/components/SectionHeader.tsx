@@ -29,10 +29,9 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "Tajawal_700Bold",
     fontSize: 18,
-    textAlign: "right",
     flex: 1,
   },
   action: {
-    marginLeft: 16,
+    marginStart: 16,
   },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, Pressable , I18nManager} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -29,18 +29,18 @@ export default function Settings() {
 
   const Item = ({ icon, label, valueText, onPress, switchVal, onSwitch, iconBg, iconColor, danger }: any) => (
     <TouchableOpacity onPress={onPress} disabled={onSwitch !== undefined && !onPress} style={styles.item}>
-      {onSwitch !== undefined ? (
-        <Switch value={switchVal} onValueChange={onSwitch} trackColor={{ true: colors.primary, false: "#E5E7EB" }} thumbColor="#FFF" />
-      ) : (
-        <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 6 }}>
-          {valueText ? <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: colors.mutedForeground }}>{valueText}</Text> : null}
-          <Feather name="chevron-left" size={18} color={colors.mutedForeground} />
-        </View>
-      )}
-      <Text style={[styles.itemT, { color: danger ? colors.danger : colors.foreground }]}>{label}</Text>
       <View style={[styles.itemIcon, { backgroundColor: (iconBg || colors.primaryLight) }]}>
         <Feather name={icon} size={16} color={iconColor || colors.primary} />
       </View>
+      <Text style={[styles.itemT, { color: danger ? colors.danger : colors.foreground }]}>{label}</Text>
+      {onSwitch !== undefined ? (
+        <Switch value={switchVal} onValueChange={onSwitch} trackColor={{ true: colors.primary, false: "#E5E7EB" }} thumbColor="#FFF" />
+      ) : (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          {valueText ? <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: colors.mutedForeground }}>{valueText}</Text> : null}
+          <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
+        </View>
+      )}
     </TouchableOpacity>
   );
 
@@ -60,7 +60,7 @@ export default function Settings() {
                 onPress={() => { onPick(o.value); onClose(); }}
                 style={[styles.modalRow, { backgroundColor: active ? colors.primaryLight : "transparent" }]}
               >
-                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 14, color: active ? colors.primary : colors.foreground, flex: 1, textAlign: "right" }}>{o.label}</Text>
+                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 14, color: active ? colors.primary : colors.foreground, flex: 1 }}>{o.label}</Text>
                 {active && <Feather name="check" size={18} color={colors.primary} />}
               </TouchableOpacity>
             );
@@ -132,13 +132,13 @@ export default function Settings() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  sT: { fontFamily: "Tajawal_700Bold", fontSize: 11, textAlign: "right", marginBottom: 6, marginRight: 4 },
+  sT: { fontFamily: "Tajawal_700Bold", fontSize: 11, marginBottom: 6, marginEnd: 4 },
   section: { borderRadius: 16, paddingHorizontal: 14 },
-  item: { flexDirection: "row-reverse", alignItems: "center", paddingVertical: 12, gap: 10 },
-  itemT: { fontFamily: "Tajawal_700Bold", fontSize: 13, flex: 1, textAlign: "right" },
+  item: { flexDirection: "row", alignItems: "center", paddingVertical: 12, gap: 10 },
+  itemT: { fontFamily: "Tajawal_700Bold", fontSize: 13, flex: 1 },
   itemIcon: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", alignItems: "center", justifyContent: "center", padding: 24 },
   modalCard: { width: "100%", maxWidth: 380, borderRadius: 18, padding: 16 },
-  modalTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 10, textAlign: "right" },
-  modalRow: { flexDirection: "row-reverse", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10, gap: 8 },
+  modalTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 10 },
+  modalRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10, gap: 8 },
 });

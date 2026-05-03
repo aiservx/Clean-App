@@ -317,7 +317,7 @@ export default function HomeScreen() {
               <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
               <View style={{ flex: 1, alignItems: "flex-end" }}>
                 <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
-                <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 6, marginTop: 2 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
                   <Text style={styles.provInfoMeta}>{(selectedProvider.rating || 0).toFixed(1)}</Text>
                   <Text style={styles.provInfoMeta}>•</Text>
@@ -327,12 +327,12 @@ export default function HomeScreen() {
                   const d = distanceKm({ lat: loc.lat, lng: loc.lng }, { lat: selectedProvider.current_lat, lng: selectedProvider.current_lng });
                   const eta = Math.max(3, Math.round((d / 25) * 60));
                   return (
-                    <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 8, marginTop: 4 }}>
-                      <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 3 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
                         <MaterialCommunityIcons name="map-marker-distance" size={12} color={colors.primary} />
                         <Text style={[styles.provInfoMeta, { color: colors.primary }]}>{d < 1 ? `${Math.round(d * 1000)} م` : `${d.toFixed(1)} كم`}</Text>
                       </View>
-                      <View style={{ flexDirection: "row-reverse", alignItems: "center", gap: 3 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
                         <MaterialCommunityIcons name="clock-outline" size={12} color="#8B5CF6" />
                         <Text style={[styles.provInfoMeta, { color: "#8B5CF6" }]}>~ {eta} دقيقة</Text>
                       </View>
@@ -356,7 +356,7 @@ export default function HomeScreen() {
         )}
 
         {/* GPS button — inside the map area */}
-        <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { position: "absolute", bottom: 40, right: 16 }]}>
+        <TouchableOpacity onPress={requestLocation} style={[styles.gpsBtn, { position: "absolute", bottom: 40, end: 16 }]}>
           <BlurView intensity={Platform.OS === "ios" ? 70 : 100} tint="light" style={styles.gpsBlur}>
             {locating ? <ActivityIndicator size="small" color={colors.primary} /> : <MaterialCommunityIcons name="crosshairs-gps" size={20} color={colors.primary} />}
           </BlurView>
@@ -422,10 +422,10 @@ export default function HomeScreen() {
 
           {/* SERVICES — 2-column grid showing all 18 categories with discount banners between rows */}
           <View style={[styles.sectionHeader]}>
+            <Text style={[styles.sectionTitle, { }]}>{t("services")}</Text>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={[styles.sectionTitle, { textAlign: "right" }]}>{t("services")}</Text>
           </View>
 
           <View style={styles.catGridWrap}>
@@ -489,10 +489,10 @@ export default function HomeScreen() {
           {offers.length > 0 && (
             <>
               <View style={[styles.sectionHeader]}>
+                <Text style={[styles.sectionTitle, { }]}>{t("offers")}</Text>
                 <TouchableOpacity onPress={() => router.push("/(tabs)/offers")}>
                   <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
                 </TouchableOpacity>
-                <Text style={[styles.sectionTitle, { textAlign: "right" }]}>{t("offers")}</Text>
               </View>
               <ScrollView
                 horizontal
@@ -511,7 +511,11 @@ export default function HomeScreen() {
                       style={[styles.offerCard, { backgroundColor: p.bg, borderColor: p.border, borderWidth: 1 }]}
                     >
                       <View style={styles.offerInner}>
-                        <View style={{ flex: 1, alignItems: "flex-end" }}>
+                        <View style={[styles.offerIcon, { backgroundColor: p.accent + "22" }]}>
+                          <Feather name="gift" size={26} color={p.accent} />
+                        </View>
+                        <View style={[styles.offerNotch, { backgroundColor: "#F8FAFC" }]} pointerEvents="none" />
+                        <View style={{ flex: 1 }}>
                           <View style={[styles.offerBadge, { backgroundColor: p.accent + "22" }]}>
                             <Text style={[styles.offerBadgeText, { color: p.text }]}>عرض</Text>
                           </View>
@@ -523,11 +527,6 @@ export default function HomeScreen() {
                             </View>
                           )}
                         </View>
-                        {/* T043: ticket-style notch + icon */}
-                        <View style={[styles.offerNotch, { backgroundColor: "#F8FAFC" }]} pointerEvents="none" />
-                        <View style={[styles.offerIcon, { backgroundColor: p.accent + "22" }]}>
-                          <Feather name="gift" size={26} color={p.accent} />
-                        </View>
                       </View>
                     </TouchableOpacity>
                   );
@@ -538,10 +537,10 @@ export default function HomeScreen() {
 
           {/* PROVIDERS */}
           <View style={[styles.sectionHeader]}>
+            <Text style={[styles.sectionTitle, { }]}>{t("nearby_pros")}</Text>
             <TouchableOpacity onPress={() => router.push("/services")}>
               <Text style={[styles.seeAll, { color: colors.primary }]}>{t("see_all")}</Text>
             </TouchableOpacity>
-            <Text style={[styles.sectionTitle, { textAlign: "right" }]}>{t("nearby_pros")}</Text>
           </View>
 
           {nearbyProviders.length === 0 ? (
@@ -608,19 +607,19 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  mapBg: { left: 0, right: 0, top: 0 },
-  topFade: { position: "absolute", top: 0, left: 0, right: 0 },
+  mapBg: { start: 0, end: 0, top: 0 },
+  topFade: { position: "absolute", top: 0, start: 0, end: 0 },
 
-  floatHeader: { position: "absolute", left: 0, right: 0, paddingHorizontal: 14, gap: 12, zIndex: 5 },
-  headerRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+  floatHeader: { position: "absolute", start: 0, end: 0, paddingHorizontal: 14, gap: 12, zIndex: 5 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 8 },
 
   headerIconBtn: { borderRadius: 14, overflow: "hidden" },
   iconBlur: {
     width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(255,255,255,0.5)",
   },
-  notifDot: { position: "absolute", top: 9, right: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: "#EF4444", borderWidth: 1, borderColor: "#fff" },
-  notifBadge: { position: "absolute", top: 6, right: 6, minWidth: 16, height: 16, borderRadius: 8, backgroundColor: "#EF4444", alignItems: "center", justifyContent: "center", paddingHorizontal: 3, borderWidth: 1.5, borderColor: "#FFF" },
+  notifDot: { position: "absolute", top: 9, end: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: "#EF4444", borderWidth: 1, borderColor: "#fff" },
+  notifBadge: { position: "absolute", top: 6, end: 6, minWidth: 16, height: 16, borderRadius: 8, backgroundColor: "#EF4444", alignItems: "center", justifyContent: "center", paddingHorizontal: 3, borderWidth: 1.5, borderColor: "#FFF" },
   notifBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 9, color: "#FFF", lineHeight: 13 },
 
   greetingBlur: {
@@ -636,7 +635,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, height: 50, borderRadius: 18,
     backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)",
   },
-  searchPlaceholder: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#94A3B8", textAlign: "right" },
+  searchPlaceholder: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#94A3B8" },
   searchAction: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   searchIconBtn: { borderRadius: 14, overflow: "hidden" },
   searchIconBlur: {
@@ -646,15 +645,15 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(255,255,255,0.6)",
   },
 
-  userLocationDot: { position: "absolute", top: "45%", left: "50%", marginLeft: -12, marginTop: -12, alignItems: "center", justifyContent: "center", width: 24, height: 24 },
+  userLocationDot: { position: "absolute", top: "45%", start: "50%", marginStart: -12, marginTop: -12, alignItems: "center", justifyContent: "center", width: 24, height: 24 },
   userLocationInner: { width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: "#fff" },
   userLocationPulse: { position: "absolute", width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(22,196,127,0.25)" },
 
   provInfoCard: {
     position: "absolute",
     bottom: 90,
-    left: 12,
-    right: 12,
+    start: 12,
+    end: 12,
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 14,
@@ -665,13 +664,13 @@ const styles = StyleSheet.create({
     elevation: 8,
     zIndex: 10,
   },
-  provInfoClose: { position: "absolute", top: 10, left: 10, zIndex: 10 },
-  provInfoRow: { flexDirection: "row-reverse", alignItems: "center", gap: 12 },
+  provInfoClose: { position: "absolute", top: 10, start: 10, zIndex: 10 },
+  provInfoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   provInfoAvatar: { width: 52, height: 52, borderRadius: 26 },
-  provInfoName: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#0F172A", textAlign: "right" },
+  provInfoName: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#0F172A" },
   provInfoMeta: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "#64748B" },
   provInfoBookBtn: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
@@ -681,7 +680,7 @@ const styles = StyleSheet.create({
   },
   provInfoBookText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#FFF" },
 
-  gpsBtn: { position: "absolute", right: 16, borderRadius: 16, overflow: "hidden", zIndex: 6, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 3 },
+  gpsBtn: { position: "absolute", end: 16, borderRadius: 16, overflow: "hidden", zIndex: 6, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 6, elevation: 3 },
   gpsBlur: { width: 46, height: 46, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.92)", borderWidth: 1, borderColor: "rgba(255,255,255,0.6)" },
 
   sheet: {
@@ -699,7 +698,7 @@ const styles = StyleSheet.create({
   sheetGrabber: { width: 38, height: 4, borderRadius: 2, backgroundColor: "#CBD5E1", alignSelf: "center", marginBottom: 14 },
 
   offerCard: { width: 290, height: 110, borderRadius: 20, overflow: "hidden" },
-  offerInner: { flex: 1, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12 },
+  offerInner: { flex: 1, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 },
   offerBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100, marginBottom: 6 },
   offerBadgeText: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 10 },
   offerTitle: { color: "#fff", fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 3 },
@@ -708,7 +707,7 @@ const styles = StyleSheet.create({
   discountText: { color: "#0F172A", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   offerIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
 
-  sectionHeader: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12, marginTop: 6 },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A" },
   seeAll: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 
@@ -752,7 +751,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   catGrid: {
-    flexDirection: "row-reverse",
+    flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
     justifyContent: "space-between",
@@ -811,7 +810,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     bottom: 0,
-    right: "4%",
+    end: "4%",
     width: "55%",
     justifyContent: "center",
     alignItems: "flex-end",
@@ -819,12 +818,10 @@ const styles = StyleSheet.create({
   bannerTitle: {
     fontFamily: "Tajawal_700Bold",
     fontSize: 13.5,
-    textAlign: "right",
   },
   bannerSub: {
     fontFamily: "Tajawal_500Medium",
     fontSize: 10.5,
-    textAlign: "right",
     marginTop: 2,
     lineHeight: 14,
   },
@@ -845,9 +842,9 @@ const styles = StyleSheet.create({
   provCard: { width: 158, backgroundColor: "#fff", borderRadius: 22, padding: 14, alignItems: "center", shadowColor: "#64748B", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 14, elevation: 3, marginBottom: 4, borderWidth: 0.5, borderColor: "#F1F5F9" },
   provAvatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: "#E0F7EE", alignItems: "center", justifyContent: "center", marginBottom: 10, position: "relative" },
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
-  provDot: { position: "absolute", bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: "#10B981", borderWidth: 2.5, borderColor: "#fff" },
+  provDot: { position: "absolute", bottom: 2, end: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: "#10B981", borderWidth: 2.5, borderColor: "#fff" },
   provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
-  provMeta: { flexDirection: "row-reverse", alignItems: "center", gap: 4, marginBottom: 8 },
+  provMeta: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 },
   provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
   provDivider: { color: "#CBD5E1", fontSize: 10 },
   provExp: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#64748B" },
@@ -855,15 +852,15 @@ const styles = StyleSheet.create({
   provPriceText: { color: "#16C47F", fontFamily: "Tajawal_700Bold", fontSize: 10 },
 
   botWrap: { marginHorizontal: 16, marginTop: 22, borderRadius: 22, overflow: "hidden", shadowColor: "#7C3AED", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 14, elevation: 5 },
-  botCard: { flexDirection: "row-reverse", alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
+  botCard: { flexDirection: "row", alignItems: "center", padding: 16, gap: 14, position: "relative", overflow: "hidden" },
   botIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" },
   botContent: { flex: 1, alignItems: "flex-end" },
-  botTitleRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8 },
+  botTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   botBadgeAi: { backgroundColor: "rgba(255,255,255,0.22)", paddingHorizontal: 7, paddingVertical: 2, borderRadius: 100 },
   botBadgeAiText: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 10, letterSpacing: 1 },
   botTitle: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
   botSub: { color: "rgba(255,255,255,0.92)", fontFamily: "Tajawal_500Medium", fontSize: 11.5, marginTop: 4 },
-  botOrbA: { position: "absolute", width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.10)", top: -40, left: -30 },
-  botOrbB: { position: "absolute", width: 80, height: 80, borderRadius: 40, backgroundColor: "rgba(255,255,255,0.06)", bottom: -30, right: 60 },
-  offerNotch: { position: "absolute", top: -10, bottom: -10, width: 20, alignSelf: "center", left: "55%", borderRadius: 100 },
+  botOrbA: { position: "absolute", width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.10)", top: -40, start: -30 },
+  botOrbB: { position: "absolute", width: 80, height: 80, borderRadius: 40, backgroundColor: "rgba(255,255,255,0.06)", bottom: -30, end: 60 },
+  offerNotch: { position: "absolute", top: -10, bottom: -10, width: 20, alignSelf: "center", start: "55%", borderRadius: 100 },
 });

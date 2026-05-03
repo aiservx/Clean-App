@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity , I18nManager} from "react-native";
 import { Feather, MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -28,7 +28,7 @@ export default function PaymentMethods() {
         <View style={{ gap: 10 }}>
           {CARDS.map((c) => (
             <View key={c.id} style={[styles.card, { backgroundColor: c.color }]}>
-              <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <Text style={styles.cardBrand}>{c.brand.toUpperCase()}</Text>
                 {c.default && (
                   <View style={styles.defBadge}>
@@ -37,7 +37,7 @@ export default function PaymentMethods() {
                 )}
               </View>
               <Text style={styles.cardNum}>**** **** **** {c.last}</Text>
-              <View style={{ flexDirection: "row-reverse", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                 <View>
                   <Text style={styles.cardLabel}>اسم حامل البطاقة</Text>
                   <Text style={styles.cardName}>{c.name}</Text>
@@ -57,16 +57,16 @@ export default function PaymentMethods() {
         <View style={{ gap: 10 }}>
           {OTHER.map((o) => (
             <TouchableOpacity key={o.id} style={[styles.row, { backgroundColor: colors.card }]}>
-              <Feather name="chevron-left" size={18} color={colors.mutedForeground} />
-              <Text style={[styles.rowT, { color: colors.foreground, flex: 1, textAlign: "right", marginHorizontal: 12 }]}>{o.t}</Text>
+              <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
+              <Text style={[styles.rowT, { color: colors.foreground, flex: 1, marginHorizontal: 12 }]}>{o.t}</Text>
               <View style={[styles.icon, { backgroundColor: o.c + "22" }]}>
                 {o.id === "apple" ? <FontAwesome name="apple" size={18} color={o.c} /> : <Feather name={o.i as any} size={18} color={o.c} />}
               </View>
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={[styles.row, { backgroundColor: colors.card }]}>
-            <Feather name="chevron-left" size={18} color={colors.mutedForeground} />
-            <Text style={[styles.rowT, { color: colors.foreground, flex: 1, textAlign: "right", marginHorizontal: 12 }]}>الدفع عند الاستلام</Text>
+            <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.mutedForeground} />
+            <Text style={[styles.rowT, { color: colors.foreground, flex: 1, marginHorizontal: 12 }]}>الدفع عند الاستلام</Text>
             <View style={[styles.icon, { backgroundColor: "#F59E0B22" }]}>
               <MaterialCommunityIcons name="cash" size={20} color="#F59E0B" />
             </View>
@@ -79,7 +79,7 @@ export default function PaymentMethods() {
 
 const styles = StyleSheet.create({
   c: { flex: 1 },
-  label: { fontFamily: "Tajawal_700Bold", fontSize: 14, textAlign: "right", marginBottom: 10 },
+  label: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 10 },
   card: { padding: 18, borderRadius: 18, height: 170, justifyContent: "space-between" },
   cardBrand: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 18, fontStyle: "italic" },
   cardNum: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 19, letterSpacing: 2, textAlign: "center" },
@@ -87,9 +87,9 @@ const styles = StyleSheet.create({
   cardName: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13 },
   defBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 10, paddingVertical: 3, borderRadius: 100 },
   defT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 10 },
-  addBtn: { borderWidth: 1, borderStyle: "dashed", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 6, marginTop: 12 },
+  addBtn: { borderWidth: 1, borderStyle: "dashed", borderRadius: 14, paddingVertical: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6, marginTop: 12 },
   addT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  row: { flexDirection: "row-reverse", alignItems: "center", padding: 12, borderRadius: 14 },
+  row: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 14 },
   rowT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   icon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
 });

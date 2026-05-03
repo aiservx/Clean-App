@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform , I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -39,7 +39,7 @@ function MethodLogo({ type }: { type: Method["type"] }) {
     return (
       <View style={lg.boxRow}>
         <View style={[lg.circle, { backgroundColor: "#EB001B" }]} />
-        <View style={[lg.circle, { backgroundColor: "#F79E1B", marginLeft: -10, opacity: 0.9 }]} />
+        <View style={[lg.circle, { backgroundColor: "#F79E1B", marginStart: -10, opacity: 0.9 }]} />
       </View>
     );
   }
@@ -114,7 +114,7 @@ export default function PaymentScreen() {
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>اختر طريقة الدفع المناسبة</Text>
         </View>
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Feather name="chevron-right" size={24} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -128,8 +128,8 @@ export default function PaymentScreen() {
             style={styles.totalCard}
           >
             {/* Decorative bg circles */}
-            <View style={[styles.bgCircle, { top: -40, right: -40, backgroundColor: "rgba(255,255,255,0.08)" }]} />
-            <View style={[styles.bgCircle, { bottom: -30, left: -30, width: 140, height: 140, backgroundColor: "rgba(255,255,255,0.06)" }]} />
+            <View style={[styles.bgCircle, { top: -40, end: -40, backgroundColor: "rgba(255,255,255,0.08)" }]} />
+            <View style={[styles.bgCircle, { bottom: -30, start: -30, width: 140, height: 140, backgroundColor: "rgba(255,255,255,0.06)" }]} />
 
             {/* Big floating wallet glyph */}
             <View style={styles.walletGlyph}>
@@ -306,7 +306,7 @@ export default function PaymentScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.confirmBtn}
           >
-            <Feather name="chevron-left" size={20} color="#FFFFFF" />
+            <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={20} color="#FFFFFF" />
             <View style={styles.confirmTextContainer}>
               <Text style={styles.confirmTitle}>تأكيد الدفع</Text>
               <Text style={styles.confirmSubtitle}>{totals.total} ر.س | الإجمالي</Text>
@@ -320,7 +320,7 @@ export default function PaymentScreen() {
 
 const lg = StyleSheet.create({
   box: {
-    width: 48, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 1,
+    width: 48, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 1,
   },
   boxRow: { width: 48, height: 32, alignItems: "center", justifyContent: "center", flexDirection: "row" },
   circle: { width: 22, height: 22, borderRadius: 11 },
@@ -329,8 +329,8 @@ const lg = StyleSheet.create({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
-  safeBadge: { flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, marginBottom: 12 },
+  safeBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100 },
   safeBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   iconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
   headerTitleContainer: { alignItems: "center" },
@@ -339,43 +339,43 @@ const styles = StyleSheet.create({
   totalWrap: { paddingHorizontal: 16, marginBottom: 18 },
   totalCard: { borderRadius: 28, padding: 24, minHeight: 160, overflow: "hidden", position: "relative" },
   bgCircle: { position: "absolute", width: 200, height: 200, borderRadius: 100 },
-  walletGlyph: { position: "absolute", left: 12, bottom: -10, opacity: 0.5 },
+  walletGlyph: { position: "absolute", start: 12, bottom: -10, opacity: 0.5 },
   totalContent: { alignItems: "flex-end", gap: 4 },
-  totalChip: { flexDirection: "row-reverse", alignItems: "center", gap: 4, backgroundColor: "rgba(255,255,255,0.18)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100, marginBottom: 6 },
+  totalChip: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "rgba(255,255,255,0.18)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100, marginBottom: 6 },
   totalChipT: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 10 },
   totalLabelLight: { fontFamily: "Tajawal_500Medium", fontSize: 13, color: "rgba(255,255,255,0.85)" },
   totalAmountLight: { fontFamily: "Tajawal_700Bold", fontSize: 36, color: "#FFFFFF", letterSpacing: -0.5 },
   totalSubLight: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 4 },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18, textAlign: "center", marginBottom: 12 },
   methodsContainer: { paddingHorizontal: 16, gap: 12, marginBottom: 16 },
-  methodItem: { flexDirection: "row-reverse", alignItems: "center", padding: 16, borderRadius: 20, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
-  radioContainer: { marginRight: 16 },
+  methodItem: { flexDirection: "row", alignItems: "center", padding: 16, borderRadius: 20, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
+  radioContainer: { marginEnd: 16 },
   radioActive: { width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   radioInactive: { width: 24, height: 24, borderRadius: 12, borderWidth: 1 },
   methodTextWrap: { flex: 1, alignItems: "flex-end", marginHorizontal: 16 },
-  methodTitleRow: { flexDirection: "row-reverse", alignItems: "center", gap: 8, marginBottom: 4 },
+  methodTitleRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
   methodTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
   recBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 100 },
   recBadgeText: { fontFamily: "Tajawal_600SemiBold", fontSize: 10 },
   methodSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 12 },
   methodLogoWrap: { width: 56, alignItems: "center" },
-  securityRow: { flexDirection: "row-reverse", justifyContent: "center", alignItems: "center", gap: 6, marginBottom: 18 },
+  securityRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 6, marginBottom: 18 },
   securityText: { fontFamily: "Tajawal_500Medium", fontSize: 12 },
   summaryCard: { marginHorizontal: 24, borderRadius: 24, overflow: "hidden", marginBottom: 18, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
-  summaryHeader: { fontFamily: "Tajawal_700Bold", fontSize: 16, padding: 20, paddingBottom: 12, textAlign: "right" },
-  summaryRow: { flexDirection: "row-reverse", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 8 },
+  summaryHeader: { fontFamily: "Tajawal_700Bold", fontSize: 16, padding: 20, paddingBottom: 12 },
+  summaryRow: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 8 },
   summaryLabel: { fontFamily: "Tajawal_500Medium", fontSize: 14 },
   summaryValue: { fontFamily: "Tajawal_600SemiBold", fontSize: 14 },
   dotDivider: { borderTopWidth: 1, borderStyle: "dashed", marginHorizontal: 20, marginVertical: 12 },
-  totalRow: { flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center", padding: 20, marginTop: 8 },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20, marginTop: 8 },
   totalValue: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   totalLabel: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
-  featuresRow: { flexDirection: "row-reverse", justifyContent: "space-around", paddingHorizontal: 16, marginBottom: 12 },
+  featuresRow: { flexDirection: "row", justifyContent: "space-around", paddingHorizontal: 16, marginBottom: 12 },
   featureItem: { alignItems: "center", gap: 8 },
   featureIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   featureText: { fontFamily: "Tajawal_600SemiBold", fontSize: 10, textAlign: "center", width: 80 },
-  bottomBar: { position: "absolute", bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingTop: 16, backgroundColor: "#FFFFFF", borderTopLeftRadius: 32, borderTopRightRadius: 32, shadowColor: "#0F172A", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 10 },
-  confirmBtn: { height: 64, borderRadius: 20, flexDirection: "row-reverse", alignItems: "center", paddingHorizontal: 20 },
+  bottomBar: { position: "absolute", bottom: 0, start: 0, end: 0, paddingHorizontal: 16, paddingTop: 16, backgroundColor: "#FFFFFF", borderTopLeftRadius: 32, borderTopRightRadius: 32, shadowColor: "#0F172A", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 10 },
+  confirmBtn: { height: 64, borderRadius: 20, flexDirection: "row", alignItems: "center", paddingHorizontal: 20 },
   confirmTextContainer: { flex: 1, alignItems: "flex-end" },
   confirmTitle: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 16 },
   confirmSubtitle: { color: "rgba(255,255,255,0.8)", fontFamily: "Tajawal_500Medium", fontSize: 12 },

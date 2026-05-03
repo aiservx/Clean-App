@@ -185,7 +185,7 @@ export default function ProviderEdit() {
         <Text style={[s.l, { color: colors.foreground }]}>نبذة عنك</Text>
         <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground, height: 80, paddingTop: 12 }]} value={bio} onChangeText={setBio} multiline textAlign="right" />
 
-        <View style={{ flexDirection: "row-reverse", gap: 10 }}>
+        <View style={{ flexDirection: "row", gap: 10 }}>
           <View style={{ flex: 1 }}>
             <Text style={[s.l, { color: colors.foreground }]}>سنوات الخبرة</Text>
             <TextInput style={[s.input, { backgroundColor: colors.card, color: colors.foreground }]} value={exp} onChangeText={setExp} keyboardType="numeric" textAlign="right" />
@@ -276,27 +276,27 @@ const s = StyleSheet.create({
   c: { flex: 1 },
   avW: { alignSelf: "center", marginBottom: 4, position: "relative", marginTop: 12 },
   av: { width: 100, height: 100, borderRadius: 50, borderWidth: 4, borderColor: "#FFF" },
-  camBadge: { position: "absolute", bottom: 0, right: 0, width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#FFF" },
+  camBadge: { position: "absolute", bottom: 0, end: 0, width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 3, borderColor: "#FFF" },
   changeT: { fontFamily: "Tajawal_700Bold", fontSize: 12, textAlign: "center", marginBottom: 16 },
-  l: { fontFamily: "Tajawal_700Bold", fontSize: 12, textAlign: "right", marginBottom: 6, marginTop: 14 },
+  l: { fontFamily: "Tajawal_700Bold", fontSize: 12, marginBottom: 6, marginTop: 14 },
   input: { height: 46, borderRadius: 12, paddingHorizontal: 14, fontFamily: "Tajawal_500Medium", fontSize: 13 },
-  catLabel: { fontFamily: "Tajawal_700Bold", fontSize: 10, textAlign: "right", marginBottom: 4, marginTop: 4 },
-  tags: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 6 },
-  tag: { flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100, borderWidth: 1 },
+  catLabel: { fontFamily: "Tajawal_700Bold", fontSize: 10, marginBottom: 4, marginTop: 4 },
+  tags: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  tag: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100, borderWidth: 1 },
   tagT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
-  infoBox: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: 14, marginTop: 16 },
-  infoT: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1, textAlign: "right", lineHeight: 18 },
-  hint: { fontFamily: "Tajawal_400Regular", fontSize: 11, textAlign: "right", marginBottom: 6 },
+  infoBox: { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: 14, marginTop: 16 },
+  infoT: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1, lineHeight: 18 },
+  hint: { fontFamily: "Tajawal_400Regular", fontSize: 11, marginBottom: 6 },
   docBtn: { padding: 20, borderRadius: 16, borderWidth: 1.5, borderStyle: "dashed", alignItems: "center", gap: 6 },
   docBtnT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   docBtnS: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   docPreviewWrap: { borderRadius: 16, overflow: "hidden", height: 160, position: "relative" },
   docPreview: { width: "100%", height: "100%" },
-  docChange: { position: "absolute", top: 8, left: 8, flexDirection: "row-reverse", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  docChange: { position: "absolute", top: 8, start: 8, flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   docChangeT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
-  docBadge: { position: "absolute", top: 8, right: 8, flexDirection: "row-reverse", alignItems: "center", gap: 3, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  docBadge: { position: "absolute", top: 8, end: 8, flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   docBadgeT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
-  bottom: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 14, paddingBottom: 28 },
+  bottom: { position: "absolute", bottom: 0, start: 0, end: 0, padding: 14, paddingBottom: 28 },
   saveBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   saveT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });

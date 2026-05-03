@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Image, TextInput, Platform, ActivityIndicator, Animated,
-} from "react-native";
+, I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -274,7 +274,7 @@ export default function RatingScreen() {
             )}
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={s.skipRow}>
-            <Feather name="chevron-left" size={16} color="#94A3B8" />
+            <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={16} color="#94A3B8" />
             <Text style={s.skipText}>تخطي التقييم</Text>
           </TouchableOpacity>
         </View>
@@ -286,7 +286,7 @@ export default function RatingScreen() {
 const s = StyleSheet.create({
   root: { flex: 1 },
   header: {
-    flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between",
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 16, paddingBottom: 12,
   },
   hIcon: {
@@ -310,27 +310,26 @@ const s = StyleSheet.create({
     fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#1E293B",
     textAlign: "center", marginBottom: 14,
   },
-  starsRow: { flexDirection: "row-reverse", justifyContent: "center", gap: 6, marginBottom: 6 },
-  starsRowSmall: { flexDirection: "row-reverse", gap: 4, marginBottom: 24, marginTop: 8 },
+  starsRow: { flexDirection: "row", justifyContent: "center", gap: 6, marginBottom: 6 },
+  starsRowSmall: { flexDirection: "row", gap: 4, marginBottom: 24, marginTop: 8 },
   ratingLabel: { fontFamily: "Tajawal_700Bold", fontSize: 18, textAlign: "center", marginBottom: 20 },
 
   commentSection: { paddingHorizontal: 20, marginBottom: 16 },
   sectionTitle: {
-    fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#1E293B",
-    textAlign: "right", marginBottom: 10,
+    fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#1E293B", marginBottom: 10,
   },
   commentBox: {
     backgroundColor: "#FFF", borderRadius: 20, borderWidth: 1,
     borderColor: "#E2E8F0", padding: 14, minHeight: 120,
   },
   input: { fontFamily: "Tajawal_400Regular", fontSize: 13, color: "#1E293B", minHeight: 80, textAlignVertical: "top" },
-  commentFooter: { flexDirection: "row-reverse", justifyContent: "flex-start", alignItems: "center", marginTop: 6 },
+  commentFooter: { flexDirection: "row", justifyContent: "flex-start", alignItems: "center", marginTop: 6 },
   charCount: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "#94A3B8" },
 
   tagsSection: { paddingHorizontal: 20, marginBottom: 16 },
-  tagsGrid: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 10 },
+  tagsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   tag: {
-    flexDirection: "row-reverse", alignItems: "center", gap: 6,
+    flexDirection: "row", alignItems: "center", gap: 6,
     paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14,
     backgroundColor: "#FFF", borderWidth: 1.5, borderColor: "#E2E8F0",
   },
@@ -338,26 +337,26 @@ const s = StyleSheet.create({
 
   trustBanner: {
     marginHorizontal: 20, borderRadius: 20, backgroundColor: "#F0FDF4",
-    padding: 16, flexDirection: "row-reverse", alignItems: "center", marginBottom: 16,
+    padding: 16, flexDirection: "row", alignItems: "center", marginBottom: 16,
   },
   trustContent: { flex: 1, alignItems: "flex-end" },
   trustTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#1E293B", marginBottom: 4 },
-  trustDescRow: { flexDirection: "row-reverse", alignItems: "center", gap: 4 },
+  trustDescRow: { flexDirection: "row", alignItems: "center", gap: 4 },
   trustDesc: { fontFamily: "Tajawal_400Regular", fontSize: 11, color: "#64748B" },
   trustIconWrap: {
     width: 56, height: 56, borderRadius: 28, backgroundColor: "#DCFCE7",
-    alignItems: "center", justifyContent: "center", marginLeft: 12,
+    alignItems: "center", justifyContent: "center", marginStart: 12,
   },
 
   bottomBar: {
-    position: "absolute", bottom: 0, left: 0, right: 0,
+    position: "absolute", bottom: 0, start: 0, end: 0,
     paddingHorizontal: 20, paddingTop: 16,
     backgroundColor: "#FFF", borderTopLeftRadius: 28, borderTopRightRadius: 28,
     shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.06, shadowRadius: 16, elevation: 8,
   },
   submitBtn: { height: 56, borderRadius: 16, backgroundColor: "#3B82F6", alignItems: "center", justifyContent: "center" },
   submitText: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
-  skipRow: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 12 },
+  skipRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 12 },
   skipText: { fontFamily: "Tajawal_500Medium", fontSize: 14, color: "#94A3B8" },
 
   successCircle: {

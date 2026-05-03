@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Platform, ActivityIndicator, Animated, Alert, Linking,
   Modal, TextInput, KeyboardAvoidingView,
-} from "react-native";
+, I18nManager} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -43,7 +43,7 @@ function StatusToast({
         <View style={[toastStyles.iconBox, { backgroundColor: color + "20" }]}>
           <MaterialCommunityIcons name={(STATUS_ICON_MAP[status] || "bell-outline") as any} size={22} color={color} />
         </View>
-        <View style={{ flex: 1, marginRight: 10 }}>
+        <View style={{ flex: 1, marginEnd: 10 }}>
           <Text style={toastStyles.title}>تحديث الطلب</Text>
           <Text style={[toastStyles.body, { color }]}>{STATUS_AR_TOAST[status] ?? status}</Text>
         </View>
@@ -55,13 +55,13 @@ function StatusToast({
   );
 }
 const toastStyles = StyleSheet.create({
-  wrap: { position: "absolute", left: 16, right: 16, zIndex: 999 },
-  card: { backgroundColor: "#FFF", borderRadius: 18, padding: 14, flexDirection: "row-reverse", alignItems: "center", gap: 12,
+  wrap: { position: "absolute", start: 16, end: 16, zIndex: 999 },
+  card: { backgroundColor: "#FFF", borderRadius: 18, padding: 14, flexDirection: "row", alignItems: "center", gap: 12,
     shadowColor: "#0F172A", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.14, shadowRadius: 16, elevation: 8,
   },
   iconBox: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  title: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#94A3B8", textAlign: "right" },
-  body: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 2, textAlign: "right" },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#94A3B8" },
+  body: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 2 },
 });
 
 const RATING_TAGS = ["الاهتمام بالتفاصيل", "الالتزام بالوقت", "التعامل الراقي", "جودة التنظيف"];
@@ -537,7 +537,7 @@ export default function TrackingScreen() {
           </Text>
         </View>
         <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={() => router.back()}>
-          <Feather name="chevron-right" size={22} color={colors.foreground} />
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -552,7 +552,7 @@ export default function TrackingScreen() {
         {isPending && !isProvider && (
           <View style={[styles.pendingBanner, { backgroundColor: "#FFF8E7", borderColor: "#F59E0B" }]}>
             <ActivityIndicator color="#F59E0B" size="small" />
-            <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#92600A", marginRight: 10 }}>
+            <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 13, color: "#92600A", marginEnd: 10 }}>
               يتم الآن البحث عن أقرب مزود خدمة… سيتم إشعارك فور القبول
             </Text>
           </View>
@@ -607,7 +607,7 @@ export default function TrackingScreen() {
           <View style={[styles.avatarBox, { backgroundColor: colors.primaryLight }]}>
             <Text style={{ fontFamily: "Tajawal_700Bold", color: colors.primary, fontSize: 16 }}>{otherInitials || "؟"}</Text>
           </View>
-          <View style={{ flex: 1, marginRight: 12, alignItems: "flex-end" }}>
+          <View style={{ flex: 1, marginEnd: 12, alignItems: "flex-end" }}>
             <Text style={[styles.pName, { color: colors.foreground }]}>
               {otherParty?.full_name || (isProvider ? "العميل" : isPending ? "جاري البحث عن مزود…" : "مزود الخدمة")}
             </Text>
@@ -617,7 +617,7 @@ export default function TrackingScreen() {
                 : (booking.provider_data?.vehicle ? `${booking.provider_data.vehicle} • ${booking.provider_data.plate || ""}` : "")}
             </Text>
           </View>
-          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginLeft: 8 }]} onPress={openChat}>
+          <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginStart: 8 }]} onPress={openChat}>
             <Feather name="message-circle" size={18} color={colors.primary} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.successLight }]} onPress={callOtherParty}>
@@ -627,7 +627,7 @@ export default function TrackingScreen() {
 
         {/* Unified Vertical Timeline */}
         <View style={[styles.timelineCard, { backgroundColor: colors.card }]}>
-          <View style={{ flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
             <Text style={[styles.timelineTitle, { color: colors.foreground, marginBottom: 0 }]}>المخطط الزمني</Text>
             {isTerminal && (
               <View style={[styles.termBadge, { backgroundColor: (statusColor + "20") }]}>
@@ -751,7 +751,7 @@ export default function TrackingScreen() {
                         {(booking.provider?.full_name || "م").trim().split(" ").map((s: string) => s[0]).slice(0, 2).join("")}
                       </Text>
                     </View>
-                    <View style={{ flex: 1, marginRight: 10 }}>
+                    <View style={{ flex: 1, marginEnd: 10 }}>
                       <Text style={rs.providerName}>{booking.provider?.full_name || "مزود الخدمة"}</Text>
                       <Text style={rs.providerSub}>{booking.services?.title_ar || "خدمة تنظيف"}</Text>
                     </View>
@@ -818,22 +818,22 @@ const rs = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },
   sheet: { backgroundColor: "#FFF", borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingBottom: 36 },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: "#E2E8F0", alignSelf: "center", marginTop: 10, marginBottom: 4 },
-  header: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", paddingVertical: 14 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 14 },
   title: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#0F172A", textAlign: "center" },
-  providerRow: { flexDirection: "row-reverse", alignItems: "center", backgroundColor: "#F8FAFC", borderRadius: 16, padding: 14, marginBottom: 16 },
+  providerRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#F8FAFC", borderRadius: 16, padding: 14, marginBottom: 16 },
   providerAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: "#DCFCE7", alignItems: "center", justifyContent: "center" },
   providerInitials: { fontFamily: "Tajawal_700Bold", fontSize: 18, color: "#16C47F" },
-  providerName: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#0F172A", textAlign: "right" },
-  providerSub: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B", textAlign: "right", marginTop: 2 },
+  providerName: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#0F172A" },
+  providerSub: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B", marginTop: 2 },
   sectionLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#F59E0B", textAlign: "center", marginBottom: 6, minHeight: 20 },
-  starsRow: { flexDirection: "row-reverse", justifyContent: "center", gap: 8, marginBottom: 18 },
-  tagsRow: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8, marginBottom: 14 },
+  starsRow: { flexDirection: "row", justifyContent: "center", gap: 8, marginBottom: 18 },
+  tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
   tag: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: "#E2E8F0", backgroundColor: "#F8FAFC" },
   tagActive: { borderColor: "#16C47F", backgroundColor: "#DCFCE7" },
   tagT: { fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B" },
   tagTActive: { color: "#16C47F", fontFamily: "Tajawal_700Bold" },
   commentInput: { borderWidth: 1, borderColor: "#E2E8F0", borderRadius: 14, padding: 12, fontFamily: "Tajawal_400Regular", fontSize: 13, color: "#0F172A", minHeight: 80, textAlignVertical: "top", marginBottom: 18 },
-  actions: { flexDirection: "row-reverse", gap: 10 },
+  actions: { flexDirection: "row", gap: 10 },
   skipBtn: { flex: 1, height: 48, borderRadius: 14, borderWidth: 1, borderColor: "#E2E8F0", alignItems: "center", justifyContent: "center" },
   skipT: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#64748B" },
   submitBtn: { flex: 2, height: 48, borderRadius: 14, backgroundColor: "#16C47F", alignItems: "center", justifyContent: "center" },
@@ -850,7 +850,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   header: {
-    flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between",
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 16, paddingBottom: 12,
     borderBottomWidth: 0.5, borderBottomColor: "rgba(0,0,0,0.06)",
   },
@@ -860,28 +860,28 @@ const styles = StyleSheet.create({
   iconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   progressBar: { height: 4 },
   progressFill: { height: 4, borderRadius: 2 },
-  pendingBanner: { flexDirection: "row-reverse", alignItems: "center", margin: 12, padding: 12, borderRadius: 14, borderWidth: 1 },
-  etaRow: { flexDirection: "row-reverse", paddingHorizontal: 12, gap: 8, marginTop: 12, marginBottom: 12 },
+  pendingBanner: { flexDirection: "row", alignItems: "center", margin: 12, padding: 12, borderRadius: 14, borderWidth: 1 },
+  etaRow: { flexDirection: "row", paddingHorizontal: 12, gap: 8, marginTop: 12, marginBottom: 12 },
   etaHalf: { flex: 1, padding: 12, borderRadius: 16, alignItems: "center", gap: 3 },
   etaSmall: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
   etaLarge: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   etaStatus: { fontFamily: "Tajawal_700Bold", fontSize: 10, textAlign: "center" },
   mapSection: { paddingHorizontal: 14, marginBottom: 12 },
   mapContainer: { height: 220, borderRadius: 20, overflow: "hidden" },
-  gpsBtn: { position: "absolute", bottom: 12, left: 12, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  partyCard: { flexDirection: "row-reverse", alignItems: "center", marginHorizontal: 14, padding: 14, borderRadius: 18, marginBottom: 12, gap: 8 },
+  gpsBtn: { position: "absolute", bottom: 12, start: 12, width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  partyCard: { flexDirection: "row", alignItems: "center", marginHorizontal: 14, padding: 14, borderRadius: 18, marginBottom: 12, gap: 8 },
   avatarBox: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
   pName: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
   pSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
   timelineCard: { marginHorizontal: 14, padding: 16, borderRadius: 18, marginBottom: 12 },
-  timelineTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, textAlign: "right", marginBottom: 16 },
+  timelineTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 16 },
   termBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  vtRow: { flexDirection: "row-reverse", gap: 12 },
+  vtRow: { flexDirection: "row", gap: 12 },
   vtDot: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 2 },
   vtConnector: { width: 2, flex: 1, minHeight: 16, marginTop: 2, borderRadius: 1 },
   vtContent: { flex: 1, paddingTop: 2 },
-  vtLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "right" },
-  vtTime: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "right", marginTop: 2 },
-  actionBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row-reverse", gap: 8 },
+  vtLabel: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
+  vtTime: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
+  actionBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   actionT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });
