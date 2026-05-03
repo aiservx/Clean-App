@@ -168,6 +168,26 @@ create table if not exists messages (
   created_at timestamptz default now()
 );
 
+create table if not exists refunds (
+  id uuid primary key default gen_random_uuid(),
+  booking_id uuid references bookings(id) on delete set null,
+  user_id uuid references profiles(id) on delete set null,
+  amount numeric(10,2) not null default 0,
+  reason text,
+  status text default 'pending',
+  created_at timestamptz default now()
+);
+
+create table if not exists support_tickets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles(id) on delete set null,
+  subject text not null,
+  body text,
+  priority text default 'normal',
+  status text default 'open',
+  created_at timestamptz default now()
+);
+
 -- ============== RLS ==============
 alter table profiles enable row level security;
 alter table service_categories enable row level security;
@@ -184,7 +204,18 @@ alter table payouts enable row level security;
 alter table push_tokens enable row level security;
 alter table chat_rooms enable row level security;
 alter table messages enable row level security;
+alter table refunds enable row level security;
+alter table support_tickets enable row level security;
 
+-- =========== is_admin() — must be defined BEFORE any policy that uses it ===========
+create or replace function public.is_admin()
+returns boolean
+language sql security definer stable
+as $$
+  select exists(select 1 from public.profiles where id = auth.uid() and role = 'admin');
+$$;
+
+-- =========== USER POLICIES ===========
 drop policy if exists "public read cats" on service_categories;
 create policy "public read cats" on service_categories for select using (true);
 drop policy if exists "public read services" on services;
@@ -241,8 +272,50 @@ create policy "msg participant" on messages for all using (
 );
 drop policy if exists "payout own" on payouts;
 create policy "payout own" on payouts for all using (auth.uid() = provider_id) with check (auth.uid() = provider_id);
+drop policy if exists "user own refund" on refunds;
+create policy "user own refund" on refunds for select using (auth.uid() = user_id);
+drop policy if exists "user own support" on support_tickets;
+create policy "user own support" on support_tickets for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- =========== ADMIN RPC: fetch push tokens bypassing RLS ==================
+-- =========== ADMIN POLICIES ===========
+drop policy if exists "admin all profiles" on profiles;
+create policy "admin all profiles" on profiles for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all categories" on service_categories;
+create policy "admin all categories" on service_categories for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all services" on services;
+create policy "admin all services" on services for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all addresses" on addresses;
+create policy "admin all addresses" on addresses for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all providers" on providers;
+create policy "admin all providers" on providers for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all bookings" on bookings;
+create policy "admin all bookings" on bookings for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all booking_log" on booking_status_log;
+create policy "admin all booking_log" on booking_status_log for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all notifications" on notifications;
+create policy "admin all notifications" on notifications for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin read notifications" on notifications;
+create policy "admin read notifications" on notifications for select using (public.is_admin() or auth.uid() = user_id);
+drop policy if exists "admin all favorites" on favorites;
+create policy "admin all favorites" on favorites for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all reviews" on reviews;
+create policy "admin all reviews" on reviews for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all offers" on offers;
+create policy "admin all offers" on offers for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all payouts" on payouts;
+create policy "admin all payouts" on payouts for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all push" on push_tokens;
+create policy "admin all push" on push_tokens for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all rooms" on chat_rooms;
+create policy "admin all rooms" on chat_rooms for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all messages" on messages;
+create policy "admin all messages" on messages for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all refunds" on refunds;
+create policy "admin all refunds" on refunds for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin all support" on support_tickets;
+create policy "admin all support" on support_tickets for all using (public.is_admin()) with check (public.is_admin());
+
+-- =========== ADMIN RPC ===========
 create or replace function get_push_tokens_for_users(user_ids uuid[])
 returns table(token text, user_id uuid)
 language sql
@@ -296,104 +369,6 @@ create trigger trg_booking_status
   after insert or update on bookings
   for each row execute function public.log_booking_status();
 
--- enable realtime
-alter publication supabase_realtime add table bookings;
-alter publication supabase_realtime add table booking_status_log;
-alter publication supabase_realtime add table notifications;
-alter publication supabase_realtime add table providers;
-alter publication supabase_realtime add table messages;
-alter publication supabase_realtime add table chat_rooms;
-
--- ============================================================================
--- ADMIN POLICIES — admins can do everything (fix for "edit/delete don't work")
--- ============================================================================
-create or replace function public.is_admin()
-returns boolean
-language sql security definer stable
-as $$
-  select exists(select 1 from public.profiles where id = auth.uid() and role = 'admin');
-$$;
-
-drop policy if exists "admin all profiles" on profiles;
-create policy "admin all profiles" on profiles for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all categories" on service_categories;
-create policy "admin all categories" on service_categories for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all services" on services;
-create policy "admin all services" on services for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all addresses" on addresses;
-create policy "admin all addresses" on addresses for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all providers" on providers;
-create policy "admin all providers" on providers for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all bookings" on bookings;
-create policy "admin all bookings" on bookings for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all booking_log" on booking_status_log;
-create policy "admin all booking_log" on booking_status_log for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all notifications" on notifications;
-create policy "admin all notifications" on notifications for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all favorites" on favorites;
-create policy "admin all favorites" on favorites for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all reviews" on reviews;
-create policy "admin all reviews" on reviews for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all offers" on offers;
-create policy "admin all offers" on offers for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all payouts" on payouts;
-create policy "admin all payouts" on payouts for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all push" on push_tokens;
-create policy "admin all push" on push_tokens for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all rooms" on chat_rooms;
-create policy "admin all rooms" on chat_rooms for all using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "admin all messages" on messages;
-create policy "admin all messages" on messages for all using (public.is_admin()) with check (public.is_admin());
-
--- Refunds & support tables (used by admin) — make sure they exist
-create table if not exists refunds (
-  id uuid primary key default gen_random_uuid(),
-  booking_id uuid references bookings(id) on delete set null,
-  user_id uuid references profiles(id) on delete set null,
-  amount numeric(10,2) not null default 0,
-  reason text,
-  status text default 'pending',
-  created_at timestamptz default now()
-);
-alter table refunds enable row level security;
-drop policy if exists "admin all refunds" on refunds;
-create policy "admin all refunds" on refunds for all using (public.is_admin()) with check (public.is_admin());
-drop policy if exists "user own refund" on refunds;
-create policy "user own refund" on refunds for select using (auth.uid() = user_id);
-
-create table if not exists support_tickets (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references profiles(id) on delete set null,
-  subject text not null,
-  body text,
-  priority text default 'normal',
-  status text default 'open',
-  created_at timestamptz default now()
-);
-alter table support_tickets enable row level security;
-drop policy if exists "admin all support" on support_tickets;
-create policy "admin all support" on support_tickets for all using (public.is_admin()) with check (public.is_admin());
-drop policy if exists "user own support" on support_tickets;
-create policy "user own support" on support_tickets for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- T023: Auto-insert notifications on booking status changes.
--- Sends a row to notifications for both the user and the assigned provider.
--- ─────────────────────────────────────────────────────────────────────────────
 create or replace function public.fn_booking_status_notify()
 returns trigger language plpgsql security definer as $$
 declare
@@ -408,25 +383,23 @@ begin
   elsif (tg_op = 'UPDATE' and new.status is distinct from old.status) then
     v_type := 'booking_status';
     case new.status
-      when 'accepted'  then v_title := 'تم قبول طلبك ✅';      v_body := 'الفنّي قَبِل طلبك وسيتواصل معك قريباً.';
-      when 'on_the_way' then v_title := 'الفنّي في الطريق 🚗';   v_body := 'يمكنك متابعة موقع الفنّي مباشرة من شاشة التتبع.';
-      when 'in_progress' then v_title := 'بدأ تنفيذ الخدمة 🧹';   v_body := 'الفنّي بدأ العمل على طلبك.';
-      when 'completed' then v_title := 'اكتملت الخدمة 🎉';      v_body := 'يسعدنا معرفة رأيك — اضغط لتقييم الفنّي.';
-      when 'cancelled' then v_title := 'تم إلغاء الطلب';        v_body := 'إذا كان هذا غير صحيح يمكنك التواصل مع الدعم.';
-      else                  v_title := 'تحديث على الطلب';        v_body := 'الحالة الجديدة: ' || new.status;
+      when 'accepted'    then v_title := 'تم قبول طلبك ✅';       v_body := 'الفنّي قَبِل طلبك وسيتواصل معك قريباً.';
+      when 'on_the_way'  then v_title := 'الفنّي في الطريق 🚗';    v_body := 'يمكنك متابعة موقع الفنّي مباشرة من شاشة التتبع.';
+      when 'in_progress' then v_title := 'بدأ تنفيذ الخدمة 🧹';    v_body := 'الفنّي بدأ العمل على طلبك.';
+      when 'completed'   then v_title := 'اكتملت الخدمة 🎉';       v_body := 'يسعدنا معرفة رأيك — اضغط لتقييم الفنّي.';
+      when 'cancelled'   then v_title := 'تم إلغاء الطلب';         v_body := 'إذا كان هذا غير صحيح يمكنك التواصل مع الدعم.';
+      else                    v_title := 'تحديث على الطلب';         v_body := 'الحالة الجديدة: ' || new.status;
     end case;
   else
     return new;
   end if;
 
-  -- Notify customer
   if new.user_id is not null then
     insert into notifications (user_id, title, body, type, data)
     values (new.user_id, v_title, v_body, v_type, jsonb_build_object('booking_id', new.id, 'status', new.status));
   end if;
 
-  -- Notify provider (if assigned)
-  if new.provider_id is not null and (tg_op = 'UPDATE' or new.provider_id is not null) then
+  if new.provider_id is not null then
     insert into notifications (user_id, title, body, type, data)
     values (new.provider_id, v_title, v_body, v_type, jsonb_build_object('booking_id', new.id, 'status', new.status));
   end if;
@@ -439,3 +412,29 @@ drop trigger if exists trg_booking_status_notify on bookings;
 create trigger trg_booking_status_notify
 after insert or update of status on bookings
 for each row execute function public.fn_booking_status_notify();
+
+-- =========== REALTIME ===========
+alter publication supabase_realtime add table bookings;
+alter publication supabase_realtime add table booking_status_log;
+alter publication supabase_realtime add table notifications;
+alter publication supabase_realtime add table providers;
+alter publication supabase_realtime add table messages;
+alter publication supabase_realtime add table chat_rooms;
+
+-- =========== MIGRATION v2 ===========
+alter table providers add column if not exists services text[] default '{}';
+alter table providers add column if not exists areas text[] default '{}';
+alter table addresses add column if not exists address text;
+
+do $$
+begin
+  alter type provider_status_t add value if not exists 'rejected';
+exception when others then null;
+end$$;
+
+-- =========== MIGRATION: messages ===========
+alter table public.messages add column if not exists read boolean default false;
+
+create index if not exists messages_room_id_idx on public.messages(room_id);
+create index if not exists messages_created_at_idx on public.messages(created_at desc);
+create index if not exists chat_rooms_booking_id_idx on public.chat_rooms(booking_id);
