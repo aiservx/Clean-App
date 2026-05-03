@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   title: { fontFamily: "Tajawal_700Bold", fontSize: 28, textAlign: "center", marginBottom: 6 },
   sub: { fontFamily: "Tajawal_500Medium", fontSize: 14, textAlign: "center" },
   banner: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderRadius: 14, borderWidth: 1.5, marginBottom: 14 },
-  bannerText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14, flex: 1, textAlign: "right" },
+  bannerText: { fontFamily: "Tajawal_600SemiBold", fontSize: 14, flex: 1 },
   field: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 56, borderRadius: 16, marginBottom: 12, gap: 10 },
   input: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14 },
   btn: { height: 56, borderRadius: 18, alignItems: "center", justifyContent: "center" },
