@@ -1,5 +1,38 @@
 # بناء ملف APK لتطبيق نظافة
 
+## آخر Build ناجح — Development Client (Build #7) ✅
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `85383fd5-da5a-4bfd-a359-f35294215b6d` |
+| Platform | Android |
+| Profile | **development** |
+| Status | **finished** |
+| SDK Version | 54.0.0 |
+| Runtime Version | 1.0.0 |
+| Version | 1.0.0 (versionCode 2) |
+| Started | 5/3/2026, 5:14 PM |
+| Finished | 5/3/2026, 5:25 PM |
+| **تنزيل APK** | **https://expo.dev/artifacts/eas/hs8BE8CVF3Gkzedobekwhe.apk** |
+| صفحة الـ Build | https://expo.dev/accounts/clean-beaton/projects/mobile/builds/85383fd5-da5a-4bfd-a359-f35294215b6d |
+
+### ملاحظات هذا البناء
+- نوع البناء: **Development Client** (يدعم Expo Dev Tools وتحديثات فورية)
+- تم تثبيت `expo-dev-client@6.0.21` بالإصدار المتوافق مع SDK 54
+- `EXPO_PUBLIC_API_URL` يشير إلى: `https://10252f24-0ba5-48e4-9528-e9243ecba660-00-3fvtassaapdy7.spock.replit.dev`
+- **ملاحظة**: هذا الـ APK يتطلب أن يكون Replit شغّالاً للاتصال بـ API. للإنتاج انشر API Server أولاً.
+
+---
+
+## Build #6 — فشل البناء (errored)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `cd45afd9-a497-4db6-a722-93687f99da39` |
+| Status | **errored** — `expo-dev-menu@55.0.26` غير متوافق مع SDK 54 |
+
+---
+
 ## آخر Build ناجح ✅
 
 | الحقل | القيمة |
