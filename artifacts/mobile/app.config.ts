@@ -48,6 +48,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     web: {
       favicon: "./assets/images/icon-light.png",
     },
+    updates: {
+      url: "https://u.expo.dev/dd03c810-2182-47e7-9a0a-823fdcc351b8",
+      fallbackToCacheTimeout: 0,
+      checkAutomatically: "ON_LOAD",
+      requestHeaders: {
+        "expo-channel-name": "preview",
+      },
+    },
+    runtimeVersion: {
+      policy: "appVersion",
+    },
     plugins: [
       ["expo-router", { origin }],
       "expo-font",
@@ -63,6 +74,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         "expo-notifications",
         { icon: "./assets/images/icon-light.png", color: "#7C3AED" },
       ],
+      "expo-updates",
     ],
     experiments: {
       typedRoutes: true,

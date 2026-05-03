@@ -35,6 +35,12 @@ import { ProviderOrderBadgeProvider } from "@/lib/providerOrderBadge";
 import { registerForPush } from "@/lib/notifications";
 import { RealtimeProvider } from "@/lib/realtimeStore";
 import { RatingBottomSheetController } from "@/components/RatingBottomSheet";
+import { useOTAUpdate } from "@/lib/useOTAUpdate";
+
+function OTAUpdater() {
+  useOTAUpdate();
+  return null;
+}
 
 function PushRegistrar() {
   const { session } = useAuth();
@@ -245,6 +251,7 @@ export default function RootLayout() {
                 <I18nProvider>
                   <AuthProvider>
                     <RealtimeProvider>
+                      <OTAUpdater />
                       <PushRegistrar />
                       <ProviderOrderBadgeProvider>
                         <ChatBadgeProvider>
