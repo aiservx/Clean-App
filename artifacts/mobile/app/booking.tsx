@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
   headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 13 },
   stepperContainer: {
-    flexDirection: "row",
+    flexDirection: rowDir,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
