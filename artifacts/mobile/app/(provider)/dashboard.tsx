@@ -108,7 +108,7 @@ export default function ProviderHome() {
           notes: b.notes,
           addr_lat: lat,
           addr_lng: lng,
-          addr_text: [addr?.district, addr?.city].filter(Boolean).join("، ") || addr?.street || "—",
+          addr_text: [addr?.street, addr?.district, addr?.city].filter(Boolean).join("، ") || "—",
           d_km: d,
           eta_min: d != null ? Math.max(5, Math.round((d / 30) * 60)) : null,
         };
@@ -163,7 +163,7 @@ export default function ProviderHome() {
           notes: b.notes,
           addr_lat: lat,
           addr_lng: lng,
-          addr_text: [addr?.district, addr?.city].filter(Boolean).join("، ") || addr?.street || "—",
+          addr_text: [addr?.street, addr?.district, addr?.city].filter(Boolean).join("، ") || "—",
           d_km: d,
           eta_min: d != null ? Math.max(5, Math.round((d / 30) * 60)) : null,
         };

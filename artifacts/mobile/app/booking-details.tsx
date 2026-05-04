@@ -111,7 +111,7 @@ export default function BookingDetails() {
   const currentIdx = STATUS_FLOW.indexOf(booking.status);
   const tax = booking.total * 0.15;
   const base = booking.total - tax;
-  const addrText = [booking.addresses?.district, booking.addresses?.city].filter(Boolean).join("، ") || booking.addresses?.street || "—";
+  const addrText = [booking.addresses?.street, booking.addresses?.district, booking.addresses?.city].filter(Boolean).join("، ") || "—";
   const bookingNum = booking.id.split("-")[0].toUpperCase();
 
   const timeline = STATUS_FLOW.map((step, i) => {

@@ -115,7 +115,7 @@ export default function ProviderBookings() {
         ) : (
           filtered.map((o) => {
             const stColor = statusColor(o.status, colors);
-            const addr = [o.addresses?.district, o.addresses?.city].filter(Boolean).join("، ") || o.addresses?.street || "—";
+            const addr = [o.addresses?.street, o.addresses?.district, o.addresses?.city].filter(Boolean).join("، ") || "—";
             return (
               <TouchableOpacity key={o.id} style={[styles.card, { backgroundColor: colors.card }]} onPress={() => router.push(`/(provider)/booking-details?id=${o.id}` as any)} activeOpacity={0.92}>
                 <View style={styles.cardTop}>

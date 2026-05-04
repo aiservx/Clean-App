@@ -151,8 +151,7 @@ function mapBooking(b: any): BookingRow {
     provider_avatar: b.provider?.avatar_url || null,
     provider_id: b.provider_id || null,
     addr_text:
-      [b.addresses?.district, b.addresses?.city].filter(Boolean).join("، ") ||
-      b.addresses?.street ||
+      [b.addresses?.street, b.addresses?.district, b.addresses?.city].filter(Boolean).join("، ") ||
       "—",
   };
 }
