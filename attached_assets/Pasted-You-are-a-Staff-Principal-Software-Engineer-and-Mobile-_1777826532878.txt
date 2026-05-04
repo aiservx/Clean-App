@@ -1,0 +1,218 @@
+You are a Staff/Principal Software Engineer and Mobile Systems Architect.
+
+Your task is to perform a FULL SYSTEM AUDIT of the entire application. This is NOT a surface-level review. This is a deep architectural, UI/UX, and systems-level analysis.
+
+You must think in terms of:
+
+* scalability
+* maintainability
+* correctness
+* user experience
+* production reliability
+
+---
+
+## SCOPE (Audit EVERYTHING)
+
+You must review ALL aspects of the system including:
+
+### 1) UI/UX SYSTEM
+
+* RTL/LTR handling (global + component level)
+* Layout consistency across all screens
+* Design system adherence
+* Component reuse and duplication
+* Alignment, spacing, hierarchy
+* Responsiveness (mobile vs web inconsistencies)
+* Accessibility issues
+
+---
+
+### 2) FRONTEND ARCHITECTURE
+
+* State management (structure, anti-patterns, leaks)
+* Component structure (tight coupling / reusability)
+* Navigation architecture
+* Error handling strategy
+* Code duplication and technical debt
+
+---
+
+### 3) BACKEND & API DESIGN
+
+* API structure (REST/GraphQL correctness)
+* Naming conventions
+* Response consistency
+* Error handling
+* Authentication / authorization flow
+* Rate limits / retry strategy
+
+---
+
+### 4) REAL-TIME & SYNC SYSTEM
+
+* Data synchronization issues
+* Race conditions
+* Idempotency problems
+* Duplicate events / requests
+* Offline handling (if applicable)
+
+---
+
+### 5) NOTIFICATIONS SYSTEM
+
+* Push notifications flow
+* In-app notifications consistency
+* Event triggering logic
+* Missing or duplicated notifications
+* Latency and reliability issues
+
+---
+
+### 6) MESSAGING / CHAT (if exists)
+
+* Message ordering
+* Delivery guarantees
+* Read receipts correctness
+* Reconnection handling
+
+---
+
+### 7) LOCATION / MAP / TRACKING (CRITICAL)
+
+* Accuracy of location updates
+* Frequency vs performance tradeoff
+* Background tracking issues
+* Permission handling
+* Map rendering correctness
+* Edge cases (no GPS / weak signal)
+
+---
+
+### 8) PERFORMANCE
+
+* Render performance (UI jank)
+* Network performance
+* Memory leaks
+* Unnecessary re-renders
+* Large lists optimization
+
+---
+
+### 9) SECURITY
+
+* Sensitive data exposure
+* Token handling
+* API vulnerabilities
+* Client-side trust issues
+
+---
+
+### 10) ERROR & EDGE CASES
+
+* What happens on:
+
+  * network failure
+  * slow connections
+  * API errors
+  * partial data
+* Crash scenarios
+
+---
+
+### 11) LOGGING & DEBUGGING
+
+* Are logs sufficient?
+* Can issues be traced in production?
+* Missing observability
+
+---
+
+### 12) CODEBASE HEALTH
+
+* Code smells
+* Dead code
+* Inconsistent patterns
+* Lack of standards
+
+---
+
+## OUTPUT FORMAT (STRICT)
+
+You MUST structure the output as follows:
+
+### 1) EXECUTIVE SUMMARY
+
+* Overall system health (score /10)
+* Top 5 critical issues
+
+---
+
+### 2) CRITICAL ISSUES (P0)
+
+For each issue:
+
+* Title
+* Where it occurs
+* Root cause (NOT symptoms)
+* Why this is dangerous
+* Exact fix (actionable)
+
+---
+
+### 3) MAJOR ISSUES (P1)
+
+---
+
+### 4) MINOR ISSUES (P2)
+
+---
+
+### 5) ARCHITECTURAL FLAWS
+
+* Deep system design problems
+* Long-term risks
+
+---
+
+### 6) QUICK WINS
+
+* Easy fixes with big impact
+
+---
+
+### 7) REFACTOR PLAN
+
+* Step-by-step prioritized plan
+* What to fix first, second, third
+
+---
+
+### 8) RTL/LTR SPECIAL SECTION
+
+* Identify ALL direction-related issues
+* Explain why they happen
+* Provide a unified system solution
+
+---
+
+### 9) RISK ANALYSIS
+
+* What will break if nothing is fixed
+* Scaling risks
+
+---
+
+## IMPORTANT RULES
+
+* DO NOT give generic advice
+* DO NOT repeat obvious things
+* Every issue MUST include root cause
+* Every fix MUST be actionable
+* Think like you're preparing the system for 1M+ users
+
+---
+
+## GOAL
+
+Deliver a brutally honest, deeply technical audit that can be used as a single source of truth to rebuild and stabilize the system.

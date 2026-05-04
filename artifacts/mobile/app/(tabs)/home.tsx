@@ -580,7 +580,7 @@ export default function HomeScreen() {
           >
             <Image
               source={require("@/assets/images/invite_friends_banner.png")}
-              style={{ width: "100%", aspectRatio: 1378 / 563, borderRadius: 18 }}
+              style={{ width: CONTENT_W, aspectRatio: 1378 / 563, borderRadius: 18 }}
               resizeMode="cover"
             />
           </TouchableOpacity>

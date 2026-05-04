@@ -11,13 +11,13 @@ title = "cleaning app icon"
 id = "NbL_pfwGCncPQ_juTQPaC"
 uri = "file://artifacts/mobile/assets/images/illustration-bucket.png"
 type = "image"
-title = "generated_image"
+title = "cleaning bucket 3d"
 
 [[generated]]
 id = "bij4ofbinL_C73PzI6vAe"
 uri = "file://artifacts/mobile/assets/images/illustration-sofa.png"
 type = "image"
-title = "generated_image"
+title = "blue sofa room"
 
 [[generated]]
 id = "qCSVsHnZqeGE--6et0lUf"
@@ -29,7 +29,7 @@ title = "office desk 3d"
 id = "3EvFK-XQph4HuJxbjJVGf"
 uri = "file://artifacts/mobile/assets/images/illustration-vacuum.png"
 type = "image"
-title = "generated_image"
+title = "blue vacuum 3d"
 
 [[generated]]
 id = "UH7-o1MzSxDbQcGJR3LKi"
@@ -53,7 +53,7 @@ title = "friends gift referral"
 id = "SaVgBAmnrXWyYPXwv0fRy"
 uri = "file://artifacts/mobile/assets/images/cleaner-fatima.png"
 type = "image"
-title = "generated_image"
+title = "cleaner avatar fatima"
 
 [[generated]]
 id = "3x8sloXGAJVOelyNCeXb9"
@@ -95,7 +95,7 @@ title = "svc office"
 id = "mwCI3wc3RlCJDzBhNE7AK"
 uri = "file://artifacts/mobile/assets/services/svc-sofa.png"
 type = "image"
-title = "generated_image"
+title = "svc sofa"
 
 [[generated]]
 id = "TU925uF-GRlUiz_UsJFha"
@@ -107,34 +107,28 @@ title = "svc villa"
 id = "ZwfccCz4Xx5nzhTauMYks"
 uri = "file://artifacts/mobile/assets/services/svc-apartment.png"
 type = "image"
-title = "generated_image"
+title = "svc apartment"
 
 [[generated]]
 id = "ZaVkYXucdKu1QJ1qvofq3"
 uri = "file://artifacts/mobile/assets/services/svc-carpet.png"
 type = "image"
-title = "generated_image"
+title = "svc carpet"
 
 [[generated]]
 id = "33INtJchLQA8I74XIhRW2"
 uri = "file://artifacts/mobile/assets/services/svc-kitchen.png"
 type = "image"
-title = "generated_image"
+title = "svc kitchen"
 
 [[generated]]
 id = "fooXQQh3IJLdgZsxFze9Z"
 uri = "file://artifacts/mobile/assets/services/svc-bathroom.png"
 type = "image"
-title = "generated_image"
+title = "svc bathroom"
 
 [[generated]]
 id = "J_7Vvm8mZUMmrssQbFKjQ"
 uri = "file://artifacts/mobile/assets/services/svc-window.png"
 type = "image"
 title = "svc window"
-
-[[generated]]
-id = "e6dkKVeYOAD5Hk5EroBtR"
-uri = "file://artifacts/mobile/assets/images/default-avatar.png"
-type = "image"
-title = "generated_image"

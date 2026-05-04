@@ -1,0 +1,218 @@
+You are a senior React Native + Expo mobile app engineer and elite UI replication specialist.
+
+Your task is to build a FULLY FUNCTIONAL mobile application that recreates the attached UI screens EXACTLY AS THEY APPEAR with pixel-perfect accuracy.
+
+IMPORTANT:
+This is NOT inspiration.
+This is NOT approximation.
+This is NOT a redesign.
+
+You MUST reproduce the uploaded screens IDENTICALLY:
+- same layout
+- same spacing
+- same alignment
+- same hierarchy
+- same shadows
+- same colors
+- same gradients
+- same typography style
+- same card sizes
+- same border radius
+- same icon positions
+- same navigation structure
+- same paddings/margins
+- same visual proportions
+- same Arabic RTL behavior
+- same UI feel
+- same premium modern aesthetic
+
+The final result must look like the ORIGINAL uploaded designs with near 1:1 visual matching.
+
+====================================================
+TECH STACK
+====================================================
+
+Use:
+- React Native with Expo
+- TypeScript
+- React Navigation
+- React Native Reanimated
+- React Native Gesture Handler
+- Expo Blur
+- Expo Linear Gradient
+- React Native Maps
+- Lucide Icons or matching icon library
+- NativeWind OR Styled Components
+- RTL Arabic support
+
+====================================================
+APP STYLE REQUIREMENTS
+====================================================
+
+Design Style:
+- Premium Saudi startup aesthetic
+- Similar quality level to Uber / Careem
+- Minimal luxury UI
+- Soft glassmorphism
+- Smooth gradients
+- White clean backgrounds
+- Soft floating cards
+- Subtle shadows
+- Rounded corners
+- Smooth transitions
+- Modern Arabic mobile UX
+
+Primary Colors:
+- Green gradient: #16C47F → #00D26A
+- Blue gradient: #2F80ED → #4AA3FF
+- Background: #F7F9FC
+- Text Dark: #1F2A37
+- Secondary Text: #6B7280
+
+Border Radius:
+- Cards: 24px
+- Buttons: 18px
+- Inputs: 16px
+
+Shadow Style:
+- Very soft premium shadows
+- iOS modern shadow aesthetic
+
+====================================================
+RTL SUPPORT
+====================================================
+
+The ENTIRE app MUST support:
+- Arabic RTL layout
+- Right-aligned typography
+- Mirrored navigation behavior
+- Proper Arabic spacing
+- RTL flex directions
+
+Arabic font style should resemble:
+- SF Arabic
+- Cairo
+- IBM Plex Sans Arabic
+
+====================================================
+SCREENS TO BUILD
+====================================================
+
+Build ALL uploaded screens exactly:
+
+1. Home Screen
+- Map section
+- Search bar
+- Service categories
+- Nearby cleaners
+- Bottom navigation
+- Floating booking button
+
+2. Services Screen
+- Grid categories
+- Filter tabs
+- Service cards
+- Pricing labels
+
+3. Booking Screen
+- Date selection
+- Time selection
+- Cleaner selection
+- Booking summary
+- Payment section
+- Confirm booking button
+
+4. Tracking Screen
+- Live map
+- Cleaner route
+- ETA card
+- Cleaner profile
+- Call/chat buttons
+
+5. Profile Screen
+- User profile card
+- Saved addresses
+- Payment methods
+- Orders
+- Settings list
+
+6. Offers Screen
+- Discount banners
+- Seasonal campaigns
+- Referral rewards
+- Promo code section
+
+7. Cleaner Selection Screen
+- Cleaner cards
+- Ratings
+- Hourly pricing
+- Availability indicators
+- Filter/search functionality
+
+====================================================
+PIXEL PERFECT REQUIREMENTS
+====================================================
+
+You MUST:
+- inspect every uploaded image carefully
+- replicate dimensions precisely
+- match spacing exactly
+- preserve identical UI hierarchy
+- preserve exact visual rhythm
+- preserve same card scaling
+- preserve same typography proportions
+
+DO NOT:
+- redesign anything
+- change spacing
+- improvise layouts
+- replace UI structure
+- use generic templates
+- simplify the UI
+
+====================================================
+ANIMATIONS
+====================================================
+
+Include:
+- smooth page transitions
+- button press animations
+- card hover/touch effects
+- smooth bottom tab transitions
+- subtle loading states
+
+Animation style:
+- ultra smooth
+- premium
+- modern startup feel
+
+====================================================
+CODE QUALITY
+====================================================
+
+Requirements:
+- reusable components
+- scalable architecture
+- clean folder structure
+- responsive layouts
+- production-ready code
+- modular components
+
+====================================================
+DELIVERABLES
+====================================================
+
+Generate:
+- complete React Native Expo project
+- all screens
+- navigation setup
+- reusable UI components
+- theme system
+- RTL support
+- dummy backend/mock data
+- responsive mobile layouts
+
+The output must feel like a real production Saudi cleaning app comparable to Uber and Careem quality.
+
+MOST IMPORTANT:
+The final implementation MUST visually match the uploaded designs as closely as technologically possible.

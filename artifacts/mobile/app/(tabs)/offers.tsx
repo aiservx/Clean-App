@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Image, Platform, I18nManager, Dimensions, FlatList,
+  Image, Platform, I18nManager, FlatList, useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -11,7 +11,7 @@ import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
 import { SEASONAL_PROMOS, GRID_PROMO_ROWS } from "@/lib/promotions";
 
-// ── Hero slider banners (File 3) ─────────────────────────────────────────────
+// ── Hero slider banners ───────────────────────────────────────────────────────
 const HERO_BANNERS = [
   require("@/assets/images/banners/offers_banner_0.png"),
   require("@/assets/images/banners/offers_banner_1.png"),
@@ -19,6 +19,17 @@ const HERO_BANNERS = [
   require("@/assets/images/banners/offers_banner_3.png"),
 ];
 const HERO_AR = 853 / 440;
+
+// ── Collect all grid promo images for 3-per-row horizontal strip ─────────────
+const GRID_IMAGES: { src: any; code: string }[] = [
+  GRID_PROMO_ROWS[0]?.left  && { src: GRID_PROMO_ROWS[0].left,  code: "SUMMER25" },
+  GRID_PROMO_ROWS[0]?.right && { src: GRID_PROMO_ROWS[0].right, code: "SUMMER25" },
+  GRID_PROMO_ROWS[1]?.left  && { src: GRID_PROMO_ROWS[1].left,  code: "SEASON20" },
+  GRID_PROMO_ROWS[1]?.right && { src: GRID_PROMO_ROWS[1].right, code: "SEASON20" },
+  GRID_PROMO_ROWS[2]?.left  && { src: GRID_PROMO_ROWS[2].left,  code: "RAIN18" },
+  GRID_PROMO_ROWS[2]?.right && { src: GRID_PROMO_ROWS[2].right, code: "RAIN18" },
+  GRID_PROMO_ROWS[3]?.left  && { src: GRID_PROMO_ROWS[3].left,  code: "WEEK12" },
+].filter(Boolean) as { src: any; code: string }[];
 
 // ── Coupons ───────────────────────────────────────────────────────────────────
 const COUPONS = [
@@ -64,15 +75,20 @@ const COUPONS = [
   },
 ];
 
-const { width: SW } = Dimensions.get("window");
 const rowDir = I18nManager.isRTL ? ("row" as const) : ("row-reverse" as const);
 
 export default function OffersScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const { width: W } = useWindowDimensions();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [slideIdx, setSlideIdx] = useState(0);
   const heroRef = useRef<FlatList>(null);
+
+  // Card sizes derived from screen width
+  const CONTENT_W = W - 32; // 16px padding each side
+  const GRID_GAP = 8;
+  const GRID_CARD_W = (CONTENT_W - GRID_GAP * 2) / 3; // exactly 3 per visible row
 
   // Auto-advance hero slider
   useEffect(() => {
@@ -96,14 +112,14 @@ export default function OffersScreen() {
   };
 
   const renderHeroBanner = useCallback(({ item }: { item: any }) => (
-    <View style={{ width: SW, paddingHorizontal: 16 }}>
+    <View style={{ width: W, paddingHorizontal: 16 }}>
       <Image
         source={item}
         style={{ width: "100%", aspectRatio: HERO_AR, borderRadius: 18 }}
         resizeMode="cover"
       />
     </View>
-  ), []);
+  ), [W]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -118,7 +134,7 @@ export default function OffersScreen() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
 
-        {/* ── HERO SLIDER (File 3) ───────────────────────────────────────── */}
+        {/* ── HERO SLIDER ────────────────────────────────────────────────── */}
         <View style={{ marginBottom: 20 }}>
           <FlatList
             ref={heroRef}
@@ -129,10 +145,11 @@ export default function OffersScreen() {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={(e) =>
-              setSlideIdx(Math.round(e.nativeEvent.contentOffset.x / SW))
+              setSlideIdx(Math.round(e.nativeEvent.contentOffset.x / W))
             }
-            getItemLayout={(_, i) => ({ length: SW, offset: SW * i, index: i })}
+            getItemLayout={(_, i) => ({ length: W, offset: W * i, index: i })}
           />
+          {/* Pagination dots */}
           <View style={styles.dotsRow}>
             {HERO_BANNERS.map((_, idx) => (
               <View
@@ -205,7 +222,7 @@ export default function OffersScreen() {
           ))}
         </View>
 
-        {/* ── INVITE FRIENDS BANNER (mid-page) ─────────────────────────── */}
+        {/* ── INVITE FRIENDS BANNER ────────────────────────────────────────── */}
         <TouchableOpacity
           activeOpacity={0.92}
           style={{ marginHorizontal: 16, marginTop: 24, borderRadius: 18, overflow: "hidden" }}
@@ -213,138 +230,67 @@ export default function OffersScreen() {
         >
           <Image
             source={require("@/assets/images/invite_friends_banner.png")}
-            style={{ width: "100%", aspectRatio: 1378 / 563, borderRadius: 18 }}
+            style={{ width: CONTENT_W, aspectRatio: 1378 / 563, borderRadius: 18 }}
             resizeMode="cover"
           />
         </TouchableOpacity>
 
-        {/* ── SEASONAL OFFERS (mixed: File 4 wide + File 5 square grid) ── */}
+        {/* ── SEASONAL OFFERS — wide banners ───────────────────────────────── */}
         <View style={[styles.sectionHeader, { marginTop: 24 }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض موسمية</Text>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12 }}>
-          {/* File 4 card 1 (wide) */}
-          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[0]?.code || "", "s0")}>
-            <Image
-              source={SEASONAL_PROMOS[0]?.image}
-              style={{ width: "100%", aspectRatio: 793 / 356, borderRadius: 16 }}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-
-          {/* File 5 row 1: 2 square cards */}
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SUMMER25", "g0l")}>
+          {SEASONAL_PROMOS.map((promo, i) => (
+            <TouchableOpacity
+              key={promo.id}
+              activeOpacity={0.92}
+              onPress={() => copyCode(promo.code, `s${i}`)}
+            >
               <Image
-                source={GRID_PROMO_ROWS[0]?.left}
-                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                source={promo.image}
+                style={{ width: CONTENT_W, aspectRatio: 793 / 340, borderRadius: 16 }}
                 resizeMode="cover"
               />
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SUMMER25", "g0r")}>
-              <Image
-                source={GRID_PROMO_ROWS[0]?.right}
-                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* File 4 card 2 (wide) */}
-          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[1]?.code || "", "s1")}>
-            <Image
-              source={SEASONAL_PROMOS[1]?.image}
-              style={{ width: "100%", aspectRatio: 793 / 331, borderRadius: 16 }}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-
-          {/* File 5 row 2: 2 square cards */}
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SEASON20", "g1l")}>
-              <Image
-                source={GRID_PROMO_ROWS[1]?.left}
-                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SEASON20", "g1r")}>
-              <Image
-                source={GRID_PROMO_ROWS[1]?.right}
-                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* File 4 card 3 (wide) */}
-          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[2]?.code || "", "s2")}>
-            <Image
-              source={SEASONAL_PROMOS[2]?.image}
-              style={{ width: "100%", aspectRatio: 793 / 332, borderRadius: 16 }}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-
-          {/* File 5 row 3: 2 square cards */}
-          <View style={{ flexDirection: "row", gap: 10 }}>
-            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("RAIN18", "g2l")}>
-              <Image
-                source={GRID_PROMO_ROWS[2]?.left}
-                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("RAIN18", "g2r")}>
-              <Image
-                source={GRID_PROMO_ROWS[2]?.right}
-                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* File 4 card 4 (wide) */}
-          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[3]?.code || "", "s3")}>
-            <Image
-              source={SEASONAL_PROMOS[3]?.image}
-              style={{ width: "100%", aspectRatio: 793 / 286, borderRadius: 16 }}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-
-          {/* File 5 single square card */}
-          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode("WEEK12", "g3")}>
-            <Image
-              source={GRID_PROMO_ROWS[3]?.left}
-              style={{ width: "100%", aspectRatio: 2, borderRadius: 14 }}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-
-          {/* File 4 card 5 (wide) */}
-          {SEASONAL_PROMOS[4] && (
-            <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[4].code, "s4")}>
-              <Image
-                source={SEASONAL_PROMOS[4].image}
-                style={{ width: "100%", aspectRatio: 793 / 257, borderRadius: 16 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          )}
-
-          {/* File 4 Ramadan (LAST) */}
-          {SEASONAL_PROMOS[5] && (
-            <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[5].code, "s5")}>
-              <Image
-                source={SEASONAL_PROMOS[5].image}
-                style={{ width: "100%", aspectRatio: 793 / 359, borderRadius: 16 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          )}
+          ))}
         </View>
+
+        {/* ── GRID PROMOS — 3-per-row horizontal scrollable strip ───────────── */}
+        {GRID_IMAGES.length > 0 && (
+          <>
+            <View style={[styles.sectionHeader, { marginTop: 20 }]}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>بطاقات العروض</Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={GRID_CARD_W + GRID_GAP}
+              decelerationRate="fast"
+              contentContainerStyle={{ paddingHorizontal: 16, gap: GRID_GAP }}
+              style={{ marginBottom: 8 }}
+            >
+              {GRID_IMAGES.map((g, idx) => (
+                <TouchableOpacity
+                  key={`grid-${idx}`}
+                  activeOpacity={0.88}
+                  onPress={() => copyCode(g.code, `grid-${idx}`)}
+                >
+                  <Image
+                    source={g.src}
+                    style={{ width: GRID_CARD_W, height: GRID_CARD_W, borderRadius: 14 }}
+                    resizeMode="cover"
+                  />
+                  {copiedId === `grid-${idx}` && (
+                    <View style={styles.copiedOverlay}>
+                      <Text style={styles.copiedOverlayText}>تم النسخ ✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </>
+        )}
 
       </ScrollView>
 
@@ -441,5 +387,14 @@ const styles = StyleSheet.create({
   notchBottom: {
     position: "absolute", end: 80, bottom: -8,
     width: 16, height: 16, borderRadius: 8,
+  },
+
+  copiedOverlay: {
+    position: "absolute", inset: 0, borderRadius: 14,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center", justifyContent: "center",
+  },
+  copiedOverlayText: {
+    color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13,
   },
 });

@@ -1,0 +1,345 @@
+0nr6-f9k7z0n6.js:21 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+0nr6-f9k7z0n6.js:21 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+0nr6-f9k7z0n6.js:21 [LaunchDarkly] LaunchDarkly client initialized
+Clean-App:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+ Unrecognized feature: 'pointer-lock'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+admin/:1 Refused to execute script from 'https://52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev/@replit/vite-plugin-dev-banner/banner-script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.
+admin/:1 Refused to execute script from 'https://52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev/@replit/vite-plugin-dev-banner/banner-script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.
+admin/:1 Refused to execute script from 'https://52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev/@replit/vite-plugin-dev-banner/banner-script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.
+admin/:1 Refused to execute script from 'https://52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev/@replit/vite-plugin-dev-banner/banner-script.js' because its MIME type ('text/html') is not executable, and strict MIME type checking is enabled.
+injected.js:37 Running application "main" with appParams:
+ Object 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+injected.js:37 "shadow*" style props are deprecated. Use "boxShadow".
+(anonymous) @ injected.js:37
+injected.js:37 [expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.
+(anonymous) @ injected.js:37
+injected.js:37 Running application "main" with appParams:
+ Object 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+injected.js:37 "shadow*" style props are deprecated. Use "boxShadow".
+(anonymous) @ injected.js:37
+injected.js:37 [expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.
+(anonymous) @ injected.js:37
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+[Intervention] Slow network is detected. See <URL> for more details. Fallback font will be used while loading: <URL>
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo-google-fonts%2Btajawal%400.4.1%2Fnode_modules%2F%40expo-google-fonts%2Ftajawal%2F400Regular/Tajawal_400Regular.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo-google-fonts%2Btajawal%400.4.1%2Fnode_modules%2F%40expo-google-fonts%2Ftajawal%2F700Bold/Tajawal_700Bold.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo-google-fonts%2Btajawal%400.4.1%2Fnode_modules%2F%40expo-google-fonts%2Ftajawal%2F500Medium/Tajawal_500Medium.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+injected.js:37 props.pointerEvents is deprecated. Use style.pointerEvents
+(anonymous) @ injected.js:37
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/Feather.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/MaterialCommunityIcons.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/Ionicons.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/MaterialIcons.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/FontAwesome.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/FontAwesome5_Brands.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/FontAwesome5_Regular.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/FontAwesome5_Solid.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/Entypo.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+52af97f2-f632-4155-bd6e-bfee556236ad-00-1j4d9clym2o7j.riker.replit.dev:3002/assets/?unstable_path=.%2F..%2F..%2Fnode_modules%2F.pnpm%2F%40expo%2Bvector-icons%4015.1.1_expo-font%4014.0.11_expo%4054.0.34_react-native%400.81.5_%40babel%2Bcor_2740e675501621396d5942ff373dfc3f%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/AntDesign.ttf:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+assets/:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+injected.js:37 props.pointerEvents is deprecated. Use style.pointerEvents
+(anonymous) @ injected.js:37
+gravatar.com/avatar/2503498f3c9aa0cd5be2744835b81ec7?d=404:1  Failed to load resource: the server responded with a status of 404 ()
+ [OrgSwitcher] splitLink routing "preConnect" → org, selectedOrgId=none
+ [OrgSwitcher] org link headers: {"hasAuth":true,"hasCookie":false,"hasOrgHeader":false,"orgId":"none"}
+ createNativeOauthConnect [object Object]
+ Opening OAuth popup window [object Object]
+ adding message event listener
+gravatar.com/avatar/2503498f3c9aa0cd5be2744835b81ec7?d=404:1  Failed to load resource: the server responded with a status of 404 ()
+0nr6-f9k7z0n6.js:21 Haven't heard from the server in a while, resetting connection...
+(anonymous) @ 0nr6-f9k7z0n6.js:21
+0nr6-f9k7z0n6.js:21 Haven't heard from the server in a while, resetting connection...
+(anonymous) @ 0nr6-f9k7z0n6.js:21
+0nr6-f9k7z0n6.js:21 Haven't heard from the server in a while, resetting connection...
+(anonymous) @ 0nr6-f9k7z0n6.js:21
+0nr6-f9k7z0n6.js:21 Haven't heard from the server in a while, resetting connection...
+(anonymous) @ 0nr6-f9k7z0n6.js:21
+0nr6-f9k7z0n6.js:21 Haven't heard from the server in a while, resetting connection...
+(anonymous) @ 0nr6-f9k7z0n6.js:21
+0nr6-f9k7z0n6.js:21 Haven't heard from the server in a while, resetting connection...
+(anonymous) @ 0nr6-f9k7z0n6.js:21
+ [OrgSwitcher] splitLink routing "preConnect" → org, selectedOrgId=none
+ [OrgSwitcher] org link headers: {"hasAuth":true,"hasCookie":false,"hasOrgHeader":false,"orgId":"none"}
+ createNativeOauthConnect [object Object]
+ Opening OAuth popup window [object Object]
+ adding message event listener
+gravatar.com/avatar/2503498f3c9aa0cd5be2744835b81ec7?d=404:1  Failed to load resource: the server responded with a status of 404 ()
+injected.js:37 GoTrueClient@sb-ppokdtzlisaxsrmtwlrb-auth-token:1 (2.105.0) 2026-04-30T11:15:37.315Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+(anonymous) @ injected.js:37
+injected.js:37 GoTrueClient@sb-ppokdtzlisaxsrmtwlrb-auth-token:1 (2.105.0) 2026-04-30T11:15:37.398Z Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+(anonymous) @ injected.js:37
+gravatar.com/avatar/2503498f3c9aa0cd5be2744835b81ec7?d=404:1  Failed to load resource: the server responded with a status of 404 ()
+gravatar.com/avatar/ef6bc6a10186242c341425f7b6ea8198?d=404:1  Failed to load resource: the server responded with a status of 404 ()
+injected.js:37 Running application "main" with appParams:
+ Object 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+injected.js:37 "shadow*" style props are deprecated. Use "boxShadow".
+(anonymous) @ injected.js:37
+injected.js:37 [expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.
+(anonymous) @ injected.js:37
+injected.js:37 props.pointerEvents is deprecated. Use style.pointerEvents
+(anonymous) @ injected.js:37
+ppokdtzlisaxsrmtwlrb.supabase.co/auth/v1/token?grant_type=password:1  Failed to load resource: the server responded with a status of 400 ()
+ppokdtzlisaxsrmtwlrb.supabase.co/auth/v1/token?grant_type=password:1  Failed to load resource: the server responded with a status of 400 ()
+ppokdtzlisaxsrmtwlrb.supabase.co/auth/v1/token?grant_type=password:1  Failed to load resource: the server responded with a status of 400 ()
+injected.js:37 [v0] Login successful with role: user
+injected.js:37 Error: cannot add `postgres_changes` callbacks for realtime:home-providers-live after `subscribe()`.
+    at RealtimeChannel.on (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:130268:15)
+    at entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:155455:71
+    at react-stack-bottom-frame (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:16716:20)
+    at runWithFiberInDEV (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:4635:70)
+    at commitHookEffectListMount (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:9625:620)
+    at commitHookPassiveMountEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:9662:58)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10618:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10624:381)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10617:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10632:11)
+    at recursivelyTraverseReconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10609:68)
+    at reconnectPassiveEffects (entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable:10617:11)
+
+The above error occurred in the <HomeScreen(./(tabs)/home.tsx)> component.
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+
+(anonymous) @ injected.js:37
