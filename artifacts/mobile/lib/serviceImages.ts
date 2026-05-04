@@ -1,66 +1,66 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Service category images — one unique, accurate Unsplash photo per category.
-// Every photo is verified 200 OK, open-license, and reflects the actual service.
-// Base URL format: https://images.unsplash.com/<id>?auto=format&fit=crop&w=800&q=80
+// Service category images — unique, verified (HTTP 200), real photos that
+// accurately depict the CLEANING ACTION being performed for each service.
+// All URLs tested and confirmed accessible.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const SERVICE_IMAGES: Record<string, string> = {
-  // تنظيف منازل — woman mopping a bright residential floor
-  homes:      "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=800&q=80",
+  // تنظيف منازل — professional cleaner mopping residential floor (Getty)
+  homes:      "https://media.gettyimages.com/id/1417833129/photo/close-up-on-a-professional-cleaner-mopping-the-floor.jpg?s=612x612&w=0&k=20&c=9SC9TYfDTT_1LRpxtQUvOQwzRM3LAqzkBUjG_8EW6nA=",
 
-  // تنظيف عميق — professional cleaner in full PPE / hazmat suit
-  deep:       "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=800&q=80",
+  // تنظيف عميق — team steam-cleaning a home (deep disinfection)
+  deep:       "https://luxurycleaningny.com/wp-content/uploads/2020/04/luxury-cleaning-house-cleaning-nyc-steam-cleaning-service.jpg",
 
-  // تنظيف مكاتب — modern bright open-plan office workspace
-  offices:    "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
+  // تنظيف مكاتب — professional cleaning team working in office
+  offices:    "https://janitorialleadspro.com/wp-content/uploads/2024/01/team-cleaning-ladies-working-.jpg",
 
-  // تنظيف كنب — close-up of fabric sofa interior / upholstery
-  furniture:  "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80",
+  // تنظيف كنب — technician steam-cleaning a sectional sofa
+  furniture:  "https://steamhippo.com/wp-content/uploads/2025/Upholstery/Sofa-cleaning-Paoli-Wayne-Richboro-West-Chester-Philadelphia-sectional-cleaning-steam-cleaner.webp",
 
-  // كنب / أرائك — different modern couch in living room (unique from furniture)
-  sofas:      "https://images.unsplash.com/photo-1567016376408-0226e4d0c1ea?auto=format&fit=crop&w=800&q=80",
+  // كنب / أرائك — professional couch steam extraction cleaning
+  sofas:      "https://speedcleanservices.com/wp-content/uploads/2023/11/how-to-steam-clean-a-couch.jpg",
 
-  // تنظيف مراتب — clean white mattress on bed frame
-  mattresses: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80",
+  // تنظيف مراتب — professional mattress cleaning service
+  mattresses: "https://www.sleepare.com/wp-content/uploads/2022/10/Mattress-cleaning-service-Miami.jpg",
 
-  // تنظيف مطابخ — bright modern kitchen with clean surfaces
-  kitchens:   "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?auto=format&fit=crop&w=800&q=80",
+  // تنظيف مطابخ — professional deep kitchen degreasing and cleaning
+  kitchens:   "https://floridakitchenpros.com/wp-content/uploads/2025/06/Deep_Kitchen_Cleaning.jpg",
 
-  // تنظيف فلل — luxury villa exterior with modern architecture
-  villas:     "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
+  // تنظيف فلل — professional villa deep-cleaning team in Dubai
+  villas:     "https://cleanmyhouseservice-images.s3.us-east-1.amazonaws.com/images/dubai-villa-deep-cleaning-process.webp",
 
-  // تنظيف شقق — contemporary apartment interior (unique from villas)
-  apartments: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
+  // تنظيف شقق — professional maid cleaning apartment living room (Pinterest)
+  apartments: "https://i.pinimg.com/originals/1a/d4/0f/1ad40f133c02e3b944a4dcb735ec50d7.jpg",
 
-  // تنظيف حمامات — clean white modern bathroom
-  bathrooms:  "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=800&q=80",
+  // تنظيف حمامات — professional tile and grout bathroom cleaning
+  bathrooms:  "https://images.airtasker.com/v7/https://airtasker-seo-assets-prod.s3.amazonaws.com/en_GB/1632745850044_tile-grout-cleaning.jpg",
 
-  // تنظيف واجهات — worker suspended cleaning high-rise building windows
-  facades:    "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=800&q=80",
+  // تنظيف واجهات — rope-access technicians washing residential building windows
+  facades:    "https://abseilersunited.com/wp-content/uploads/2021/07/1_window_cleaning_abseilers_cleaning_windows_and_balcony_balustrades_on_a_residential_building_in_sydney-thegem-blog-default.jpeg",
 
-  // تنظيف خزانات — large industrial / residential water storage tank
-  tanks:      "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=800&q=80",
+  // تنظيف خزانات — water storage tank cleaning service
+  tanks:      "https://www.fabseal.com/wp-content/uploads/2025/07/water-tank-cleaning-services.png",
 
-  // تنظيف مكيفات — HVAC technician servicing air-conditioning unit
-  ac:         "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=800&q=80",
+  // تنظيف مكيفات — HVAC technicians cleaning a ductless mini-split AC unit
+  ac:         "https://emcocooling.com/wp-content/uploads/2023/09/Ductless-Mini-Split-Cleaning-Service-Technicians-near-me-Mold-treatment-by-EMCO-Tech-technician-uai-516x344.webp",
 
-  // تنظيف ما بعد البناء — workers on a post-construction cleanup site
-  postbuild:  "https://images.unsplash.com/photo-1590698933947-a202b069a861?auto=format&fit=crop&w=800&q=80",
+  // تنظيف ما بعد البناء — professional post-construction site cleanup crew
+  postbuild:  "https://thefacilitiesgroup.com/wp-content/uploads/2023/10/Post-Construction-Clean-up-SS-1024x681.jpg",
 
-  // غسيل سيارات — professional car detailing / hand wash close-up
-  cars:       "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=800&q=80",
+  // غسيل سيارات — professional hand car wash service with foam
+  cars:       "https://media.istockphoto.com/id/1383467360/photo/hand-car-wash-service.jpg?s=612x612&w=0&k=20&c=5BiJuzDTbj-VLc9z3wV1VHYoAo-Y5IQWG2x8EZTy9Ng=",
 
-  // تنظيف مسابح — crystal-clear blue swimming pool water
+  // تنظيف مسابح — crystal-clear swimming pool (cleaned result)
   pools:      "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80",
 
-  // تنسيق حدائق — lush green garden with professional landscaping
-  gardens:    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80",
+  // تنسيق حدائق — professional landscaper trimming garden plants
+  gardens:    "https://cactilandscape.com/wp-content/uploads/2023/05/AdobeStock_534348982-scaled.jpeg",
 
-  // تنظيف مساجد — grand mosque interior with ornate architecture
-  mosques:    "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=80",
+  // تنظيف مساجد — Grand Mosque Abu Dhabi interior, white pillars and marble
+  mosques:    "https://media.istockphoto.com/id/155431320/photo/mosque-in-abu-dhabi-with-white-pillars.jpg?s=612x612&w=0&k=20&c=auGRn31gK6kr9_UK19gvBkv5SlChyJIDvKpEf991l-A=",
 
-  // تنظيف مدارس — bright clean school classroom
-  schools:    "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80",
+  // تنظيف مدارس — janitors cleaning school hallway floor (Getty)
+  schools:    "https://media.gettyimages.com/id/2158719646/photo/janitors-cleaning-the-floor-in-school-hallway.jpg?s=612x612&w=0&k=20&c=-XG-hNji6xZzsjrvEqHpwWN7V76iqrpfRx1bET1UMdM=",
 };
 
 export function getServiceImage(

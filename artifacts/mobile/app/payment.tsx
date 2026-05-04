@@ -268,6 +268,28 @@ export default function PaymentScreen() {
               const methodMap: Record<string, string> = {
                 "1": "card", "5": "mada", "2": "apple_pay", "6": "stc_pay", "4": "tamara", "3": "cash",
               };
+              // Resolve address_id: use booking store value, or fall back to user's default address
+              let resolvedAddressId: string | null = booking.addressId ?? null;
+              if (!resolvedAddressId) {
+                const { data: defaultAddr } = await supabase
+                  .from("addresses")
+                  .select("id")
+                  .eq("user_id", user.id)
+                  .eq("is_default", true)
+                  .maybeSingle();
+                if (defaultAddr?.id) {
+                  resolvedAddressId = defaultAddr.id;
+                } else {
+                  const { data: anyAddr } = await supabase
+                    .from("addresses")
+                    .select("id")
+                    .eq("user_id", user.id)
+                    .order("created_at", { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                  resolvedAddressId = anyAddr?.id ?? null;
+                }
+              }
               const insertData: any = {
                 user_id: user.id,
                 service_id: isUuid ? svcId : null,
@@ -276,6 +298,7 @@ export default function PaymentScreen() {
                 payment_method: methodMap[booking.paymentMethodId] || "card",
                 status: "pending",
                 scheduled_at: booking.scheduledIso || new Date().toISOString(),
+                address_id: resolvedAddressId,
               };
               const { data: row, error } = await supabase.from("bookings").insert(insertData).select("id").maybeSingle();
               if (error) console.log("[v0] booking insert error:", error.message);

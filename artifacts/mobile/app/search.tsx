@@ -15,9 +15,9 @@ const POPULAR = [
 ];
 
 const PROVIDERS = [
-  { id: "1", n: "أحمد علي", r: "4.9", img: require("@/assets/images/cleaner-fatima.png") },
-  { id: "2", n: "سعد عبدالله", r: "4.8", img: require("@/assets/images/cleaner-sara.png") },
-  { id: "3", n: "محمد حسين", r: "4.7", img: require("@/assets/images/cleaner-noura.png") },
+  { id: "1", n: "فاطمة الزهراني", r: "4.9", img: require("@/assets/images/cleaner-fatima.png") },
+  { id: "2", n: "سارة العتيبي",  r: "4.8", img: require("@/assets/images/cleaner-sara.png") },
+  { id: "3", n: "نورة القحطاني", r: "4.7", img: require("@/assets/images/cleaner-noura.png") },
 ];
 
 export default function SearchScreen() {

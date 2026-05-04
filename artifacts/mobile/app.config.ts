@@ -31,7 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: "com.aiservx.nazafa",
-      versionCode: 13,
+      versionCode: 14,
       googleServicesFile: "./google-services.json",
       adaptiveIcon: {
         foregroundImage: "./assets/images/icon-light.png",
@@ -50,7 +50,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       favicon: "./assets/images/icon-light.png",
     },
     updates: {
-      url: "https://u.expo.dev/09e4ce5c-f181-49b0-b379-68b832e1f292",
+      url: "https://u.expo.dev/c1d243e2-193e-4a27-ad30-87468c74e92b",
       fallbackToCacheTimeout: 0,
       checkAutomatically: "ON_LOAD",
       requestHeaders: {

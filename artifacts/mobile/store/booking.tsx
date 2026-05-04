@@ -16,12 +16,14 @@ export type BookingState = {
   cleanerId: string;            // selected provider id (uuid) or "" for auto
   paymentMethodId: string;
   scheduledIso: string | null;  // ISO timestamp for scheduled bookings
+  addressId: string | null;     // selected address id (uuid)
   setService: (s: ServiceItem) => void;
   setDateIndex: (i: number) => void;
   setTimeIndex: (i: number) => void;
   setCleanerId: (id: string) => void;
   setPaymentMethodId: (id: string) => void;
   setScheduledIso: (iso: string | null) => void;
+  setAddressId: (id: string | null) => void;
   reset: () => void;
 };
 
@@ -43,6 +45,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
   const [cleanerId, setCleanerId] = useState<string>("");
   const [paymentMethodId, setPaymentMethodId] = useState<string>("1");
   const [scheduledIso, setScheduledIso] = useState<string | null>(null);
+  const [addressId, setAddressId] = useState<string | null>(null);
 
   const value = useMemo<BookingState>(
     () => ({
@@ -52,12 +55,14 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
       cleanerId,
       paymentMethodId,
       scheduledIso,
+      addressId,
       setService,
       setDateIndex,
       setTimeIndex,
       setCleanerId,
       setPaymentMethodId,
       setScheduledIso,
+      setAddressId,
       reset: () => {
         setService(DEFAULT_SERVICE);
         setDateIndex(0);
@@ -65,9 +70,10 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
         setCleanerId("");
         setPaymentMethodId("1");
         setScheduledIso(null);
+        setAddressId(null);
       },
     }),
-    [service, dateIndex, timeIndex, cleanerId, paymentMethodId, scheduledIso],
+    [service, dateIndex, timeIndex, cleanerId, paymentMethodId, scheduledIso, addressId],
   );
 
   return <BookingContext.Provider value={value}>{children}</BookingContext.Provider>;
