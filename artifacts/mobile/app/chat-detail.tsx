@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Animated, I18nManager,
+  TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Animated, I18nManager, Linking, Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -64,6 +64,7 @@ export default function ChatDetail() {
 
   const [roomId, setRoomId] = useState<string | null>(paramRoomId ?? null);
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
+  const [otherPhone, setOtherPhone] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
@@ -83,10 +84,26 @@ export default function ChatDetail() {
         .eq("id", rid)
         .maybeSingle();
       if (!room) return;
-      const other = room.user_id === session.user.id ? room.provider_id : room.user_id;
-      setOtherUserId(other ?? null);
+      const otherId = room.user_id === session.user.id ? room.provider_id : room.user_id;
+      setOtherUserId(otherId ?? null);
+      if (otherId) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("phone")
+          .eq("id", otherId)
+          .maybeSingle();
+        setOtherPhone(prof?.phone ?? null);
+      }
     } catch {}
   }, [session]);
+
+  const callOtherParty = useCallback(() => {
+    if (!otherPhone) {
+      Alert.alert("لا يوجد رقم هاتف", "لا يوجد رقم هاتف متاح لهذا المستخدم");
+      return;
+    }
+    Linking.openURL(`tel:${otherPhone}`).catch(() => {});
+  }, [otherPhone]);
 
   const ensureRoom = useCallback(async (): Promise<string | null> => {
     if (!session?.user) return null;
@@ -230,9 +247,10 @@ export default function ChatDetail() {
       style={[s.c, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      {/* Header — back button first so RTL mirror places it on the RIGHT */}
       <View style={[s.header, { paddingTop: insets.top + 10, backgroundColor: colors.card }]}>
-        <TouchableOpacity style={[s.icon, { backgroundColor: colors.primaryLight }]}>
-          <Feather name="phone" size={16} color={colors.primary} />
+        <TouchableOpacity onPress={() => router.back()}>
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: "center" }}>
           <Text style={[s.hN, { color: colors.foreground }]}>{name || "المزود"}</Text>
@@ -244,8 +262,8 @@ export default function ChatDetail() {
               : "محادثة"}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
+        <TouchableOpacity style={[s.icon, { backgroundColor: colors.primaryLight }]} onPress={callOtherParty}>
+          <Feather name="phone" size={16} color={colors.primary} />
         </TouchableOpacity>
       </View>
 

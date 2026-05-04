@@ -37,7 +37,7 @@ function StatusToast({
   }, []);
   return (
     <Animated.View style={[toastStyles.wrap, { top: insets.top + 8, transform: [{ translateY: slide }] }]}>
-      <View style={[toastStyles.card, { borderRightColor: color, borderRightWidth: 4 }]}>
+      <View style={[toastStyles.card, { borderStartColor: color, borderStartWidth: 4 }]}>
         <View style={[toastStyles.iconBox, { backgroundColor: color + "20" }]}>
           <MaterialCommunityIcons name={(STATUS_ICON_MAP[status] || "bell-outline") as any} size={22} color={color} />
         </View>
@@ -453,10 +453,16 @@ export default function TrackingScreen() {
         />
       )}
 
-      {/* Header */}
+      {/* Header — back button first so RTL mirror places it on the RIGHT */}
       <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.card }]}>
-        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={callOtherParty}>
-          <Feather name="phone" size={18} color={colors.primary} />
+        <TouchableOpacity
+          style={[styles.iconCircle, { backgroundColor: colors.muted }]}
+          onPress={() => isProvider
+            ? router.replace("/(provider)/dashboard" as any)
+            : router.replace("/(tabs)/bookings" as any)
+          }
+        >
+          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>{STATUS_AR[status]}</Text>
@@ -468,14 +474,8 @@ export default function TrackingScreen() {
                 : isProvider ? "متابعة طلب العميل" : "متابعة الطلب"}
           </Text>
         </View>
-        <TouchableOpacity
-          style={[styles.iconCircle, { backgroundColor: colors.muted }]}
-          onPress={() => isProvider
-            ? router.replace("/(provider)/dashboard" as any)
-            : router.replace("/(tabs)/bookings" as any)
-          }
-        >
-          <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
+        <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.muted }]} onPress={callOtherParty}>
+          <Feather name="phone" size={18} color={colors.primary} />
         </TouchableOpacity>
       </View>
 

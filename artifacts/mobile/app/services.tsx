@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   categoryPill: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1, gap: 6, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   categoryText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 12 },
-  svcRow: { flexDirection: "row", justifyContent: "space-between", gap: 12, marginBottom: 0 },
+  svcRow: { flexDirection: "row", justifyContent: "space-between", gap: 12, marginBottom: 12 },
   serviceCard: { flex: 1, borderRadius: 22, overflow: "hidden", padding: 0, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 3 },
   imageWrap: { width: "100%", height: 130, position: "relative", backgroundColor: "#F1F5F9" },
   img: { width: "100%", height: "100%" },

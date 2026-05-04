@@ -1,44 +1,45 @@
-// Curated high-quality, modern, calm-toned realistic photos
-// for each service category. Hosted on Unsplash (free CDN).
-// Images chosen for: clean backgrounds, soft natural light, brand fit.
+// Curated high-quality, modern, realistic photos for each service category.
+// All URLs verified accessible from Unsplash CDN (open license).
+// Every category has a unique, accurate image that reflects the actual service.
 
 export const SERVICE_IMAGES: Record<string, string> = {
-  // House cleaning — bright clean modern living room
-  homes: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=800&q=80",
-  // Deep cleaning — supplies and gloves on calm background
-  deep: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
-  // Office cleaning — bright modern office desk
-  offices: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
-  // Sofa cleaning — green sofa in a clean room
+  // House cleaning — woman mopping clean bright floor
+  homes: "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=800&q=80",
+  // Deep cleaning — worker in PPE gloves disinfecting surface
+  deep: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80",
+  // Office cleaning — bright modern clean office workspace
+  offices: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80",
+  // Furniture cleaning — emerald velvet sofa in clean room
   furniture: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
-  sofas: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80",
-  // Mattress cleaning
+  // Sofa cleaning — different modern gray sofa (unique from furniture)
+  sofas: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=800&q=80",
+  // Mattress cleaning — white clean mattress on bed frame
   mattresses: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80",
-  // Kitchen cleaning — clean modern kitchen
-  kitchens: "https://images.unsplash.com/photo-1556909114-44e3e7d9eef0?auto=format&fit=crop&w=800&q=80",
-  // Villas — exterior with palms
-  villas: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80",
-  // Apartments
-  apartments: "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-  // Bathrooms
-  bathrooms: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=800&q=80",
-  // Facades / windows
-  facades: "https://images.unsplash.com/photo-1599809275671-b5942cabc7a2?auto=format&fit=crop&w=800&q=80",
-  // Tanks
-  tanks: "https://images.unsplash.com/photo-1581281658100-1ae26eb31c13?auto=format&fit=crop&w=800&q=80",
-  // AC
-  ac: "https://images.unsplash.com/photo-1631545806609-44dadec0f1f5?auto=format&fit=crop&w=800&q=80",
-  // Post-construction
-  postbuild: "https://images.unsplash.com/photo-1585128792020-803d29415281?auto=format&fit=crop&w=800&q=80",
-  // Cars
-  cars: "https://images.unsplash.com/photo-1605732440685-ec5b1b7c8086?auto=format&fit=crop&w=800&q=80",
-  // Pools
-  pools: "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80",
-  // Gardens
-  gardens: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=80",
-  // Mosques
+  // Kitchen cleaning — modern white kitchen countertop
+  kitchens: "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=800&q=80",
+  // Villa cleaning — luxury villa exterior with pool terrace
+  villas: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
+  // Apartment cleaning — modern minimalist apartment interior
+  apartments: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
+  // Bathroom cleaning — clean white modern bathroom
+  bathrooms: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+  // Facade / window cleaning — worker cleaning building exterior windows
+  facades: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=800&q=80",
+  // Water tank cleaning — large industrial water storage tank
+  tanks: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=800&q=80",
+  // AC cleaning — technician repairing air conditioner unit
+  ac: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+  // Post-construction cleanup — construction site cleanup workers
+  postbuild: "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?auto=format&fit=crop&w=800&q=80",
+  // Car washing — professional car wash with water spray
+  cars: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=800&q=80",
+  // Pool cleaning — crystal blue swimming pool water
+  pools: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80",
+  // Garden maintenance — lush green garden landscaping
+  gardens: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80",
+  // Mosque cleaning — mosque interior with beautiful architecture
   mosques: "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=800&q=80",
-  // Schools
+  // School cleaning — clean bright classroom
   schools: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80",
 };
 

@@ -127,8 +127,8 @@ export default function NotificationsScreen() {
           </Text>
         </TouchableOpacity>
         {[
-          { id: "unread" as const, label: `غير مقروءة${unreadCount ? ` (${unreadCount})` : ""}` },
           { id: "all" as const, label: "الكل" },
+          { id: "unread" as const, label: `غير مقروءة${unreadCount ? ` (${unreadCount})` : ""}` },
         ].map((t) => (
           <TouchableOpacity
             key={t.id}
@@ -243,15 +243,16 @@ const styles = StyleSheet.create({
     top: 12,
     start: 12,
   },
-  rowText: { flex: 1, alignItems: "flex-end" },
-  rowTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 3 },
+  rowText: { flex: 1, alignItems: "flex-start" },
+  rowTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 3, textAlign: "right" },
   rowBody: {
     fontFamily: "Tajawal_400Regular",
     fontSize: 11,
     lineHeight: 17,
     marginBottom: 4,
+    textAlign: "right",
   },
-  rowTime: { fontFamily: "Tajawal_500Medium", fontSize: 10 },
+  rowTime: { fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "right" },
   iconBox: {
     width: 42,
     height: 42,

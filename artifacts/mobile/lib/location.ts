@@ -23,46 +23,65 @@ export async function ensurePermission(): Promise<boolean> {
   }
 }
 
+// Uses Nominatim (OpenStreetMap) for rich Arabic addresses including street names.
+// Falls back to the native geocoder if Nominatim times out or fails.
 async function reverseGeocode(latitude: number, longitude: number) {
-  let street: string | null = null;
-  let district: string | null = null;
-  let city: string | null = null;
-  let region: string | null = null;
-  let country: string | null = null;
+  // 1) Try Nominatim first — gives detailed Arabic street names
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=ar&addressdetails=1`,
+      { headers: { "User-Agent": "NazafahApp/1.0" }, signal: controller.signal }
+    );
+    clearTimeout(timeout);
+    const j: any = await r.json();
+    const a = j.address || {};
+    const street =
+      a.road || a.pedestrian || a.footway || a.cycleway || a.path ||
+      a.street || a.primary || a.secondary || null;
+    const district =
+      a.suburb || a.neighbourhood || a.quarter || a.residential ||
+      a.city_district || null;
+    const city =
+      a.city || a.town || a.village || a.municipality || a.county || null;
+    const region = a.state || null;
+    const country = a.country || null;
+    // Only accept Nominatim result if it gave us something useful
+    if (city || street || district) {
+      return { street, district, city, region, country };
+    }
+  } catch {}
 
+  // 2) Fall back to native geocoder (available on iOS/Android)
   if (Platform.OS !== "web") {
     try {
       const places = await Location.reverseGeocodeAsync({ latitude, longitude });
       const p = places[0];
       if (p) {
-        street = p.street || (p as any).name || null;
-        district = (p as any).district || p.subregion || null;
-        city = p.city || null;
-        region = p.region || null;
-        country = p.country || null;
+        return {
+          street: p.street || (p as any).name || null,
+          district: (p as any).district || p.subregion || null,
+          city: p.city || null,
+          region: p.region || null,
+          country: p.country || null,
+        };
       }
-    } catch {}
-  } else {
-    try {
-      const r = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=ar`,
-        { headers: { "User-Agent": "NazafahApp/1.0" } }
-      );
-      const j: any = await r.json();
-      const a = j.address || {};
-      street = a.road || a.pedestrian || null;
-      district = a.suburb || a.neighbourhood || a.quarter || null;
-      city = a.city || a.town || a.village || null;
-      region = a.state || null;
-      country = a.country || null;
     } catch {}
   }
 
-  return { street, district, city, region, country };
+  return { street: null, district: null, city: null, region: null, country: null };
 }
 
-function buildResult(latitude: number, longitude: number, geo: { street: string | null; district: string | null; city: string | null; region: string | null; country: string | null }): ResolvedAddress {
-  const parts = [geo.street, geo.district, geo.city, geo.region].filter(Boolean);
+function buildResult(
+  latitude: number,
+  longitude: number,
+  geo: { street: string | null; district: string | null; city: string | null; region: string | null; country: string | null }
+): ResolvedAddress {
+  // Full address: street → district → city (most specific → least specific)
+  const parts = [geo.street, geo.district, geo.city].filter(Boolean);
+  // Add region if city is missing
+  if (!geo.city && geo.region) parts.push(geo.region);
   return {
     lat: latitude,
     lng: longitude,
