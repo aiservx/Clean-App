@@ -6,6 +6,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import FloatingTabBar from "@/components/FloatingTabBar";
 
 const AI_AVATAR_LIGHT = require("@/assets/images/ai-avatar-light.png");
 const AI_AVATAR_DARK = require("@/assets/images/ai-avatar-dark.png");
@@ -205,13 +206,26 @@ export default function ChatScreen() {
         }
         if (me) setCurrentAddress(me);
 
-        const mappedSvc: ServiceItem[] = (svcRes.data ?? []).map((s: any) => ({
-          id: s.id,
-          title: s.title_ar || "خدمة",
-          desc: s.desc_ar || "",
-          price: Number(s.base_price || 0),
-          duration: Number(s.duration_min || 120),
-        }));
+        // Sort by Saudi cleaning market demand (most popular first)
+        const PRIORITY: Record<string, number> = {
+          "منازل": 1, "شقق": 2, "كنب": 3, "سجاد": 4, "مكيفات": 5,
+          "فلل": 6, "مطابخ": 7, "خزانات": 8, "تعقيم": 9, "واجهات": 10,
+        };
+        const svcPriority = (title: string) => {
+          for (const [kw, rank] of Object.entries(PRIORITY)) {
+            if (title.includes(kw)) return rank;
+          }
+          return 99;
+        };
+        const mappedSvc: ServiceItem[] = (svcRes.data ?? [])
+          .map((s: any) => ({
+            id: s.id,
+            title: s.title_ar || "خدمة",
+            desc: s.desc_ar || "",
+            price: Number(s.base_price || 0),
+            duration: Number(s.duration_min || 120),
+          }))
+          .sort((a, b) => svcPriority(a.title) - svcPriority(b.title));
         setServices(mappedSvc);
 
         // Providers (nearby, available)
@@ -263,19 +277,23 @@ export default function ChatScreen() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   }, []);
 
-  // Welcome on mount
+  // Welcome on mount — single combined message with quick actions + arrow hint
   useEffect(() => {
     if (loadingMeta) return;
     const name = profile?.full_name?.split(" ")[0] || "";
-    addBotMessage(name ? `مرحباً ${name}! 👋\nأنا مساعدك الذكي في نظافة.` : "مرحباً! 👋\nأنا مساعدك الذكي في نظافة.");
+    const greeting = name
+      ? `مرحباً ${name} مني! 👋\nأنا مساعدك الذكي في نظافة. واقدر أساعدك في ⬇️`
+      : "مرحباً مني! 👋\nأنا مساعدك الذكي في نظافة. واقدر أساعدك في ⬇️";
+    addBotMessage(greeting, "quick_actions");
     setTimeout(() => {
-      setMessages((prev) => [...prev, { id: nextId(), role: "bot", text: "كيف أقدر أساعدك؟", cardType: "quick_actions" }]);
-      setTimeout(() => {
-        setMessages((prev) => [...prev, { id: nextId(), role: "bot", text: services.length ? "اختر خدمة من الشبكة:" : "لا توجد خدمات متاحة الآن، حاول لاحقاً.", cardType: services.length ? "services" : null }]);
-        setStep("services");
-        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-      }, 700);
-    }, 1200);
+      setMessages((prev) => [...prev, {
+        id: nextId(), role: "bot",
+        text: services.length ? "اختار الخدمة" : "لا توجد خدمات متاحة الآن، حاول لاحقاً.",
+        cardType: services.length ? "services" : null,
+      }]);
+      setStep("services");
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    }, 1000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingMeta]);
 
@@ -467,7 +485,7 @@ export default function ChatScreen() {
     setChosenPhone("");
     addBotMessage("بدأنا حجزاً جديداً 🎯");
     setTimeout(() => {
-      setMessages((prev) => [...prev, { id: nextId(), role: "bot", text: "اختر خدمة:", cardType: "services" }]);
+      setMessages((prev) => [...prev, { id: nextId(), role: "bot", text: "اختار الخدمة", cardType: "services" }]);
       setStep("services");
     }, 800);
   };
@@ -526,7 +544,7 @@ export default function ChatScreen() {
         { id: "support", label: "دعم", icon: "headphones", onPress: () => { addUserMessage("التواصل مع الدعم"); const a = answerFromKb("دعم", { hasOpenBooking }); a && addBotMessage(a); } },
         { id: "invoice", label: "فاتورتي", icon: "file-text", onPress: () => { addUserMessage("فاتورتي"); const a = answerFromKb("فاتورة", { hasOpenBooking }); a && addBotMessage(a); } },
       ].map((q) => (
-        <TouchableOpacity key={q.id} style={s.qaChip} activeOpacity={0.85} onPress={q.onPress}>
+        <TouchableOpacity key={q.id} style={[s.qaChip, { backgroundColor: colors.card, borderColor: colors.primaryLight }]} activeOpacity={0.85} onPress={q.onPress}>
           <Feather name={q.icon as any} size={13} color="#7C3AED" />
           <Text style={s.qaChipT}>{q.label}</Text>
         </TouchableOpacity>
@@ -560,15 +578,15 @@ export default function ChatScreen() {
   const renderProviderCards = () => (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
       {providers.length === 0 ? (
-        <View style={[s.provCard, { alignItems: "center" }]}>
-          <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B" }}>لا يوجد فنيون متاحون الآن</Text>
+        <View style={[s.provCard, { alignItems: "center", backgroundColor: colors.card }]}>
+          <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: colors.mutedForeground }}>لا يوجد فنيون متاحون الآن</Text>
           <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: "#94A3B8", marginTop: 4 }}>سيتم تخصيص أقرب فنّي تلقائياً</Text>
           <TouchableOpacity style={[s.confirmBtn, { marginTop: 10 }]} onPress={() => handleSelectProvider({ id: "auto", name: "أقرب فنّي", rating: 4.8, distance_km: null, exp: 0, rate: 0 })}>
             <Text style={s.confirmBtnText}>تخصيص تلقائي</Text>
           </TouchableOpacity>
         </View>
       ) : providers.map((prov) => (
-        <TouchableOpacity key={prov.id} style={s.provCard} activeOpacity={0.85} onPress={() => handleSelectProvider(prov)}>
+        <TouchableOpacity key={prov.id} style={[s.provCard, { backgroundColor: colors.card }]} activeOpacity={0.85} onPress={() => handleSelectProvider(prov)}>
           <View style={s.provAvatar}>
             <Text style={s.provInitials}>{prov.name.split(" ").map((w) => w[0]).join("").slice(0,2)}</Text>
           </View>
@@ -701,8 +719,8 @@ export default function ChatScreen() {
                   <Image source={AI_AVATAR_LIGHT} style={s.botAvatarSmall} />
                 )}
                 <View style={{ flex: 1, maxWidth: "92%" }}>
-                  <View style={msg.role === "bot" ? s.botBubble : s.userBubble}>
-                    <Text style={msg.role === "bot" ? s.botText : s.userText}>{msg.text}</Text>
+                  <View style={[msg.role === "bot" ? s.botBubble : s.userBubble, msg.role === "bot" && { backgroundColor: colors.card }]}>
+                    <Text style={[msg.role === "bot" ? s.botText : s.userText, msg.role === "bot" && { color: colors.foreground }]}>{msg.text}</Text>
                   </View>
                   {msg.cardType === "quick_actions" && <QuickActions />}
                   {msg.cardType === "services" && renderServiceGrid()}
@@ -718,34 +736,35 @@ export default function ChatScreen() {
             {typing && (
               <View style={s.botMsgWrap}>
                 <Image source={AI_AVATAR_LIGHT} style={s.botAvatarSmall} />
-                <View style={s.typingBubble}>
-                  <Animated.View style={[s.typingDot, { opacity: typingAnim }]} />
-                  <Animated.View style={[s.typingDot, { opacity: typingAnim, marginStart: 6 }]} />
-                  <Animated.View style={[s.typingDot, { opacity: typingAnim, marginStart: 6 }]} />
+                <View style={[s.typingBubble, { backgroundColor: colors.card }]}>
+                  <Animated.View style={[s.typingDot, { opacity: typingAnim, backgroundColor: colors.mutedForeground }]} />
+                  <Animated.View style={[s.typingDot, { opacity: typingAnim, backgroundColor: colors.mutedForeground, marginStart: 6 }]} />
+                  <Animated.View style={[s.typingDot, { opacity: typingAnim, backgroundColor: colors.mutedForeground, marginStart: 6 }]} />
                 </View>
               </View>
             )}
           </ScrollView>
 
-          <View style={[s.inputBar, { paddingBottom: Math.max(insets.bottom, 12) + 60 }]}>
-            <View style={s.inputRow}>
+          {/* Input bar + main tab bar at bottom */}
+          <View style={[s.inputBar, { paddingBottom: Math.max(insets.bottom, 8) + 4, backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border ?? "#E2E8F0" }]}>
+            <View style={[s.inputRow, { backgroundColor: colors.card }]}>
               <TouchableOpacity style={s.sendBtn} onPress={handleSendText} activeOpacity={0.85}>
                 <Feather name="send" size={18} color="#FFF" style={{ transform: [{ scaleX: -1 }] }} />
               </TouchableOpacity>
-              <TouchableOpacity style={[s.micBtn, voiceListening && { backgroundColor: "#EF4444" }]} onPress={onMicPress} activeOpacity={0.85}>
+              <TouchableOpacity style={[s.micBtn, voiceListening && { backgroundColor: "#EF4444" }, { backgroundColor: voiceListening ? "#EF4444" : colors.primaryLight ?? "#EDE9FE" }]} onPress={onMicPress} activeOpacity={0.85}>
                 <MaterialCommunityIcons name={voiceListening ? "microphone" : "microphone-outline"} size={20} color={voiceListening ? "#FFF" : "#7C3AED"} />
               </TouchableOpacity>
               <TouchableOpacity
-                style={[s.micBtn, { backgroundColor: voiceLang === "en-US" ? "#3B82F6" : "#F1F5F9" }]}
+                style={[s.micBtn, { backgroundColor: voiceLang === "en-US" ? "#3B82F6" : colors.card }]}
                 onPress={() => setVoiceLang((l) => l === "ar-SA" ? "en-US" : "ar-SA")}
                 activeOpacity={0.85}
               >
-                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: voiceLang === "en-US" ? "#FFF" : "#64748B" }}>
+                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: voiceLang === "en-US" ? "#FFF" : colors.mutedForeground }}>
                   {voiceLang === "ar-SA" ? "ع" : "EN"}
                 </Text>
               </TouchableOpacity>
               <TextInput
-                style={s.textInput}
+                style={[s.textInput, { color: colors.foreground }]}
                 value={inputText}
                 onChangeText={setInputText}
                 placeholder={
@@ -753,7 +772,7 @@ export default function ChatScreen() {
                   step === "phone" ? "اكتب رقم الهاتف..." :
                   "اكتب رسالتك أو اضغط على المايك..."
                 }
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={colors.mutedForeground ?? "#94A3B8"}
                 onSubmitEditing={handleSendText}
                 returnKeyType="send"
               />
@@ -761,6 +780,8 @@ export default function ChatScreen() {
           </View>
         </KeyboardAvoidingView>
       )}
+
+      <FloatingTabBar active="chat" />
     </View>
   );
 }
@@ -791,7 +812,7 @@ const s = StyleSheet.create({
 
   // Quick action chips
   qaWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
-  qaChip: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#FFF", borderWidth: 1, borderColor: "#EDE9FE", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },
+  qaChip: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderColor: "#EDE9FE", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },
   qaChipT: { fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#7C3AED" },
 
   // Service grid
@@ -803,7 +824,7 @@ const s = StyleSheet.create({
   svcCardDur: { fontFamily: "Tajawal_400Regular", fontSize: 9, color: "#64748B", marginTop: 2 },
 
   // Provider cards (horizontal)
-  provCard: { width: 150, backgroundColor: "#FFF", borderRadius: 18, padding: 14, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  provCard: { width: 150, borderRadius: 18, padding: 14, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
   provAvatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#EDE9FE", alignItems: "center", justifyContent: "center", marginBottom: 8 },
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#7C3AED" },
   provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
