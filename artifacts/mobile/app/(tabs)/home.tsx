@@ -44,16 +44,15 @@ const HOME_CATEGORY_CARDS: { id: string; title: string; img: any }[] = [
   { id: "schools",    title: "تنظيف مدارس",     img: require("@/assets/services/cards/school.png") },
 ];
 
-// Home banners — pixel-perfect crops (no white borders)
-// Each has its own AR; we fix container to tallest (887/332) and use cover.
+// Home banners — promotional cards (Ramadan is always last)
 const HOME_OFFER_BANNERS: { src: any; ar: number }[] = [
-  { src: require("@/assets/images/banners/home_new_0.png"), ar: 887 / 305 },
-  { src: require("@/assets/images/banners/home_new_1.png"), ar: 887 / 317 },
-  { src: require("@/assets/images/banners/home_new_2.png"), ar: 887 / 325 },
-  { src: require("@/assets/images/banners/home_new_3.png"), ar: 887 / 314 },
-  { src: require("@/assets/images/banners/home_new_4.png"), ar: 887 / 332 },
+  { src: require("@/assets/images/banners/home_new_0.png"), ar: 887 / 317 },
+  { src: require("@/assets/images/banners/home_new_1.png"), ar: 887 / 324 },
+  { src: require("@/assets/images/banners/home_new_2.png"), ar: 887 / 314 },
+  { src: require("@/assets/images/banners/home_new_3.png"), ar: 887 / 330 },
+  { src: require("@/assets/images/banners/home_new_4.png"), ar: 887 / 305 },
 ];
-const HOME_BANNER_AR = 887 / 332; // container fixed to tallest banner
+const HOME_BANNER_AR = 887 / 330;
 
 // Per-category soft background colors for the service card illustrations
 const CAT_BG: Record<string, string> = {
