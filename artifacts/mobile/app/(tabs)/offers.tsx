@@ -7,51 +7,66 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
-
 import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
-import { SEASONAL_PROMOS, FEATURED_PROMOS, GRID_PROMO_ROWS } from "@/lib/promotions";
 
-// ─── Aspect ratios (per-card, after cropping) ────────────────────────────────
-// seasonal_banner_*: 853×461px → AR = 853/461 ≈ 1.85
-// featured_banner_*: 793×330px → AR = 793/330 ≈ 2.40
-// grid_banner_r*_c*: 512×384px → AR = 512/384 ≈ 4:3 = 1.33
-const SEASONAL_AR = 853 / 461;   // ~1.85
-const FEATURED_AR = 793 / 330;   // ~2.40
-const GRID_CELL_AR = 512 / 384;  // ~1.33
-
-const { width: SW } = Dimensions.get("window");
-const CONTENT_W = SW - 32;
-const GRID_CELL_W = Math.floor((CONTENT_W - 12) / 2);
-
-// Hero uses featured_banner_0/1/2 (rows 0-2 of promo-offers-4.png)
-const HERO_IMAGES = [
-  require("@/assets/images/banners/featured_banner_0.png"),
-  require("@/assets/images/banners/featured_banner_1.png"),
-  require("@/assets/images/banners/featured_banner_2.png"),
+// ── Banners ──────────────────────────────────────────────────────────────────
+// 5 pixel-perfect banners — no white borders, no embedded form elements
+const BANNERS: { src: any; ar: number }[] = [
+  { src: require("@/assets/images/banners/home_new_0.png"), ar: 887 / 305 },
+  { src: require("@/assets/images/banners/home_new_1.png"), ar: 887 / 317 },
+  { src: require("@/assets/images/banners/home_new_2.png"), ar: 887 / 325 },
+  { src: require("@/assets/images/banners/home_new_3.png"), ar: 887 / 314 },
+  { src: require("@/assets/images/banners/home_new_4.png"), ar: 887 / 332 },
 ];
-const HERO_AR = FEATURED_AR;
-const HERO_H = Math.round(CONTENT_W / HERO_AR);
-const HERO_GAP = 10;
+// Container fixed to tallest banner height
+const CAROUSEL_AR = 887 / 332;
 
+// ── Coupons ───────────────────────────────────────────────────────────────────
 const COUPONS = [
   {
-    id: "clean20", code: "CLEAN20", discountLabel: "خصم 20%",
+    id: "clean20", code: "CLEAN20",
+    discountLabel: "خصم 20%",
     title: "خصم 20% على جميع الخدمات",
-    minOrder: "الحد الأدنى للطلب 150 ر.س", expiry: "ينتهي في 20 مايو 2025",
+    minOrder: "الحد الأدنى للطلب 150 ر.س",
+    expiry: "ينتهي في 20 مايو 2025",
+    accent: "#16C47F",
   },
   {
-    id: "save30", code: "SAVE30", discountLabel: "خصم\n30 ر.س",
+    id: "save30", code: "SAVE30",
+    discountLabel: "خصم\n30 ر.س",
     title: "خصم 30 ر.س على الطلبات",
-    minOrder: "الحد الأدنى للطلب 200 ر.س", expiry: "ينتهي في 15 مايو 2025",
+    minOrder: "الحد الأدنى للطلب 200 ر.س",
+    expiry: "ينتهي في 15 مايو 2025",
+    accent: "#3B82F6",
   },
   {
-    id: "carpet10", code: "CARPET10", discountLabel: "خصم 10%",
+    id: "carpet10", code: "CARPET10",
+    discountLabel: "خصم 10%",
     title: "خصم 10% على تنظيف السجاد والكنب",
-    minOrder: "بدون حد أدنى", expiry: "ينتهي في 10 مايو 2025",
+    minOrder: "بدون حد أدنى",
+    expiry: "ينتهي في 10 مايو 2025",
+    accent: "#7C3AED",
+  },
+  {
+    id: "ramadan30", code: "RAMADAN30",
+    discountLabel: "خصم 30%",
+    title: "عرض رمضان المبارك",
+    minOrder: "الحد الأدنى للطلب 100 ر.س",
+    expiry: "ساري حتى نهاية رمضان",
+    accent: "#F59E0B",
+  },
+  {
+    id: "summer25", code: "SUMMER25",
+    discountLabel: "خصم 25%",
+    title: "عروض الصيف .. بيت منعش",
+    minOrder: "الحد الأدنى للطلب 120 ر.س",
+    expiry: "حتى 31 أغسطس",
+    accent: "#EC4899",
   },
 ];
 
+const { width: SW } = Dimensions.get("window");
 const rowDir = I18nManager.isRTL ? ("row" as const) : ("row-reverse" as const);
 const colAlign = I18nManager.isRTL ? ("flex-start" as const) : ("flex-end" as const);
 
@@ -59,19 +74,19 @@ export default function OffersScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [showAllSeasonal, setShowAllSeasonal] = useState(false);
-  const [heroIdx, setHeroIdx] = useState(0);
-  const heroRef = useRef<ScrollView>(null);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const sliderRef = useRef<ScrollView>(null);
 
+  // Auto-advance carousel
   useEffect(() => {
-    const t = setInterval(() => {
-      setHeroIdx((prev) => {
-        const next = (prev + 1) % HERO_IMAGES.length;
-        heroRef.current?.scrollTo({ x: next * (CONTENT_W + HERO_GAP), animated: true });
+    const id = setInterval(() => {
+      setSlideIdx((prev) => {
+        const next = (prev + 1) % BANNERS.length;
+        sliderRef.current?.scrollTo({ x: next * SW, animated: true });
         return next;
       });
-    }, 3500);
-    return () => clearInterval(t);
+    }, 4000);
+    return () => clearInterval(id);
   }, []);
 
   const copyCode = (code: string, id: string) => {
@@ -80,62 +95,12 @@ export default function OffersScreen() {
       navigator.clipboard.writeText(code).catch(() => {});
     }
     setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 1500);
-  };
-
-  const seasonalItems = showAllSeasonal ? SEASONAL_PROMOS : SEASONAL_PROMOS.slice(0, 2);
-
-  // Group seasonal items into pairs (items 0-3 = seasonal_banner → show 2-per-row)
-  // items 4-7 = featured_banner → show 1-per-row (wider landscape)
-  const renderSeasonal = () => {
-    const nodes: React.ReactNode[] = [];
-    let i = 0;
-    while (i < seasonalItems.length) {
-      const item = seasonalItems[i];
-      const next = seasonalItems[i + 1];
-      const isSeasonalPair = i < 4 && next && i + 1 < 4;
-
-      if (isSeasonalPair) {
-        // 2-per-row for seasonal_banner (853×461 at half width)
-        nodes.push(
-          <View key={`pair-${i}`} style={styles.pairRow}>
-            <TouchableOpacity activeOpacity={0.9} onPress={() => copyCode(item.code, item.id)}>
-              <Image
-                source={item.image}
-                style={{ width: GRID_CELL_W, aspectRatio: SEASONAL_AR, borderRadius: 14 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.9} onPress={() => copyCode(next.code, next.id)}>
-              <Image
-                source={next.image}
-                style={{ width: GRID_CELL_W, aspectRatio: SEASONAL_AR, borderRadius: 14 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          </View>
-        );
-        i += 2;
-      } else {
-        // 1-per-row for featured_banner (wider landscape)
-        nodes.push(
-          <TouchableOpacity key={item.id} activeOpacity={0.9} onPress={() => copyCode(item.code, item.id)}>
-            <Image
-              source={item.image}
-              style={{ width: "100%", aspectRatio: FEATURED_AR, borderRadius: 16 }}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        );
-        i++;
-      }
-    }
-    return nodes;
+    setTimeout(() => setCopiedId(null), 1600);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
           <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
@@ -146,50 +111,48 @@ export default function OffersScreen() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
 
-        {/* ── HERO SLIDER ── */}
-        <View style={{ marginBottom: 22 }}>
+        {/* ── BANNER CAROUSEL ─────────────────────────────────────────────── */}
+        <View style={{ marginBottom: 20 }}>
           <ScrollView
-            ref={heroRef}
+            ref={sliderRef}
             horizontal
-            snapToInterval={CONTENT_W + HERO_GAP}
-            decelerationRate="fast"
+            pagingEnabled
             showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) => {
-              setHeroIdx(Math.round(e.nativeEvent.contentOffset.x / (CONTENT_W + HERO_GAP)));
-            }}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: HERO_GAP }}
+            onMomentumScrollEnd={(e) =>
+              setSlideIdx(Math.round(e.nativeEvent.contentOffset.x / SW))
+            }
           >
-            {HERO_IMAGES.map((src, idx) => (
-              <TouchableOpacity
-                key={idx}
-                activeOpacity={0.92}
-                onPress={() => router.push("/services" as any)}
-                style={{ width: CONTENT_W, height: HERO_H, borderRadius: 18, overflow: "hidden" }}
-              >
-                <Image source={src} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-              </TouchableOpacity>
+            {BANNERS.map((b, idx) => (
+              <View key={idx} style={{ width: SW, paddingHorizontal: 16 }}>
+                <View style={{ width: "100%", aspectRatio: CAROUSEL_AR, borderRadius: 18, overflow: "hidden" }}>
+                  <Image source={b.src} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                </View>
+              </View>
             ))}
           </ScrollView>
-
-          <View style={styles.heroDots}>
-            {HERO_IMAGES.map((_, idx) => (
+          {/* Dots */}
+          <View style={styles.dotsRow}>
+            {BANNERS.map((_, idx) => (
               <View
                 key={idx}
-                style={[styles.heroDot, {
-                  backgroundColor: idx === heroIdx ? colors.primary : colors.border,
-                  width: idx === heroIdx ? 18 : 6,
-                }]}
+                style={[
+                  styles.dot,
+                  {
+                    backgroundColor: idx === slideIdx ? colors.primary : colors.border,
+                    width: idx === slideIdx ? 20 : 6,
+                  },
+                ]}
               />
             ))}
           </View>
         </View>
 
-        {/* ── STATS ── */}
+        {/* ── STATS ───────────────────────────────────────────────────────── */}
         <View style={styles.statsRow}>
           {[
-            { icon: "tag",      label: "كوبونات",   value: "12" },
-            { icon: "calendar", label: "موسمية",    value: String(SEASONAL_PROMOS.length) },
-            { icon: "gift",     label: "حصرية",     value: String(FEATURED_PROMOS.length) },
+            { icon: "tag",      label: "كوبونات",   value: String(COUPONS.length) },
+            { icon: "gift",     label: "عروض",      value: "5" },
+            { icon: "calendar", label: "موسمية",    value: "4" },
             { icon: "users",    label: "دعوة صديق", value: "50 ر.س", small: true },
           ].map((s) => (
             <View key={s.label} style={[styles.statCard, { backgroundColor: colors.card }]}>
@@ -202,107 +165,56 @@ export default function OffersScreen() {
           ))}
         </View>
 
-        {/* ── SEASONAL ── */}
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض موسمية</Text>
-          <TouchableOpacity onPress={() => setShowAllSeasonal((v) => !v)} style={styles.seeAllChip} activeOpacity={0.7}>
-            <Text style={[styles.seeAll, { color: colors.primary }]}>
-              {showAllSeasonal ? "عرض أقل" : `عرض الكل (${SEASONAL_PROMOS.length})`}
-            </Text>
-            <Feather name={showAllSeasonal ? "chevron-up" : "chevron-down"} size={12} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ paddingHorizontal: 16, gap: 10, marginBottom: 22 }}>
-          {renderSeasonal()}
-        </View>
-
-        {/* ── FEATURED (full-width landscape banners) ── */}
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض حصرية</Text>
-        </View>
-
-        <View style={{ paddingHorizontal: 16, gap: 10, marginBottom: 22 }}>
-          {FEATURED_PROMOS.map((p) => (
-            <TouchableOpacity key={p.id} activeOpacity={0.9} onPress={() => copyCode(p.code, p.id)}>
-              <Image
-                source={p.image}
-                style={{ width: "100%", aspectRatio: FEATURED_AR, borderRadius: 16 }}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          ))}
-
-          {/* Grid rows (image 5, rows 1-3): each row shown as 2-per-row cell pair */}
-          {GRID_PROMO_ROWS.map((row) => (
-            <View key={row.id} style={styles.pairRow}>
-              <TouchableOpacity activeOpacity={0.9} onPress={() => copyCode(row.code + "_L", row.id + "_l")}>
-                <Image
-                  source={row.left}
-                  style={{ width: GRID_CELL_W, aspectRatio: GRID_CELL_AR, borderRadius: 14 }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity activeOpacity={0.9} onPress={() => copyCode(row.code + "_R", row.id + "_r")}>
-                <Image
-                  source={row.right}
-                  style={{ width: GRID_CELL_W, aspectRatio: GRID_CELL_AR, borderRadius: 14 }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-
-        {/* ── COUPONS ── */}
+        {/* ── COUPONS ─────────────────────────────────────────────────────── */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>كوبونات مميزة</Text>
-          <TouchableOpacity>
-            <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
-          </TouchableOpacity>
         </View>
 
-        <View style={{ paddingHorizontal: 16, gap: 12 }}>
+        <View style={{ paddingHorizontal: 16, gap: 14 }}>
           {COUPONS.map((c) => (
             <View key={c.id} style={[styles.couponCard, { backgroundColor: colors.card }]}>
+              {/* Content */}
               <View style={styles.couponContent}>
                 <Text style={[styles.couponTitle, { color: colors.foreground }]}>{c.title}</Text>
-                <View style={styles.couponMetaRow}>
+                <View style={styles.couponMeta}>
                   <Feather name="package" size={11} color={colors.mutedForeground} />
-                  <Text style={[styles.couponMeta, { color: colors.mutedForeground }]}>{c.minOrder}</Text>
+                  <Text style={[styles.couponMetaText, { color: colors.mutedForeground }]}>{c.minOrder}</Text>
                 </View>
-                <View style={styles.couponMetaRow}>
+                <View style={styles.couponMeta}>
                   <Feather name="clock" size={11} color={colors.mutedForeground} />
-                  <Text style={[styles.couponMeta, { color: colors.mutedForeground }]}>{c.expiry}</Text>
+                  <Text style={[styles.couponMetaText, { color: colors.mutedForeground }]}>{c.expiry}</Text>
                 </View>
               </View>
-              <View style={styles.couponCodeColumn}>
-                <View style={[styles.couponCodeBox, { borderColor: colors.primary }]}>
+              {/* Code */}
+              <View style={styles.couponCodeCol}>
+                <View style={[styles.couponCodeBox, { borderColor: c.accent }]}>
                   <Text style={[styles.couponCodeText, { color: colors.foreground }]}>{c.code}</Text>
                 </View>
                 <TouchableOpacity onPress={() => copyCode(c.code, c.id)} activeOpacity={0.7}>
-                  <Text style={[styles.copyCodeText, { color: colors.primary }]}>
+                  <Text style={[styles.copyText, { color: c.accent }]}>
                     {copiedId === c.id ? "تم النسخ ✓" : "نسخ الكود"}
                   </Text>
                 </TouchableOpacity>
               </View>
-              <View style={[styles.couponTag, { backgroundColor: colors.primary }]}>
-                <Text style={styles.couponTagText}>{c.discountLabel}</Text>
+              {/* Discount tag */}
+              <View style={[styles.discountTag, { backgroundColor: c.accent }]}>
+                <Text style={styles.discountTagText}>{c.discountLabel}</Text>
               </View>
-              <View style={[styles.couponNotchTop, { backgroundColor: colors.background }]} />
-              <View style={[styles.couponNotchBottom, { backgroundColor: colors.background }]} />
+              {/* Notches */}
+              <View style={[styles.notchTop,    { backgroundColor: colors.background }]} />
+              <View style={[styles.notchBottom, { backgroundColor: colors.background }]} />
             </View>
           ))}
         </View>
 
-        {/* ── INVITE ── */}
+        {/* ── INVITE ──────────────────────────────────────────────────────── */}
         <View style={[styles.inviteCard, { backgroundColor: "#FFF7ED" }]}>
           <View style={styles.inviteContent}>
             <Text style={[styles.inviteTitle, { color: "#0F172A" }]}>دع أصدقائك ووفر أكثر</Text>
             <Text style={[styles.inviteBody, { color: "#475569" }]}>
               ادع أصدقائك واحصل على 50 ر.س لكل صديق{"\n"}عند أول طلب لهم
             </Text>
-            <View style={styles.inviteActionRow}>
+            <View style={[styles.inviteActions, { flexDirection: rowDir }]}>
               <TouchableOpacity activeOpacity={0.85} style={styles.inviteBtn}>
                 <Text style={styles.inviteBtnText}>دعوة الأصدقاء</Text>
               </TouchableOpacity>
@@ -317,6 +229,7 @@ export default function OffersScreen() {
             resizeMode="cover"
           />
         </View>
+
       </ScrollView>
 
       <FloatingTabBar active="offers" />
@@ -326,69 +239,116 @@ export default function OffersScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
   header: {
-    flexDirection: rowDir, alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 16, marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   iconCircle: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: "#FFFFFF",
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: "#FFFFFF",
     alignItems: "center", justifyContent: "center",
   },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
 
-  heroDots: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 5, marginTop: 10 },
-  heroDot: { height: 6, borderRadius: 3 },
-
-  statsRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 22 },
-  statCard: {
-    flex: 1, paddingVertical: 14, paddingHorizontal: 6, borderRadius: 18, alignItems: "center",
+  dotsRow: {
+    flexDirection: "row", justifyContent: "center",
+    alignItems: "center", gap: 5, marginTop: 10,
   },
-  statIconBox: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center", marginBottom: 8 },
+  dot: { height: 6, borderRadius: 3 },
+
+  statsRow: {
+    flexDirection: "row", paddingHorizontal: 16,
+    gap: 8, marginBottom: 24,
+  },
+  statCard: {
+    flex: 1, paddingVertical: 14, paddingHorizontal: 6,
+    borderRadius: 18, alignItems: "center",
+  },
+  statIconBox: {
+    width: 36, height: 36, borderRadius: 12,
+    alignItems: "center", justifyContent: "center", marginBottom: 8,
+  },
   statValue: { fontFamily: "Tajawal_700Bold", marginBottom: 2 },
   statLabel: { fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "center" },
 
   sectionHeader: {
-    flexDirection: rowDir, justifyContent: "space-between", alignItems: "center",
-    paddingHorizontal: 16, marginBottom: 12,
+    paddingHorizontal: 16, marginBottom: 14,
   },
-  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
-  seeAll: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
-  seeAllChip: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4 },
+  sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
 
-  pairRow: { flexDirection: rowDir, gap: 12 },
-
+  // ── Coupon card ───────────────────────────────────────────────────────────
   couponCard: {
-    flexDirection: rowDir, alignItems: "stretch", borderRadius: 20,
-    padding: 16, paddingEnd: 96, overflow: "visible", position: "relative", minHeight: 96,
+    flexDirection: "row",
+    alignItems: "stretch",
+    borderRadius: 20,
+    padding: 16,
+    paddingEnd: 100,
+    overflow: "visible",
+    position: "relative",
+    minHeight: 100,
+    shadowColor: "#64748B",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  couponContent: { flex: 1, alignItems: colAlign, justifyContent: "center", gap: 6 },
+  couponContent: { flex: 1, justifyContent: "center", gap: 5 },
   couponTitle: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
-  couponMetaRow: { flexDirection: "row", alignItems: "center", gap: 5 },
-  couponMeta: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
-  couponCodeColumn: { alignItems: "center", justifyContent: "center", gap: 6, marginStart: 12, minWidth: 90 },
-  couponCodeBox: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1.5, borderStyle: "dashed" },
-  couponCodeText: { fontFamily: "Tajawal_700Bold", fontSize: 13, letterSpacing: 0.5 },
-  copyCodeText: { fontFamily: "Tajawal_600SemiBold", fontSize: 11 },
-  couponTag: {
-    position: "absolute", end: 0, top: 0, bottom: 0, width: 80,
-    borderTopEndRadius: 20, borderBottomEndRadius: 20, alignItems: "center", justifyContent: "center", padding: 8,
+  couponMeta: { flexDirection: "row", alignItems: "center", gap: 5 },
+  couponMetaText: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
+  couponCodeCol: {
+    alignItems: "center", justifyContent: "center",
+    gap: 6, marginStart: 10, minWidth: 86,
   },
-  couponTagText: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "center" },
-  couponNotchTop: { position: "absolute", end: 72, top: -8, width: 16, height: 16, borderRadius: 8 },
-  couponNotchBottom: { position: "absolute", end: 72, bottom: -8, width: 16, height: 16, borderRadius: 8 },
+  couponCodeBox: {
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: 8, borderWidth: 1.5, borderStyle: "dashed",
+  },
+  couponCodeText: { fontFamily: "Tajawal_700Bold", fontSize: 12, letterSpacing: 0.5 },
+  copyText: { fontFamily: "Tajawal_600SemiBold", fontSize: 11 },
+  discountTag: {
+    position: "absolute", end: 0, top: 0, bottom: 0, width: 88,
+    borderTopEndRadius: 20, borderBottomEndRadius: 20,
+    alignItems: "center", justifyContent: "center", padding: 8,
+  },
+  discountTagText: {
+    color: "#FFF", fontFamily: "Tajawal_700Bold",
+    fontSize: 13, textAlign: "center",
+  },
+  notchTop: {
+    position: "absolute", end: 80, top: -8,
+    width: 16, height: 16, borderRadius: 8,
+  },
+  notchBottom: {
+    position: "absolute", end: 80, bottom: -8,
+    width: 16, height: 16, borderRadius: 8,
+  },
 
+  // ── Invite ────────────────────────────────────────────────────────────────
   inviteCard: {
-    marginHorizontal: 16, marginTop: 22, borderRadius: 24, padding: 16,
-    flexDirection: rowDir, alignItems: "center", overflow: "hidden", minHeight: 130,
+    marginHorizontal: 16, marginTop: 24, borderRadius: 24,
+    padding: 16, flexDirection: "row",
+    alignItems: "center", overflow: "hidden", minHeight: 130,
   },
-  inviteContent: { flex: 1, alignItems: colAlign },
+  inviteContent: { flex: 1 },
   inviteTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 6 },
-  inviteBody: { fontFamily: "Tajawal_400Regular", fontSize: 11, lineHeight: 16, marginBottom: 12 },
-  inviteActionRow: { flexDirection: rowDir, alignItems: "center", gap: 8 },
-  inviteBtn: { backgroundColor: "#F59E0B", paddingHorizontal: 22, paddingVertical: 10, borderRadius: 100 },
-  inviteBtnText: { color: "#FFFFFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
+  inviteBody: {
+    fontFamily: "Tajawal_400Regular", fontSize: 11,
+    lineHeight: 17, marginBottom: 12,
+  },
+  inviteActions: { alignItems: "center", gap: 8 },
+  inviteBtn: {
+    backgroundColor: "#F59E0B",
+    paddingHorizontal: 20, paddingVertical: 9, borderRadius: 100,
+  },
+  inviteBtnText: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   inviteShareBtn: {
-    width: 38, height: 38, borderRadius: 19, backgroundColor: "#FFFFFF",
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: "#FFFFFF",
     alignItems: "center", justifyContent: "center",
   },
   inviteImage: { width: 110, height: 110, borderRadius: 16, marginStart: 8 },

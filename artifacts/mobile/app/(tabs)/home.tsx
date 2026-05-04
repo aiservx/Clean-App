@@ -44,16 +44,16 @@ const HOME_CATEGORY_CARDS: { id: string; title: string; img: any }[] = [
   { id: "schools",    title: "تنظيف مدارس",     img: require("@/assets/services/cards/school.png") },
 ];
 
-// Home banners — re-cropped at exact content boundaries (no white borders)
-// Heights: 305, 317, 325, 314, 332 px → carousel uses tallest AR = 887/332 ≈ 2.67
-const HOME_OFFER_BANNERS = [
-  require("@/assets/images/banners/home_new_0.png"),
-  require("@/assets/images/banners/home_new_1.png"),
-  require("@/assets/images/banners/home_new_2.png"),
-  require("@/assets/images/banners/home_new_3.png"),
-  require("@/assets/images/banners/home_new_4.png"),
+// Home banners — pixel-perfect crops (no white borders)
+// Each has its own AR; we fix container to tallest (887/332) and use cover.
+const HOME_OFFER_BANNERS: { src: any; ar: number }[] = [
+  { src: require("@/assets/images/banners/home_new_0.png"), ar: 887 / 305 },
+  { src: require("@/assets/images/banners/home_new_1.png"), ar: 887 / 317 },
+  { src: require("@/assets/images/banners/home_new_2.png"), ar: 887 / 325 },
+  { src: require("@/assets/images/banners/home_new_3.png"), ar: 887 / 314 },
+  { src: require("@/assets/images/banners/home_new_4.png"), ar: 887 / 332 },
 ];
-const HOME_BANNER_AR = 887 / 332; // tallest banner determines container height
+const HOME_BANNER_AR = 887 / 332; // container fixed to tallest banner
 
 // Per-category soft background colors for the service card illustrations
 const CAT_BG: Record<string, string> = {
@@ -118,7 +118,6 @@ export default function HomeScreen() {
   const knownNearbyIds = useRef<Set<string>>(new Set());
   const hasInitialLoad = useRef(false);
   const providerScrollRef = useRef<any>(null);
-  const bannerScrollRef = useRef<ScrollView>(null);
   const { unreadCount: notifUnread } = useNotifBadge();
 
   const loadProviders = async () => {
@@ -198,14 +197,10 @@ export default function HomeScreen() {
     return () => clearInterval(id);
   }, []);
 
-  // Auto-advance home banner carousel every 4 seconds
+  // Auto-advance home banner — simple index swap, works on web + native
   useEffect(() => {
     const id = setInterval(() => {
-      setBannerIdx((prev) => {
-        const next = (prev + 1) % HOME_OFFER_BANNERS.length;
-        bannerScrollRef.current?.scrollTo({ x: next * SW, animated: true });
-        return next;
-      });
+      setBannerIdx((prev) => (prev + 1) % HOME_OFFER_BANNERS.length);
     }, 4000);
     return () => clearInterval(id);
   }, []);
@@ -467,29 +462,19 @@ export default function HomeScreen() {
         <View style={styles.sheet}>
           <View style={styles.sheetGrabber} />
 
-          {/* PROMO BANNERS CAROUSEL — 5 banners, auto-slides every 4 s */}
-          <View style={{ marginBottom: 18 }}>
-            <ScrollView
-              ref={bannerScrollRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={(e) => {
-                setBannerIdx(Math.round(e.nativeEvent.contentOffset.x / SW));
-              }}
+          {/* PROMO BANNERS — single image swapper, works on web + native */}
+          <View style={{ marginHorizontal: 16, marginBottom: 18 }}>
+            <TouchableOpacity
+              activeOpacity={0.92}
+              onPress={() => router.push("/(tabs)/offers")}
+              style={{ width: "100%", aspectRatio: HOME_BANNER_AR, borderRadius: 16, overflow: "hidden" }}
             >
-              {HOME_OFFER_BANNERS.map((src, idx) => (
-                <View key={idx} style={{ width: SW, paddingHorizontal: 16 }}>
-                  <TouchableOpacity
-                    activeOpacity={0.92}
-                    onPress={() => router.push("/(tabs)/offers")}
-                    style={{ width: "100%", aspectRatio: HOME_BANNER_AR, borderRadius: 16, overflow: "hidden" }}
-                  >
-                    <Image source={src} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </ScrollView>
+              <Image
+                source={HOME_OFFER_BANNERS[bannerIdx].src}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
             {/* Pagination dots */}
             <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 5, marginTop: 8 }}>
               {HOME_OFFER_BANNERS.map((_, idx) => (
@@ -497,7 +482,7 @@ export default function HomeScreen() {
                   key={idx}
                   style={{
                     height: 6,
-                    width: idx === bannerIdx ? 18 : 6,
+                    width: idx === bannerIdx ? 20 : 6,
                     borderRadius: 3,
                     backgroundColor: idx === bannerIdx ? colors.primary : colors.border,
                   }}
