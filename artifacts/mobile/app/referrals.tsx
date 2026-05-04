@@ -26,9 +26,9 @@ export default function Referrals() {
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="دعوة الأصدقاء" subtitle={`اكسب ${REFERRAL_PROGRAM.rewardPerFriend} ر.س لكل صديق`} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        {/* Banner hero — orange promo image with overlay */}
+        {/* Banner hero */}
         <View style={styles.hero}>
-          <Image source={REFERRAL_PROGRAM.hero.image} style={styles.heroImg} resizeMode="cover" />
+          <Image source={require("@/assets/images/invite_friends_banner.png")} style={styles.heroImg} resizeMode="cover" />
           <LinearGradient
             colors={["rgba(0,0,0,0.32)", "rgba(0,0,0,0.05)", "rgba(0,0,0,0)"]}
             start={{ x: 0, y: 0.5 }}
@@ -38,13 +38,13 @@ export default function Referrals() {
           <View style={styles.heroContent}>
             <View style={styles.heroBadge}>
               <MaterialCommunityIcons name="gift" size={12} color="#FFFFFF" />
-              <Text style={styles.heroBadgeT}>{REFERRAL_PROGRAM.hero.badge}</Text>
+              <Text style={styles.heroBadgeT}>دعوة صديق</Text>
             </View>
-            <Text style={styles.heroT}>{REFERRAL_PROGRAM.hero.title}</Text>
-            <Text style={styles.heroS}>{REFERRAL_PROGRAM.hero.subtitle}</Text>
+            <Text style={styles.heroT}>اكسب {REFERRAL_PROGRAM.rewardPerFriend} ر.س لكل صديق</Text>
+            <Text style={styles.heroS}>شارك كودك وكسب مكافأة فورية</Text>
             <TouchableOpacity style={styles.heroCta} activeOpacity={0.85} onPress={onShare}>
               <Feather name="share-2" size={13} color="#0F172A" />
-              <Text style={styles.heroCtaT}>{REFERRAL_PROGRAM.hero.cta}</Text>
+              <Text style={styles.heroCtaT}>شارك الآن</Text>
             </TouchableOpacity>
           </View>
         </View>

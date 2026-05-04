@@ -78,16 +78,6 @@ export const SEASONAL_PROMOS: SeasonalPromo[] = [
     ctaBg: "#16A34A", ctaText: "#FFFFFF", validUntil: "حتى 30 سبتمبر",
   },
   {
-    id: "national-day",
-    image: require("@/assets/images/banners/seasonal_banner_4.png"),
-    badge: "اليوم الوطني",
-    title: "عروض اليوم الوطني السعودي",
-    subtitle: "احتفل بوطنك مع خصومات حصرية على خدمات التنظيف",
-    discount: 25, code: "SAUDI25", cta: "احجز بالخصم",
-    textColor: "#FFFFFF", badgeBg: "rgba(0,124,60,0.9)", badgeText: "#FFFFFF",
-    ctaBg: "#007C3C", ctaText: "#FFFFFF", validUntil: "حتى 23 سبتمبر",
-  },
-  {
     id: "ramadan",
     image: require("@/assets/images/banners/seasonal_banner_5.png"),
     badge: "عرض رمضان",
