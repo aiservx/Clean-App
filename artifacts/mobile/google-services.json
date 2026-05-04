@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "584580714131",
+    "project_id": "nazafa-46eb7",
+    "storage_bucket": "nazafa-46eb7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584580714131:android:a3f2c1d0e5b7f890abcd12",
+        "android_client_info": {
+          "package_name": "com.aiservx.nazafa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbQWvhagk8Fxgfo9Bv_dZxUkcVlr-XisI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

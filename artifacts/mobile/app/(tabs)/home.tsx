@@ -314,51 +314,72 @@ export default function HomeScreen() {
           pointerEvents="none"
         />
 
-        {/* Provider info card — shown when a marker is tapped */}
+        {/* Provider info card — modern design shown when a marker is tapped */}
         {selectedProvider && (
           <View style={styles.provInfoCard}>
-            <TouchableOpacity onPress={() => setSelectedProvider(null)} style={styles.provInfoClose} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-              <Feather name="x" size={14} color="#64748B" />
-            </TouchableOpacity>
-            <View style={styles.provInfoRow}>
-              <View style={{ flex: 1, alignItems: colAlign }}>
-                <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
-                <View style={{ flexDirection: rowDir, alignItems: "center", gap: 6, marginTop: 2 }}>
-                  <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
-                  <Text style={styles.provInfoMeta}>{(selectedProvider.rating || 0).toFixed(1)}</Text>
-                  <Text style={styles.provInfoMeta}>•</Text>
-                  <Text style={styles.provInfoMeta}>{selectedProvider.experience_years || 0} سنة</Text>
-                </View>
-                {loc && selectedProvider.current_lat && selectedProvider.current_lng && (() => {
-                  const d = distanceKm({ lat: loc.lat, lng: loc.lng }, { lat: selectedProvider.current_lat, lng: selectedProvider.current_lng });
-                  const eta = Math.max(3, Math.round((d / 25) * 60));
-                  return (
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                        <MaterialCommunityIcons name="map-marker-distance" size={12} color={colors.primary} />
-                        <Text style={[styles.provInfoMeta, { color: colors.primary }]}>{d < 1 ? `${Math.round(d * 1000)} م` : `${d.toFixed(1)} كم`}</Text>
-                      </View>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                        <MaterialCommunityIcons name="clock-outline" size={12} color="#8B5CF6" />
-                        <Text style={[styles.provInfoMeta, { color: "#8B5CF6" }]}>~ {eta} دقيقة</Text>
-                      </View>
+            {/* Header strip */}
+            <LinearGradient colors={[colors.primary + "18", colors.primary + "06"]} style={styles.provInfoGrad}>
+              <View style={styles.provInfoRow}>
+                <View style={{ flex: 1, alignItems: colAlign }}>
+                  {/* Online badge */}
+                  <View style={styles.provOnlineBadge}>
+                    <View style={styles.provOnlineDot} />
+                    <Text style={styles.provOnlineTxt}>متاح الآن</Text>
+                  </View>
+                  <Text style={styles.provInfoName} numberOfLines={1}>{selectedProvider.profiles?.full_name || "فني"}</Text>
+                  {/* Rating + exp */}
+                  <View style={{ flexDirection: rowDir, alignItems: "center", gap: 8, marginTop: 4 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                      <MaterialCommunityIcons name="star" size={14} color="#F59E0B" />
+                      <Text style={[styles.provInfoMeta, { color: "#F59E0B", fontFamily: "Tajawal_700Bold" }]}>{(selectedProvider.rating || 0).toFixed(1)}</Text>
                     </View>
-                  );
-                })()}
+                    <View style={styles.provMetaDivider} />
+                    <Text style={styles.provInfoMeta}>{selectedProvider.experience_years || 0} سنة خبرة</Text>
+                  </View>
+                  {/* Distance + ETA */}
+                  {loc && selectedProvider.current_lat && selectedProvider.current_lng && (() => {
+                    const d = distanceKm({ lat: loc.lat, lng: loc.lng }, { lat: selectedProvider.current_lat, lng: selectedProvider.current_lng });
+                    const eta = Math.max(3, Math.round((d / 25) * 60));
+                    return (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6 }}>
+                        <View style={[styles.provChip, { backgroundColor: colors.primaryLight }]}>
+                          <MaterialCommunityIcons name="map-marker-distance" size={11} color={colors.primary} />
+                          <Text style={[styles.provChipT, { color: colors.primary }]}>{d < 1 ? `${Math.round(d * 1000)} م` : `${d.toFixed(1)} كم`}</Text>
+                        </View>
+                        <View style={[styles.provChip, { backgroundColor: "#EDE9FE" }]}>
+                          <MaterialCommunityIcons name="clock-fast" size={11} color="#7C3AED" />
+                          <Text style={[styles.provChipT, { color: "#7C3AED" }]}>~{eta} د</Text>
+                        </View>
+                      </View>
+                    );
+                  })()}
+                </View>
+                <View style={styles.provAvatarWrap}>
+                  <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
+                  <View style={[styles.provVerifiedBadge, { backgroundColor: colors.primary }]}>
+                    <MaterialCommunityIcons name="check-decagram" size={12} color="#FFF" />
+                  </View>
+                </View>
               </View>
-              <Image source={selectedProvider.profiles?.avatar_url ? { uri: selectedProvider.profiles.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.provInfoAvatar} />
+            </LinearGradient>
+
+            {/* Action buttons */}
+            <View style={styles.provInfoActions}>
+              <TouchableOpacity onPress={() => setSelectedProvider(null)} style={styles.provInfoDismiss}>
+                <Feather name="x" size={15} color="#64748B" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={() => {
+                  setSelectedProvider(null);
+                  router.push({ pathname: "/provider/[id]", params: { id: selectedProvider.id } } as any);
+                }}
+                style={[styles.provInfoBookBtn, { backgroundColor: colors.primary, flex: 1 }]}
+              >
+                <Feather name="calendar" size={14} color="#FFF" />
+                <Text style={styles.provInfoBookText}>احجز الآن</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={() => {
-                setSelectedProvider(null);
-                router.push({ pathname: "/provider/[id]", params: { id: selectedProvider.id } } as any);
-              }}
-              style={[styles.provInfoBookBtn, { backgroundColor: colors.primary }]}
-            >
-              <Text style={styles.provInfoBookText}>طلب حجز</Text>
-              <Feather name="calendar" size={14} color="#FFF" />
-            </TouchableOpacity>
           </View>
         )}
 
@@ -665,27 +686,36 @@ const styles = StyleSheet.create({
     start: 12,
     end: 12,
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 14,
+    borderRadius: 22,
+    overflow: "hidden",
     shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 14,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 10,
     zIndex: 10,
   },
-  provInfoClose: { position: "absolute", top: 10, start: 10, zIndex: 10 },
-  provInfoRow: { flexDirection: rowDir, alignItems: "center", gap: 12 },
-  provInfoAvatar: { width: 52, height: 52, borderRadius: 26 },
-  provInfoName: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#0F172A" },
+  provInfoGrad: { padding: 14 },
+  provInfoRow: { flexDirection: rowDir, alignItems: "flex-start", gap: 12 },
+  provAvatarWrap: { position: "relative" },
+  provInfoAvatar: { width: 58, height: 58, borderRadius: 29, borderWidth: 2.5, borderColor: "#FFF" },
+  provVerifiedBadge: { position: "absolute", bottom: 0, end: 0, width: 20, height: 20, borderRadius: 10, alignItems: "center", justifyContent: "center", borderWidth: 1.5, borderColor: "#FFF" },
+  provOnlineBadge: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 4 },
+  provOnlineDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: "#16C47F" },
+  provOnlineTxt: { fontFamily: "Tajawal_600SemiBold", fontSize: 10, color: "#16C47F" },
+  provInfoName: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#0F172A" },
   provInfoMeta: { fontFamily: "Tajawal_500Medium", fontSize: 11, color: "#64748B" },
+  provMetaDivider: { width: 1, height: 10, backgroundColor: "#E2E8F0" },
+  provChip: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 100 },
+  provChipT: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
+  provInfoActions: { flexDirection: rowDir, alignItems: "center", paddingHorizontal: 12, paddingBottom: 12, gap: 10 },
+  provInfoDismiss: { width: 38, height: 38, borderRadius: 12, backgroundColor: "#F1F5F9", alignItems: "center", justifyContent: "center" },
   provInfoBookBtn: {
     flexDirection: rowDir,
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    marginTop: 10,
-    paddingVertical: 10,
+    paddingVertical: 11,
     borderRadius: 14,
   },
   provInfoBookText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#FFF" },

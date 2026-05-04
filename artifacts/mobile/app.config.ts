@@ -2,7 +2,6 @@ import type { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const replitDomain = process.env.REPLIT_DEV_DOMAIN;
-  // Replit proxies port 18115 as :3002 externally, so we must allow both
   const origin = replitDomain ? `https://${replitDomain}:3002` : "https://replit.com/";
 
   return {
@@ -22,7 +21,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     ios: {
       supportsTablet: false,
-      bundleIdentifier: "com.cleanbeaton.nathafa",
+      bundleIdentifier: "com.aiservx.nazafa",
       infoPlist: {
         NSLocationWhenInUseUsageDescription:
           "نحتاج الإذن بموقعك لإيجاد مزودي الخدمة القريبين منك",
@@ -31,8 +30,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     },
     android: {
-      package: "com.cleanbeaton.nathafa",
-      versionCode: 1,
+      package: "com.aiservx.nazafa",
+      versionCode: 12,
+      googleServicesFile: "./google-services.json",
       adaptiveIcon: {
         foregroundImage: "./assets/images/icon-light.png",
         backgroundColor: "#7C3AED",
@@ -43,6 +43,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         "ACCESS_BACKGROUND_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
+        "POST_NOTIFICATIONS",
       ],
     },
     web: {
@@ -72,7 +73,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       [
         "expo-notifications",
-        { icon: "./assets/images/icon-light.png", color: "#7C3AED" },
+        {
+          icon: "./assets/images/icon-light.png",
+          color: "#7C3AED",
+          sounds: [],
+        },
       ],
       "expo-updates",
     ],

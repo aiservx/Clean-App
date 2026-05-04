@@ -54,6 +54,7 @@ export default function ProviderBookingDetails() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [myLoc, setMyLoc] = useState<ResolvedAddress | null>(null);
+  const [review, setReview] = useState<{ rating: number; comment: string | null } | null>(null);
 
   const load = useCallback(async () => {
     if (!params.id) {
@@ -71,6 +72,14 @@ export default function ProviderBookingDetails() {
       .eq("id", params.id)
       .maybeSingle();
     setBooking(data);
+    if (data?.status === "completed") {
+      const { data: rev } = await supabase
+        .from("reviews")
+        .select("rating, comment")
+        .eq("booking_id", params.id)
+        .maybeSingle();
+      setReview(rev ?? null);
+    }
     setLoading(false);
   }, [params.id]);
 
@@ -347,6 +356,56 @@ export default function ProviderBookingDetails() {
             <Text style={[styles.dV, { color: colors.success }]}>{(Number(booking.total) * 0.85).toFixed(2)} ر.س</Text>
           </View>
         </View>
+
+        {/* Review section — shown only after booking is completed */}
+        {booking.status === "completed" && (
+          <View style={[styles.section, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>تقييم العميل</Text>
+            {review ? (
+              <>
+                <View style={styles.dRow}>
+                  <View style={{ flexDirection: "row", gap: 3 }}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <MaterialCommunityIcons
+                        key={s}
+                        name={s <= review.rating ? "star" : "star-outline"}
+                        size={20}
+                        color={s <= review.rating ? "#F59E0B" : "#CBD5E1"}
+                      />
+                    ))}
+                  </View>
+                  <Text style={[styles.dL, { color: colors.mutedForeground }]}>التقييم</Text>
+                </View>
+                {review.comment ? (
+                  <View style={[styles.reviewComment, { backgroundColor: colors.background }]}>
+                    <Text style={[styles.dV, { color: colors.foreground, fontSize: 13, lineHeight: 20 }]}>
+                      "{review.comment}"
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={[styles.dL, { color: colors.mutedForeground, marginTop: 4 }]}>لا توجد ملاحظات مكتوبة</Text>
+                )}
+              </>
+            ) : (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 6 }}>
+                <MaterialCommunityIcons name="star-outline" size={22} color={colors.mutedForeground} />
+                <Text style={[styles.dL, { color: colors.mutedForeground }]}>لم يقيّم العميل الخدمة بعد</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Back to bookings list */}
+        <TouchableOpacity
+          onPress={() => router.replace("/(provider)/bookings" as any)}
+          style={[styles.section, { backgroundColor: colors.primaryLight, flexDirection: "row", alignItems: "center", gap: 10 }]}
+        >
+          <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color={colors.primary} />
+          <Text style={{ flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.primary, textAlign: "right" }}>
+            العودة لقائمة طلباتي
+          </Text>
+          <MaterialCommunityIcons name="clipboard-list-outline" size={20} color={colors.primary} />
+        </TouchableOpacity>
       </ScrollView>
 
       <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom, 20) + 16 }]}>
@@ -412,4 +471,5 @@ const styles = StyleSheet.create({
   ctaSec: { paddingHorizontal: 18, height: 50, borderRadius: 16, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
   ctaSecT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   completedBox: { flex: 1, height: 50, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  reviewComment: { borderRadius: 12, padding: 12, marginTop: 8 },
 });

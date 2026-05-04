@@ -28,19 +28,19 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
   };
 
   const userItems: { key: ActiveKey; label: string; icon: string; iconLib: "feather" | "mci"; path: string }[] = [
-    { key: "home", label: "الرئيسية", icon: "home", iconLib: "feather", path: "/(tabs)/home" },
-    { key: "offers", label: "العروض", icon: "diamond-stone", iconLib: "mci", path: "/(tabs)/offers" },
-    { key: "bookings", label: "طلباتي", icon: "calendar", iconLib: "feather", path: "/(tabs)/bookings" },
-    { key: "chat", label: "المحادثات", icon: "message-circle", iconLib: "feather", path: "/(tabs)/chat" },
-    { key: "profile", label: "الملف الشخصي", icon: "user", iconLib: "feather", path: "/(tabs)/profile" },
+    { key: "home",     label: "الرئيسية",   icon: "home",           iconLib: "feather", path: "/(tabs)/home" },
+    { key: "offers",   label: "العروض",     icon: "diamond-stone",  iconLib: "mci",     path: "/(tabs)/offers" },
+    { key: "bookings", label: "طلباتي",     icon: "calendar",       iconLib: "feather", path: "/(tabs)/bookings" },
+    { key: "chat",     label: "المحادثات",  icon: "message-circle", iconLib: "feather", path: "/(tabs)/chat" },
+    { key: "profile",  label: "حسابي",      icon: "user",           iconLib: "feather", path: "/(tabs)/profile" },
   ];
 
   const providerItems: { key: ActiveKey; label: string; icon: string; iconLib: "feather" | "mci"; path: string }[] = [
-    { key: "home", label: "لوحة التحكم", icon: "grid", iconLib: "feather", path: "/(provider)/dashboard" },
-    { key: "bookings", label: "طلباتي", icon: "calendar", iconLib: "feather", path: "/(provider)/bookings" },
-    { key: "wallet", label: "المحفظة", icon: "credit-card", iconLib: "feather", path: "/(provider)/wallet" },
-    { key: "chat", label: "الرسائل", icon: "message-circle", iconLib: "feather", path: "/(provider)/chat" },
-    { key: "profile", label: "الملف الشخصي", icon: "user", iconLib: "feather", path: "/(provider)/profile" },
+    { key: "home",     label: "لوحة التحكم", icon: "grid",           iconLib: "feather", path: "/(provider)/dashboard" },
+    { key: "bookings", label: "طلباتي",       icon: "calendar",       iconLib: "feather", path: "/(provider)/bookings" },
+    { key: "wallet",   label: "المحفظة",      icon: "credit-card",    iconLib: "feather", path: "/(provider)/wallet" },
+    { key: "chat",     label: "الرسائل",      icon: "message-circle", iconLib: "feather", path: "/(provider)/chat" },
+    { key: "profile",  label: "حسابي",        icon: "user",           iconLib: "feather", path: "/(provider)/profile" },
   ];
 
   const items = variant === "provider" ? providerItems : userItems;
@@ -59,11 +59,11 @@ export default function FloatingTabBar({ active = null, variant = "user" }: Prop
 
         return (
           <TouchableOpacity key={it.key} style={s.tab} onPress={() => goto(it.path)} activeOpacity={0.7}>
-            <View style={[s.iconWrap, isActive && { backgroundColor: colors.primary + "14" }]}>
+            <View style={[s.iconWrap, isActive && { backgroundColor: colors.primary + "18" }]}>
               {it.iconLib === "mci" ? (
-                <MaterialCommunityIcons name={it.icon as any} size={21} color={color} />
+                <MaterialCommunityIcons name={it.icon as any} size={22} color={color} />
               ) : (
-                <Feather name={it.icon as any} size={21} color={color} />
+                <Feather name={it.icon as any} size={22} color={color} />
               )}
               {showBadge && (
                 <View style={[s.badge, { backgroundColor: colors.destructive ?? "#EF4444" }]}>
@@ -101,9 +101,9 @@ const s = StyleSheet.create({
     elevation: 12,
   },
   tab: { alignItems: "center", justifyContent: "center", flex: 1, gap: 2 },
-  iconWrap: { width: 36, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  iconWrap: { width: 40, height: 32, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   label: { fontSize: 10, marginTop: 1 },
-  activeDot: { width: 4, height: 4, borderRadius: 2, marginTop: 3 },
+  activeDot: { width: 4, height: 4, borderRadius: 2, marginTop: 2 },
   badge: {
     position: "absolute",
     top: -4,

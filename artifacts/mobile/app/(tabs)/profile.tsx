@@ -95,7 +95,7 @@ export default function ProfileScreen() {
 
         {/* Membership Banner */}
         <LinearGradient colors={["#8B5CF6", "#A78BFA"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.memberBanner}>
-          <TouchableOpacity style={s.memberBtn}>
+          <TouchableOpacity style={s.memberBtn} onPress={() => router.push("/premium-membership" as any)}>
             <Text style={s.memberBtnText}>عرض المميزات</Text>
           </TouchableOpacity>
           <View style={s.memberContent}>
@@ -179,7 +179,6 @@ export default function ProfileScreen() {
               <Feather name="log-out" size={16} color="#EF4444" />
             </View>
             <Text style={s.signOutText}>{t("signout")}</Text>
-            <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={16} color="#FCA5A5" />
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -245,7 +244,7 @@ const s = StyleSheet.create({
   menuSub: { fontFamily: "Tajawal_400Regular", fontSize: 11 },
   menuIconWrap: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   signOutBtn: { marginHorizontal: 16, marginTop: 8, marginBottom: 24, borderRadius: 18, borderWidth: 1, borderColor: "#FECACA", backgroundColor: "#FFF5F5", overflow: "hidden", shadowColor: "#EF4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 1 },
-  signOutInner: { flexDirection: rowDir, alignItems: "center", paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
+  signOutInner: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
   signOutIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#FEE2E2", alignItems: "center", justifyContent: "center" },
-  signOutText: { flex: 1, fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#DC2626" },
+  signOutText: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#DC2626" },
 });
