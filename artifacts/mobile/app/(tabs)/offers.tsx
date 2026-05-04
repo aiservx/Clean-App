@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Image, Platform, I18nManager, Dimensions,
+  Image, Platform, I18nManager, Dimensions, FlatList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -11,14 +11,14 @@ import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
 import { SEASONAL_PROMOS, GRID_PROMO_ROWS } from "@/lib/promotions";
 
-// ── Banners (File 3 — Offers hero slider) ────────────────────────────────────
-const BANNERS: { src: any; ar: number }[] = [
-  { src: require("@/assets/images/banners/offers_banner_0.png"), ar: 853 / 492 },
-  { src: require("@/assets/images/banners/offers_banner_1.png"), ar: 853 / 425 },
-  { src: require("@/assets/images/banners/offers_banner_2.png"), ar: 853 / 415 },
-  { src: require("@/assets/images/banners/offers_banner_3.png"), ar: 853 / 443 },
+// ── Hero slider banners (File 3) ─────────────────────────────────────────────
+const HERO_BANNERS = [
+  require("@/assets/images/banners/offers_banner_0.png"),
+  require("@/assets/images/banners/offers_banner_1.png"),
+  require("@/assets/images/banners/offers_banner_2.png"),
+  require("@/assets/images/banners/offers_banner_3.png"),
 ];
-const CAROUSEL_AR = 853 / 492;
+const HERO_AR = 853 / 440;
 
 // ── Coupons ───────────────────────────────────────────────────────────────────
 const COUPONS = [
@@ -66,21 +66,20 @@ const COUPONS = [
 
 const { width: SW } = Dimensions.get("window");
 const rowDir = I18nManager.isRTL ? ("row" as const) : ("row-reverse" as const);
-const colAlign = I18nManager.isRTL ? ("flex-start" as const) : ("flex-end" as const);
 
 export default function OffersScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [slideIdx, setSlideIdx] = useState(0);
-  const sliderRef = useRef<ScrollView>(null);
+  const heroRef = useRef<FlatList>(null);
 
-  // Auto-advance carousel
+  // Auto-advance hero slider
   useEffect(() => {
     const id = setInterval(() => {
       setSlideIdx((prev) => {
-        const next = (prev + 1) % BANNERS.length;
-        sliderRef.current?.scrollTo({ x: next * SW, animated: true });
+        const next = (prev + 1) % HERO_BANNERS.length;
+        heroRef.current?.scrollToIndex({ index: next, animated: true });
         return next;
       });
     }, 4000);
@@ -96,6 +95,16 @@ export default function OffersScreen() {
     setTimeout(() => setCopiedId(null), 1600);
   };
 
+  const renderHeroBanner = useCallback(({ item }: { item: any }) => (
+    <View style={{ width: SW, paddingHorizontal: 16 }}>
+      <Image
+        source={item}
+        style={{ width: "100%", aspectRatio: HERO_AR, borderRadius: 18 }}
+        resizeMode="cover"
+      />
+    </View>
+  ), []);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
@@ -109,28 +118,23 @@ export default function OffersScreen() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
 
-        {/* ── BANNER CAROUSEL ─────────────────────────────────────────────── */}
+        {/* ── HERO SLIDER (File 3) ───────────────────────────────────────── */}
         <View style={{ marginBottom: 20 }}>
-          <ScrollView
-            ref={sliderRef}
+          <FlatList
+            ref={heroRef}
+            data={HERO_BANNERS}
+            renderItem={renderHeroBanner}
+            keyExtractor={(_, i) => `hero-${i}`}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={(e) =>
               setSlideIdx(Math.round(e.nativeEvent.contentOffset.x / SW))
             }
-          >
-            {BANNERS.map((b, idx) => (
-              <View key={idx} style={{ width: SW, paddingHorizontal: 16 }}>
-                <View style={{ width: "100%", aspectRatio: CAROUSEL_AR, borderRadius: 18, overflow: "hidden" }}>
-                  <Image source={b.src} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-          {/* Dots */}
+            getItemLayout={(_, i) => ({ length: SW, offset: SW * i, index: i })}
+          />
           <View style={styles.dotsRow}>
-            {BANNERS.map((_, idx) => (
+            {HERO_BANNERS.map((_, idx) => (
               <View
                 key={idx}
                 style={[
@@ -171,7 +175,6 @@ export default function OffersScreen() {
         <View style={{ paddingHorizontal: 16, gap: 14 }}>
           {COUPONS.map((c) => (
             <View key={c.id} style={[styles.couponCard, { backgroundColor: colors.card }]}>
-              {/* Content */}
               <View style={styles.couponContent}>
                 <Text style={[styles.couponTitle, { color: colors.foreground }]}>{c.title}</Text>
                 <View style={styles.couponMeta}>
@@ -183,7 +186,6 @@ export default function OffersScreen() {
                   <Text style={[styles.couponMetaText, { color: colors.mutedForeground }]}>{c.expiry}</Text>
                 </View>
               </View>
-              {/* Code */}
               <View style={styles.couponCodeCol}>
                 <View style={[styles.couponCodeBox, { borderColor: c.accent }]}>
                   <Text style={[styles.couponCodeText, { color: colors.foreground }]}>{c.code}</Text>
@@ -194,104 +196,154 @@ export default function OffersScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-              {/* Discount tag */}
               <View style={[styles.discountTag, { backgroundColor: c.accent }]}>
                 <Text style={styles.discountTagText}>{c.discountLabel}</Text>
               </View>
-              {/* Notches */}
               <View style={[styles.notchTop,    { backgroundColor: colors.background }]} />
               <View style={[styles.notchBottom, { backgroundColor: colors.background }]} />
             </View>
           ))}
         </View>
 
-        {/* ── SEASONAL OFFERS (Files 4 — single cards) ──────────────────── */}
-        <View style={styles.sectionHeader}>
+        {/* ── INVITE FRIENDS BANNER (mid-page) ─────────────────────────── */}
+        <TouchableOpacity
+          activeOpacity={0.92}
+          style={{ marginHorizontal: 16, marginTop: 24, borderRadius: 18, overflow: "hidden" }}
+          onPress={() => router.push("/referrals" as any)}
+        >
+          <Image
+            source={require("@/assets/images/invite_friends_banner.png")}
+            style={{ width: "100%", aspectRatio: 1378 / 563, borderRadius: 18 }}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
+
+        {/* ── SEASONAL OFFERS (mixed: File 4 wide + File 5 square grid) ── */}
+        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض موسمية</Text>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12 }}>
-          {SEASONAL_PROMOS.map((promo, idx) => (
-            <TouchableOpacity
-              key={promo.id}
-              activeOpacity={0.92}
-              onPress={() => {
-                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                copyCode(promo.code, promo.id);
-              }}
-              style={[
-                styles.seasonalCard,
-                { backgroundColor: colors.card },
-                idx % 3 === 0 && { width: "100%" },
-              ]}
-            >
+          {/* File 4 card 1 (wide) */}
+          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[0]?.code || "", "s0")}>
+            <Image
+              source={SEASONAL_PROMOS[0]?.image}
+              style={{ width: "100%", aspectRatio: 793 / 356, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+
+          {/* File 5 row 1: 2 square cards */}
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SUMMER25", "g0l")}>
               <Image
-                source={promo.image}
-                style={{ width: "100%", aspectRatio: 793 / 340, borderRadius: 16 }}
+                source={GRID_PROMO_ROWS[0]?.left}
+                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
                 resizeMode="cover"
               />
             </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* ── GRID OFFERS (File 5 — 2 per row variety) ─────────────────── */}
-        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض حصرية</Text>
-        </View>
-
-        <View style={{ paddingHorizontal: 16, gap: 10 }}>
-          {GRID_PROMO_ROWS.map((row) => (
-            <View key={row.id} style={{ flexDirection: "row", gap: 10 }}>
-              <TouchableOpacity
-                activeOpacity={0.92}
-                onPress={() => copyCode(row.code, row.id + "-l")}
-                style={{ flex: 1 }}
-              >
-                <Image
-                  source={row.left}
-                  style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-              {row.right && (
-                <TouchableOpacity
-                  activeOpacity={0.92}
-                  onPress={() => copyCode(row.code, row.id + "-r")}
-                  style={{ flex: 1 }}
-                >
-                  <Image
-                    source={row.right}
-                    style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
-                    resizeMode="cover"
-                  />
-                </TouchableOpacity>
-              )}
-              {!row.right && <View style={{ flex: 1 }} />}
-            </View>
-          ))}
-        </View>
-
-        {/* ── INVITE ──────────────────────────────────────────────────────── */}
-        <View style={[styles.inviteCard, { backgroundColor: "#FFF7ED" }]}>
-          <View style={styles.inviteContent}>
-            <Text style={[styles.inviteTitle, { color: "#0F172A" }]}>دع أصدقائك ووفر أكثر</Text>
-            <Text style={[styles.inviteBody, { color: "#475569" }]}>
-              ادع أصدقائك واحصل على 50 ر.س لكل صديق{"\n"}عند أول طلب لهم
-            </Text>
-            <View style={[styles.inviteActions, { flexDirection: rowDir }]}>
-              <TouchableOpacity activeOpacity={0.85} style={styles.inviteBtn}>
-                <Text style={styles.inviteBtnText}>دعوة الأصدقاء</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.inviteShareBtn}>
-                <Feather name="share-2" size={18} color="#0F172A" />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SUMMER25", "g0r")}>
+              <Image
+                source={GRID_PROMO_ROWS[0]?.right}
+                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
           </View>
-          <Image
-            source={require("@/assets/images/saudi-friends-illust.jpg")}
-            style={styles.inviteImage}
-            resizeMode="cover"
-          />
+
+          {/* File 4 card 2 (wide) */}
+          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[1]?.code || "", "s1")}>
+            <Image
+              source={SEASONAL_PROMOS[1]?.image}
+              style={{ width: "100%", aspectRatio: 793 / 331, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+
+          {/* File 5 row 2: 2 square cards */}
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SEASON20", "g1l")}>
+              <Image
+                source={GRID_PROMO_ROWS[1]?.left}
+                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("SEASON20", "g1r")}>
+              <Image
+                source={GRID_PROMO_ROWS[1]?.right}
+                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* File 4 card 3 (wide) */}
+          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[2]?.code || "", "s2")}>
+            <Image
+              source={SEASONAL_PROMOS[2]?.image}
+              style={{ width: "100%", aspectRatio: 793 / 332, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+
+          {/* File 5 row 3: 2 square cards */}
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("RAIN18", "g2l")}>
+              <Image
+                source={GRID_PROMO_ROWS[2]?.left}
+                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.92} style={{ flex: 1 }} onPress={() => copyCode("RAIN18", "g2r")}>
+              <Image
+                source={GRID_PROMO_ROWS[2]?.right}
+                style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* File 4 card 4 (wide) */}
+          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[3]?.code || "", "s3")}>
+            <Image
+              source={SEASONAL_PROMOS[3]?.image}
+              style={{ width: "100%", aspectRatio: 793 / 286, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+
+          {/* File 5 single square card */}
+          <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode("WEEK12", "g3")}>
+            <Image
+              source={GRID_PROMO_ROWS[3]?.left}
+              style={{ width: "100%", aspectRatio: 2, borderRadius: 14 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+
+          {/* File 4 card 5 (wide) */}
+          {SEASONAL_PROMOS[4] && (
+            <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[4].code, "s4")}>
+              <Image
+                source={SEASONAL_PROMOS[4].image}
+                style={{ width: "100%", aspectRatio: 793 / 257, borderRadius: 16 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          )}
+
+          {/* File 4 Ramadan (LAST) */}
+          {SEASONAL_PROMOS[5] && (
+            <TouchableOpacity activeOpacity={0.92} onPress={() => copyCode(SEASONAL_PROMOS[5].code, "s5")}>
+              <Image
+                source={SEASONAL_PROMOS[5].image}
+                style={{ width: "100%", aspectRatio: 793 / 359, borderRadius: 16 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          )}
         </View>
 
       </ScrollView>
@@ -344,7 +396,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
 
-  // ── Coupon card ───────────────────────────────────────────────────────────
   couponCard: {
     flexDirection: "row",
     alignItems: "stretch",
@@ -391,40 +442,4 @@ const styles = StyleSheet.create({
     position: "absolute", end: 80, bottom: -8,
     width: 16, height: 16, borderRadius: 8,
   },
-
-  // ── Seasonal card ──────────────────────────────────────────────────────────
-  seasonalCard: {
-    borderRadius: 16,
-    overflow: "hidden",
-    shadowColor: "#64748B",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-
-  // ── Invite ────────────────────────────────────────────────────────────────
-  inviteCard: {
-    marginHorizontal: 16, marginTop: 24, borderRadius: 24,
-    padding: 16, flexDirection: "row",
-    alignItems: "center", overflow: "hidden", minHeight: 130,
-  },
-  inviteContent: { flex: 1 },
-  inviteTitle: { fontFamily: "Tajawal_700Bold", fontSize: 15, marginBottom: 6 },
-  inviteBody: {
-    fontFamily: "Tajawal_400Regular", fontSize: 11,
-    lineHeight: 17, marginBottom: 12,
-  },
-  inviteActions: { alignItems: "center", gap: 8 },
-  inviteBtn: {
-    backgroundColor: "#F59E0B",
-    paddingHorizontal: 20, paddingVertical: 9, borderRadius: 100,
-  },
-  inviteBtnText: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  inviteShareBtn: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center", justifyContent: "center",
-  },
-  inviteImage: { width: 110, height: 110, borderRadius: 16, marginStart: 8 },
 });

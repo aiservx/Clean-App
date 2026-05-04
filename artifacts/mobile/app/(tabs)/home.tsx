@@ -572,6 +572,19 @@ export default function HomeScreen() {
             </>
           )}
 
+          {/* INVITE FRIENDS BANNER */}
+          <TouchableOpacity
+            activeOpacity={0.92}
+            style={{ marginHorizontal: 16, marginBottom: 18, borderRadius: 18, overflow: "hidden" }}
+            onPress={() => router.push("/referrals" as any)}
+          >
+            <Image
+              source={require("@/assets/images/invite_friends_banner.png")}
+              style={{ width: "100%", aspectRatio: 1378 / 563, borderRadius: 18 }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
+
           {/* PROVIDERS */}
           <View style={[styles.sectionHeader]}>
             <Text style={[styles.sectionTitle, { }]}>{t("nearby_pros")}</Text>
