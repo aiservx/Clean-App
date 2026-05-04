@@ -11,9 +11,8 @@ import { useBooking } from "@/store/booking";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 
-// Services banners — individually cropped from promo-services-banners.png (793×1983, 5 rows)
-// Each card: 793×396px → aspectRatio ≈ 2.0 (landscape portrait)
-const SVC_BANNER_AR = 793 / 396; // ~2.0
+// Services banners — promotional cards between service rows (Ramadan is always last)
+const SVC_BANNER_AR = 793 / 385;
 const SVC_BANNERS = [
   require("@/assets/images/banners/svc_banner_0.png"),
   require("@/assets/images/banners/svc_banner_1.png"),

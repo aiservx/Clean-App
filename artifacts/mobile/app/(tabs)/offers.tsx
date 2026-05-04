@@ -9,18 +9,16 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import FloatingTabBar from "@/components/FloatingTabBar";
+import { SEASONAL_PROMOS, GRID_PROMO_ROWS } from "@/lib/promotions";
 
-// ── Banners ──────────────────────────────────────────────────────────────────
-// 5 pixel-perfect banners — no white borders, no embedded form elements
+// ── Banners (File 3 — Offers hero slider) ────────────────────────────────────
 const BANNERS: { src: any; ar: number }[] = [
-  { src: require("@/assets/images/banners/home_new_0.png"), ar: 887 / 305 },
-  { src: require("@/assets/images/banners/home_new_1.png"), ar: 887 / 317 },
-  { src: require("@/assets/images/banners/home_new_2.png"), ar: 887 / 325 },
-  { src: require("@/assets/images/banners/home_new_3.png"), ar: 887 / 314 },
-  { src: require("@/assets/images/banners/home_new_4.png"), ar: 887 / 332 },
+  { src: require("@/assets/images/banners/offers_banner_0.png"), ar: 853 / 492 },
+  { src: require("@/assets/images/banners/offers_banner_1.png"), ar: 853 / 425 },
+  { src: require("@/assets/images/banners/offers_banner_2.png"), ar: 853 / 415 },
+  { src: require("@/assets/images/banners/offers_banner_3.png"), ar: 853 / 443 },
 ];
-// Container fixed to tallest banner height
-const CAROUSEL_AR = 887 / 332;
+const CAROUSEL_AR = 853 / 492;
 
 // ── Coupons ───────────────────────────────────────────────────────────────────
 const COUPONS = [
@@ -151,8 +149,8 @@ export default function OffersScreen() {
         <View style={styles.statsRow}>
           {[
             { icon: "tag",      label: "كوبونات",   value: String(COUPONS.length) },
-            { icon: "gift",     label: "عروض",      value: "5" },
-            { icon: "calendar", label: "موسمية",    value: "4" },
+            { icon: "gift",     label: "عروض",      value: String(SEASONAL_PROMOS.length) },
+            { icon: "calendar", label: "موسمية",    value: String(GRID_PROMO_ROWS.length) },
             { icon: "users",    label: "دعوة صديق", value: "50 ر.س", small: true },
           ].map((s) => (
             <View key={s.label} style={[styles.statCard, { backgroundColor: colors.card }]}>
@@ -203,6 +201,72 @@ export default function OffersScreen() {
               {/* Notches */}
               <View style={[styles.notchTop,    { backgroundColor: colors.background }]} />
               <View style={[styles.notchBottom, { backgroundColor: colors.background }]} />
+            </View>
+          ))}
+        </View>
+
+        {/* ── SEASONAL OFFERS (Files 4 — single cards) ──────────────────── */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض موسمية</Text>
+        </View>
+
+        <View style={{ paddingHorizontal: 16, gap: 12 }}>
+          {SEASONAL_PROMOS.map((promo, idx) => (
+            <TouchableOpacity
+              key={promo.id}
+              activeOpacity={0.92}
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                copyCode(promo.code, promo.id);
+              }}
+              style={[
+                styles.seasonalCard,
+                { backgroundColor: colors.card },
+                idx % 3 === 0 && { width: "100%" },
+              ]}
+            >
+              <Image
+                source={promo.image}
+                style={{ width: "100%", aspectRatio: 793 / 340, borderRadius: 16 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* ── GRID OFFERS (File 5 — 2 per row variety) ─────────────────── */}
+        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>عروض حصرية</Text>
+        </View>
+
+        <View style={{ paddingHorizontal: 16, gap: 10 }}>
+          {GRID_PROMO_ROWS.map((row) => (
+            <View key={row.id} style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableOpacity
+                activeOpacity={0.92}
+                onPress={() => copyCode(row.code, row.id + "-l")}
+                style={{ flex: 1 }}
+              >
+                <Image
+                  source={row.left}
+                  style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+              {row.right && (
+                <TouchableOpacity
+                  activeOpacity={0.92}
+                  onPress={() => copyCode(row.code, row.id + "-r")}
+                  style={{ flex: 1 }}
+                >
+                  <Image
+                    source={row.right}
+                    style={{ width: "100%", aspectRatio: 1, borderRadius: 14 }}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              )}
+              {!row.right && <View style={{ flex: 1 }} />}
             </View>
           ))}
         </View>
@@ -326,6 +390,17 @@ const styles = StyleSheet.create({
   notchBottom: {
     position: "absolute", end: 80, bottom: -8,
     width: 16, height: 16, borderRadius: 8,
+  },
+
+  // ── Seasonal card ──────────────────────────────────────────────────────────
+  seasonalCard: {
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#64748B",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
 
   // ── Invite ────────────────────────────────────────────────────────────────
