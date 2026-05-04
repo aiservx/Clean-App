@@ -3,7 +3,8 @@ import { Card, PageHeader, StatusChip } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const API_BASE = import.meta.env.VITE_API_URL || "https://eb9ca67f-3840-494c-a44c-7f4dce377432-00-ssajzbo1u1yq.kirk.replit.dev";
+const API_BASE = import.meta.env.VITE_API_URL ||
+  `https://${window.location.hostname.replace(/^\d+-/, "8080-")}`;
 
 const STATUS_FLOW = ["pending", "accepted", "on_the_way", "in_progress", "completed"] as const;
 type BookingStatus = typeof STATUS_FLOW[number] | "cancelled" | "rejected";

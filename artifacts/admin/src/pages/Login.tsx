@@ -3,8 +3,8 @@ import { useAuth } from "@/lib/auth";
 
 export default function Login() {
   const { signIn } = useAuth();
-  const [email, setEmail] = useState("admin@nazafa.sa");
-  const [pwd, setPwd] = useState("admin123456");
+  const [email, setEmail] = useState("");
+  const [pwd, setPwd] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -55,7 +55,7 @@ export default function Login() {
             {loading ? "جاري الدخول…" : "تسجيل الدخول"}
           </button>
           <div className="text-xs text-gray-400 text-center pt-2">
-            البريد الافتراضي: admin@nazafa.sa<br />كلمة المرور: admin123456
+            للدخول استخدم بيانات حساب المدير في Supabase
           </div>
         </form>
       </div>

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Card, PageHeader } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://eb9ca67f-3840-494c-a44c-7f4dce377432-00-ssajzbo1u1yq.kirk.replit.dev";
+const API_BASE = import.meta.env.VITE_API_URL ||
+  `https://${window.location.hostname.replace(/^\d+-/, "8080-")}`;
 
 export default function Notifications() {
   const [title, setTitle] = useState("");
