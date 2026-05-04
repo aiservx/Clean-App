@@ -88,14 +88,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       ...(config.extra ?? {}),
       eas: {
-        projectId: "09e4ce5c-f181-49b0-b379-68b832e1f292",
+        projectId: "dd03c810-2182-47e7-9a0a-823fdcc351b8",
       },
       router: {
         origin,
         headOrigin: origin,
       },
     },
-    owner: "hadystow",
+    owner: "clean-beaton",
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore – Replit-specific extension field
     _replit: {
