@@ -109,57 +109,46 @@ export default function OffersScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={{ paddingHorizontal: 16, gap: 16, marginBottom: 22 }}>
+        <View style={{ paddingHorizontal: 16, gap: 12, marginBottom: 22 }}>
           {visibleSeasonal.map((slide) => (
-            <View key={slide.id}>
-              {/* Promo code chip — ABOVE the image, tappable to copy */}
-              <TouchableOpacity
-                onPress={() => copyCode(slide.code, slide.id)}
-                activeOpacity={0.85}
-                style={[styles.codeAboveCard, { backgroundColor: colors.card }]}
-              >
-                <Feather name={copiedId === slide.id ? "check-circle" : "copy"} size={14} color={colors.primary} />
-                <Text style={[styles.codeAboveText, { color: colors.primary }]}>
-                  {copiedId === slide.id ? "✓ تم نسخ الكود" : slide.code}
-                </Text>
-                <Text style={[styles.codeAboveHint, { color: colors.mutedForeground }]}>
-                  {copiedId === slide.id ? "" : "• اضغط لنسخ"}
-                </Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              key={slide.id}
+              activeOpacity={0.92}
+              onPress={() => copyCode(slide.code, slide.id)}
+              style={styles.heroCard}
+            >
+              <Image source={slide.image} style={styles.heroFullImage} resizeMode="cover" />
 
-              {/* The card itself — image with all text embedded inside */}
-              <View style={styles.heroCard}>
-                <Image source={slide.image} style={styles.heroFullImage} resizeMode="cover" />
+              {/* Soft scrim on the left side so the text reads on any banner */}
+              <LinearGradient
+                colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0.05)", "rgba(0,0,0,0)"]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 0.7, y: 0.5 }}
+                style={StyleSheet.absoluteFillObject}
+              />
 
-                {/* Gradient scrim so text is readable over any background */}
-                <LinearGradient
-                  colors={["rgba(0,0,0,0.55)", "rgba(0,0,0,0.15)", "rgba(0,0,0,0)"]}
-                  start={{ x: 0, y: 0.5 }}
-                  end={{ x: 0.75, y: 0.5 }}
-                  style={StyleSheet.absoluteFillObject}
-                />
+              {/* Floating discount % badge in the top-left */}
+              <View style={styles.heroDiscountBadge}>
+                <Text style={styles.heroDiscountBadgeText}>-{slide.discount}%</Text>
+              </View>
 
-                {/* Discount % badge — top-left corner (where the arrow points in design) */}
-                <View style={styles.heroDiscountBadge}>
-                  <Text style={styles.heroDiscountBadgeText}>-{slide.discount}%</Text>
+              {/* Text block in the empty (left) area of the banner */}
+              <View style={styles.heroOverlay}>
+                <View style={[styles.heroBadge, { backgroundColor: slide.badgeBg }]}>
+                  <Feather name="zap" size={10} color={slide.badgeText} />
+                  <Text style={[styles.heroBadgeText, { color: slide.badgeText }]}>{slide.badge}</Text>
                 </View>
 
-                {/* All text/CTA embedded in the image */}
-                <View style={styles.heroOverlay}>
-                  <View style={[styles.heroBadge, { backgroundColor: slide.badgeBg }]}>
-                    <Feather name="zap" size={10} color={slide.badgeText} />
-                    <Text style={[styles.heroBadgeText, { color: slide.badgeText }]}>{slide.badge}</Text>
-                  </View>
+                <View>
+                  <Text style={[styles.heroTitle, { color: slide.textColor }]} numberOfLines={2}>
+                    {slide.title}
+                  </Text>
+                  <Text style={[styles.heroSub, { color: slide.textColor, opacity: 0.92 }]} numberOfLines={2}>
+                    {slide.subtitle}
+                  </Text>
+                </View>
 
-                  <View>
-                    <Text style={[styles.heroTitle, { color: slide.textColor }]} numberOfLines={2}>
-                      {slide.title}
-                    </Text>
-                    <Text style={[styles.heroSub, { color: slide.textColor, opacity: 0.92 }]} numberOfLines={2}>
-                      {slide.subtitle}
-                    </Text>
-                  </View>
-
+                <View style={styles.heroCtaRow}>
                   <TouchableOpacity
                     onPress={() => copyCode(slide.code, slide.id)}
                     activeOpacity={0.85}
@@ -170,9 +159,12 @@ export default function OffersScreen() {
                       {copiedId === slide.id ? "تم نسخ الكود" : slide.cta}
                     </Text>
                   </TouchableOpacity>
+                  <View style={styles.heroCodePill}>
+                    <Text style={[styles.heroCodeText, { color: slide.textColor }]}>{slide.code}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -191,62 +183,53 @@ export default function OffersScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={{ paddingHorizontal: 16, gap: 16, marginBottom: 22 }}>
+        <View style={{ paddingHorizontal: 16, gap: 12, marginBottom: 22 }}>
           {visibleFeatured.map((p) => (
-            <View key={p.id}>
-              {/* Promo code chip ABOVE the card */}
-              <TouchableOpacity
-                onPress={() => copyCode(p.code, p.id)}
-                activeOpacity={0.85}
-                style={[styles.codeAboveCard, { backgroundColor: colors.card }]}
-              >
-                <Feather name={copiedId === p.id ? "check-circle" : "copy"} size={14} color={colors.primary} />
-                <Text style={[styles.codeAboveText, { color: colors.primary }]}>
-                  {copiedId === p.id ? "✓ تم نسخ الكود" : p.code}
-                </Text>
-                <Text style={[styles.codeAboveHint, { color: colors.mutedForeground }]}>
-                  {copiedId === p.id ? "" : "• اضغط لنسخ"}
-                </Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              key={p.id}
+              activeOpacity={0.9}
+              onPress={() => copyCode(p.code, p.id)}
+              style={styles.featuredCard}
+            >
+              <Image source={p.image} style={styles.featuredImage} resizeMode="cover" />
 
-              <View style={styles.featuredCard}>
-                <Image source={p.image} style={styles.featuredImage} resizeMode="cover" />
+              {/* Subtle scrim on the LEFT (text-side) so light text reads */}
+              <LinearGradient
+                colors={["rgba(0,0,0,0.18)", "rgba(0,0,0,0.04)", "rgba(0,0,0,0)"]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 0.6, y: 0.5 }}
+                style={StyleSheet.absoluteFillObject}
+              />
 
-                <LinearGradient
-                  colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,0.12)", "rgba(0,0,0,0)"]}
-                  start={{ x: 0, y: 0.5 }}
-                  end={{ x: 0.7, y: 0.5 }}
-                  style={StyleSheet.absoluteFillObject}
-                />
+              {/* Floating discount % badge in the top-left corner */}
+              <View style={styles.featuredDiscountBadge}>
+                <Text style={styles.featuredDiscountNum}>-{p.discount}%</Text>
+              </View>
 
-                {/* Discount badge top-left */}
-                <View style={styles.featuredDiscountBadge}>
-                  <Text style={styles.featuredDiscountNum}>-{p.discount}%</Text>
+              {/* Text block on the empty left half of the banner */}
+              <View style={styles.featuredOverlay}>
+                <View style={[styles.featuredBadge, { backgroundColor: p.badgeBg }]}>
+                  <Text style={[styles.featuredBadgeText, { color: p.badgeText }]}>{p.badge}</Text>
                 </View>
-
-                <View style={styles.featuredOverlay}>
-                  <View style={[styles.featuredBadge, { backgroundColor: p.badgeBg }]}>
-                    <Text style={[styles.featuredBadgeText, { color: p.badgeText }]}>{p.badge}</Text>
-                  </View>
-                  <Text style={[styles.featuredTitle, { color: p.titleColor }]} numberOfLines={2}>
-                    {p.title}
-                  </Text>
-                  <Text style={[styles.featuredSub, { color: p.subColor }]} numberOfLines={2}>
-                    {p.subtitle}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => copyCode(p.code, p.id)}
-                    activeOpacity={0.85}
-                    style={[styles.featuredCta, { backgroundColor: p.ctaBg }]}
-                  >
+                <Text style={[styles.featuredTitle, { color: p.titleColor }]} numberOfLines={2}>
+                  {p.title}
+                </Text>
+                <Text style={[styles.featuredSub, { color: p.subColor }]} numberOfLines={2}>
+                  {p.subtitle}
+                </Text>
+                <View style={styles.featuredCtaRow}>
+                  <View style={[styles.featuredCta, { backgroundColor: p.ctaBg }]}>
                     <Feather name={copiedId === p.id ? "check" : I18nManager.isRTL ? "arrow-left" : "arrow-right"} size={12} color={p.ctaText} />
                     <Text style={[styles.featuredCtaText, { color: p.ctaText }]}>
                       {copiedId === p.id ? "تم النسخ" : p.cta}
                     </Text>
-                  </TouchableOpacity>
+                  </View>
+                  <View style={styles.featuredCodePill}>
+                    <Text style={styles.featuredCodeText}>{p.code}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -353,7 +336,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17 },
 
-  // Seasonal banner cards (full-width, image with overlay text)
   heroCard: {
     borderRadius: 22,
     overflow: "hidden",
@@ -388,31 +370,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#0F172A",
   },
-  codeAboveCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    alignSelf: "flex-start",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 100,
-    marginBottom: 8,
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  codeAboveText: {
-    fontFamily: "Tajawal_700Bold",
-    fontSize: 13,
-    letterSpacing: 0.5,
-  },
-  codeAboveHint: {
-    fontFamily: "Tajawal_400Regular",
-    fontSize: 11,
-  },
-
   heroOverlay: {
     position: "absolute",
     top: 14,
@@ -429,7 +386,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 3,
     borderRadius: 100,
-    marginTop: 24, // leave room for the floating discount badge
+    marginTop: 24,
   },
   heroBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
   heroTitle: {
@@ -463,8 +420,21 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   heroCtaText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  heroCodePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.7)",
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.18)",
+    borderStyle: "dashed",
+  },
+  heroCodeText: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 10,
+    letterSpacing: 0.4,
+  },
 
-  // "عرض الكل" toggle pill
   seeAllChip: {
     flexDirection: "row",
     alignItems: "center",
@@ -473,7 +443,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  // Featured promo banners (image 2)
   featuredCard: {
     borderRadius: 22,
     overflow: "hidden",
@@ -518,7 +487,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 3,
     borderRadius: 100,
-    marginTop: 24, // leave room for floating discount badge
+    marginTop: 24,
   },
   featuredBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 10 },
   featuredTitle: {
@@ -536,6 +505,11 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     marginTop: 1,
   },
+  featuredCtaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   featuredCta: {
     flexDirection: "row",
     alignItems: "center",
@@ -545,8 +519,22 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   featuredCtaText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  featuredCodePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.55)",
+    borderStyle: "dashed",
+  },
+  featuredCodeText: {
+    fontFamily: "Tajawal_700Bold",
+    fontSize: 10,
+    color: "#FFFFFF",
+    letterSpacing: 0.4,
+  },
 
-  // Stats row
   statsRow: {
     flexDirection: "row",
     paddingHorizontal: 16,
@@ -576,7 +564,6 @@ const styles = StyleSheet.create({
   statValue: { fontFamily: "Tajawal_700Bold", marginBottom: 2 },
   statLabel: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "center" },
 
-  // Section header
   sectionHeader: {
     flexDirection: rowDir,
     justifyContent: "space-between",
@@ -587,7 +574,6 @@ const styles = StyleSheet.create({
   sectionTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16 },
   seeAll: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
 
-  // Coupons
   couponCard: {
     flexDirection: rowDir,
     alignItems: "stretch",
@@ -658,7 +644,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 
-  // Invite
   inviteCard: {
     marginHorizontal: 16,
     marginTop: 22,
