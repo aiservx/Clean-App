@@ -44,51 +44,38 @@ const HOME_CATEGORY_CARDS: { id: string; title: string; img: any }[] = [
   { id: "schools",    title: "تنظيف مدارس",     img: require("@/assets/services/cards/school.png") },
 ];
 
-// Discount banners placed between every two rows of categories.
-// Text is positioned in the empty right-side area of each banner.
-type Banner = { img: any; title: string; subtitle: string; cta: string; titleColor: string; subColor: string; ctaBg: string; ctaText: string };
-const HOME_OFFER_BANNERS: Banner[] = [
-  {
-    img: require("@/assets/services/offers/green.png"),
-    title: "خصومات الربيع",
-    subtitle: "وفر 20% على خدمات التنظيف العميق",
-    cta: "احجز الآن",
-    titleColor: "#1F6F3E",
-    subColor: "#2F7A4D",
-    ctaBg: "#2BA15F",
-    ctaText: "#FFFFFF",
-  },
-  {
-    img: require("@/assets/services/offers/orange.png"),
-    title: "هدية الترحيب",
-    subtitle: "كوبون بقيمة 50 ر.س لطلبك الأول",
-    cta: "استلم الكوبون",
-    titleColor: "#9A5B07",
-    subColor: "#A6680E",
-    ctaBg: "#F0A53A",
-    ctaText: "#FFFFFF",
-  },
-  {
-    img: require("@/assets/services/offers/purple.png"),
-    title: "الباقة الشاملة",
-    subtitle: "وفر 30% عند طلب 3 خدمات معاً",
-    cta: "احجز الباقة",
-    titleColor: "#5B2A99",
-    subColor: "#6B36A6",
-    ctaBg: "#8B5CF6",
-    ctaText: "#FFFFFF",
-  },
-  {
-    img: require("@/assets/services/offers/pink.png"),
-    title: "تنظيف الكنب والسجاد",
-    subtitle: "بخصم 25% لفترة محدودة",
-    cta: "استفد الآن",
-    titleColor: "#9F2C5A",
-    subColor: "#AD3868",
-    ctaBg: "#EC4899",
-    ctaText: "#FFFFFF",
-  },
+// Home banners — re-cropped at exact content boundaries (no white borders)
+// Heights: 305, 317, 325, 314, 332 px → carousel uses tallest AR = 887/332 ≈ 2.67
+const HOME_OFFER_BANNERS = [
+  require("@/assets/images/banners/home_new_0.png"),
+  require("@/assets/images/banners/home_new_1.png"),
+  require("@/assets/images/banners/home_new_2.png"),
+  require("@/assets/images/banners/home_new_3.png"),
+  require("@/assets/images/banners/home_new_4.png"),
 ];
+const HOME_BANNER_AR = 887 / 332; // tallest banner determines container height
+
+// Per-category soft background colors for the service card illustrations
+const CAT_BG: Record<string, string> = {
+  homes:      "#E8F5EE",
+  deep:       "#EDE9FE",
+  offices:    "#DBEAFE",
+  villas:     "#FEF3C7",
+  apartments: "#FCE7F3",
+  furniture:  "#F0FDF4",
+  mattresses: "#FFF7ED",
+  kitchens:   "#E0F2FE",
+  bathrooms:  "#F5F3FF",
+  facades:    "#ECFDF5",
+  tanks:      "#EFF6FF",
+  ac:         "#FDF4FF",
+  postbuild:  "#FFFBEB",
+  cars:       "#F0F9FF",
+  pools:      "#E0F7FA",
+  gardens:    "#F0FDF4",
+  mosques:    "#FFF7ED",
+  schools:    "#EDE9FE",
+};
 
 // Soft, coupon-style background colors for offer cards (T043).
 const OFFER_PALETTES: { bg: string; border: string; accent: string; text: string }[] = [
@@ -99,7 +86,8 @@ const OFFER_PALETTES: { bg: string; border: string; accent: string; text: string
   { bg: "#EDE9FE", border: "#DDD6FE", accent: "#7C3AED", text: "#5B21B6" }, // violet
 ];
 
-const { height: SCREEN_H } = Dimensions.get("window");
+const { width: SW, height: SCREEN_H } = Dimensions.get("window");
+const CONTENT_W = SW - 32;
 
 type Cat = { id: string; title_ar: string; icon: string; color: string; sort: number };
 type Provider = {
@@ -126,9 +114,11 @@ export default function HomeScreen() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [nearbyToast, setNearbyToast] = useState<ToastProvider | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+  const [bannerIdx, setBannerIdx] = useState(0);
   const knownNearbyIds = useRef<Set<string>>(new Set());
   const hasInitialLoad = useRef(false);
   const providerScrollRef = useRef<any>(null);
+  const bannerScrollRef = useRef<ScrollView>(null);
   const { unreadCount: notifUnread } = useNotifBadge();
 
   const loadProviders = async () => {
@@ -205,6 +195,18 @@ export default function HomeScreen() {
   // is unavailable or silently disconnected.
   useEffect(() => {
     const id = setInterval(loadProviders, 5_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Auto-advance home banner carousel every 4 seconds
+  useEffect(() => {
+    const id = setInterval(() => {
+      setBannerIdx((prev) => {
+        const next = (prev + 1) % HOME_OFFER_BANNERS.length;
+        bannerScrollRef.current?.scrollTo({ x: next * SW, animated: true });
+        return next;
+      });
+    }, 4000);
     return () => clearInterval(id);
   }, []);
 
@@ -465,7 +467,46 @@ export default function HomeScreen() {
         <View style={styles.sheet}>
           <View style={styles.sheetGrabber} />
 
-          {/* SERVICES — 2-column grid showing all 18 categories with discount banners between rows */}
+          {/* PROMO BANNERS CAROUSEL — 5 banners, auto-slides every 4 s */}
+          <View style={{ marginBottom: 18 }}>
+            <ScrollView
+              ref={bannerScrollRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                setBannerIdx(Math.round(e.nativeEvent.contentOffset.x / SW));
+              }}
+            >
+              {HOME_OFFER_BANNERS.map((src, idx) => (
+                <View key={idx} style={{ width: SW, paddingHorizontal: 16 }}>
+                  <TouchableOpacity
+                    activeOpacity={0.92}
+                    onPress={() => router.push("/(tabs)/offers")}
+                    style={{ width: "100%", aspectRatio: HOME_BANNER_AR, borderRadius: 16, overflow: "hidden" }}
+                  >
+                    <Image source={src} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+            {/* Pagination dots */}
+            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 5, marginTop: 8 }}>
+              {HOME_OFFER_BANNERS.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    height: 6,
+                    width: idx === bannerIdx ? 18 : 6,
+                    borderRadius: 3,
+                    backgroundColor: idx === bannerIdx ? colors.primary : colors.border,
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* SERVICES — clean 2-column grid, no banners between rows */}
           <View style={[styles.sectionHeader]}>
             <Text style={[styles.sectionTitle, { }]}>{t("services")}</Text>
             <TouchableOpacity onPress={() => router.push("/services")}>
@@ -474,60 +515,27 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.catGridWrap}>
-            {(() => {
-              const blocks: React.ReactNode[] = [];
-              const rowsPerBlock = 2;
-              const cardsPerRow = 2;
-              const cardsPerBlock = rowsPerBlock * cardsPerRow; // 4
-              const totalBlocks = Math.ceil(HOME_CATEGORY_CARDS.length / cardsPerBlock);
-              for (let b = 0; b < totalBlocks; b++) {
-                const slice = HOME_CATEGORY_CARDS.slice(b * cardsPerBlock, (b + 1) * cardsPerBlock);
-                blocks.push(
-                  <View key={`row-${b}`} style={styles.catGrid}>
-                    {slice.map((c) => (
-                      <TouchableOpacity
-                        key={c.id}
-                        activeOpacity={0.88}
-                        style={styles.catCard}
-                        onPress={() => router.push({ pathname: "/services", params: { cat: c.id } } as any)}
-                      >
-                        <View style={styles.catCardSurface}>
-                          <Image source={c.img} style={styles.catCardImage} resizeMode="cover" />
-                        </View>
-                        <Text style={styles.catCardTitle} numberOfLines={1}>{c.title}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                );
-                // Insert a discount banner between every two rows of categories
-                // (i.e. after each block, except the last one).
-                if (b < totalBlocks - 1 && b < HOME_OFFER_BANNERS.length) {
-                  const ban = HOME_OFFER_BANNERS[b];
-                  blocks.push(
+            {Array.from({ length: Math.ceil(HOME_CATEGORY_CARDS.length / 2) }, (_, rowIdx) => {
+              const pair = HOME_CATEGORY_CARDS.slice(rowIdx * 2, rowIdx * 2 + 2);
+              return (
+                <View key={`row-${rowIdx}`} style={styles.catGrid}>
+                  {pair.map((c) => (
                     <TouchableOpacity
-                      key={`ban-${b}`}
-                      activeOpacity={0.92}
-                      style={styles.banner}
-                      onPress={() => router.push("/(tabs)/offers")}
+                      key={c.id}
+                      activeOpacity={0.88}
+                      style={styles.catCard}
+                      onPress={() => router.push({ pathname: "/services", params: { cat: c.id } } as any)}
                     >
-                      <Image source={ban.img} style={styles.bannerImg} resizeMode="cover" />
-                      <View style={styles.bannerTextOverlay} pointerEvents="none">
-                        <Text style={[styles.bannerTitle, { color: ban.titleColor }]} numberOfLines={1}>
-                          {ban.title}
-                        </Text>
-                        <Text style={[styles.bannerSub, { color: ban.subColor }]} numberOfLines={2}>
-                          {ban.subtitle}
-                        </Text>
-                        <View style={[styles.bannerCta, { backgroundColor: ban.ctaBg }]}>
-                          <Text style={[styles.bannerCtaText, { color: ban.ctaText }]}>{ban.cta}</Text>
-                        </View>
+                      <View style={[styles.catCardSurface, { backgroundColor: CAT_BG[c.id] ?? "#F0F9FF" }]}>
+                        <Image source={c.img} style={styles.catCardImage} resizeMode="contain" />
                       </View>
+                      <Text style={styles.catCardTitle} numberOfLines={1}>{c.title}</Text>
                     </TouchableOpacity>
-                  );
-                }
-              }
-              return blocks;
-            })()}
+                  ))}
+                  {pair.length === 1 && <View style={{ flex: 1 }} />}
+                </View>
+              );
+            })}
           </View>
 
           {/* OFFERS (T042: moved below services, T043: soft coupon-style colors) */}
@@ -822,15 +830,14 @@ const styles = StyleSheet.create({
     aspectRatio: 1.55,
     borderRadius: 18,
     overflow: "hidden",
-    backgroundColor: "#FFFFFF",
     shadowColor: "#64748B",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.10,
-    shadowRadius: 14,
-    elevation: 4,
-    borderWidth: 0.5,
-    borderColor: "#E2E8F0",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     marginBottom: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   catCardImage: {
     width: "100%",
@@ -842,55 +849,6 @@ const styles = StyleSheet.create({
     color: "#0F172A",
     textAlign: "center",
     letterSpacing: 0.2,
-  },
-
-  // Discount banners between rows
-  banner: {
-    width: "100%",
-    aspectRatio: 1528 / 187, // matches source banner aspect ratio
-    borderRadius: 16,
-    overflow: "hidden",
-    position: "relative",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
-    marginVertical: 2,
-  },
-  bannerImg: {
-    width: "100%",
-    height: "100%",
-  },
-  // Text sits in the empty right-half of the banner (RTL layout).
-  bannerTextOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    end: "4%",
-    width: "55%",
-    justifyContent: "center",
-    alignItems: "flex-end",
-  },
-  bannerTitle: {
-    fontFamily: "Tajawal_700Bold",
-    fontSize: 13.5,
-  },
-  bannerSub: {
-    fontFamily: "Tajawal_500Medium",
-    fontSize: 10.5,
-    marginTop: 2,
-    lineHeight: 14,
-  },
-  bannerCta: {
-    marginTop: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 100,
-  },
-  bannerCtaText: {
-    fontFamily: "Tajawal_700Bold",
-    fontSize: 10,
   },
 
   emptyBox: { marginHorizontal: 16, padding: 26, borderRadius: 18, alignItems: "center", gap: 8, backgroundColor: "#fff" },

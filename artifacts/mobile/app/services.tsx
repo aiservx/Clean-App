@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Image , I18nManager} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Image, I18nManager, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 
@@ -11,6 +10,18 @@ import FloatingTabBar from "@/components/FloatingTabBar";
 import { useBooking } from "@/store/booking";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
+
+// Services banners — individually cropped from promo-services-banners.png (793×1983, 5 rows)
+// Each card: 793×396px → aspectRatio ≈ 2.0 (landscape portrait)
+const SVC_BANNER_AR = 793 / 396; // ~2.0
+const SVC_BANNERS = [
+  require("@/assets/images/banners/svc_banner_0.png"),
+  require("@/assets/images/banners/svc_banner_1.png"),
+  require("@/assets/images/banners/svc_banner_2.png"),
+  require("@/assets/images/banners/svc_banner_3.png"),
+  require("@/assets/images/banners/svc_banner_4.png"),
+];
+// eslint-disable-next-line import/first
 import { useI18n } from "@/lib/i18n";
 import {
   getServiceImage,
@@ -137,45 +148,69 @@ export default function ServicesScreen() {
 
         {loading ? (
           <ActivityIndicator style={{ marginTop: 40 }} color={colors.primary} />
+        ) : filtered.length === 0 ? (
+          <View style={{ width: "100%", alignItems: "center", padding: 40 }}>
+            <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground }}>{t("no_services_in_cat")}</Text>
+          </View>
         ) : (
-          <View style={styles.grid}>
-            {filtered.map((service) => {
-              const cat = cats.find((c) => c.id === service.category_id);
-              const icon = CAT_ICON_MAP[service.category_id || ""] || "broom";
-              const imageUri = getServiceImage(service.category_id, service.image_url);
-              return (
-                <TouchableOpacity key={service.id} style={[styles.serviceCard, { backgroundColor: colors.card }]} onPress={() => onSelectService(service)} activeOpacity={0.9}>
-                  <View style={styles.imageWrap}>
-                    <Image source={{ uri: imageUri }} style={styles.img} resizeMode="cover" />
-                    <LinearGradient
-                      colors={["rgba(255,255,255,0)", "rgba(255,255,255,0.18)"]}
-                      style={StyleSheet.absoluteFill}
-                      pointerEvents="none"
-                    />
-                    <View style={[styles.categoryIndicator, { backgroundColor: "#FFFFFF" }]}>
-                      <MaterialCommunityIcons name={(cat?.icon as any) || icon as any} size={14} color={cat?.color || colors.primary} />
-                    </View>
+          <View style={{ paddingHorizontal: 12 }}>
+            {(() => {
+              const rows: React.ReactNode[] = [];
+              for (let i = 0; i < filtered.length; i += 2) {
+                const pair = filtered.slice(i, i + 2);
+                rows.push(
+                  <View key={`svc-row-${i}`} style={styles.svcRow}>
+                    {pair.map((service) => {
+                      const cat = cats.find((c) => c.id === service.category_id);
+                      const icon = CAT_ICON_MAP[service.category_id || ""] || "broom";
+                      const imageUri = getServiceImage(service.category_id, service.image_url);
+                      return (
+                        <TouchableOpacity key={service.id} style={[styles.serviceCard, { backgroundColor: colors.card }]} onPress={() => onSelectService(service)} activeOpacity={0.9}>
+                          <View style={styles.imageWrap}>
+                            <Image source={{ uri: imageUri }} style={styles.img} resizeMode="cover" />
+                            <View style={[styles.categoryIndicator, { backgroundColor: "#FFFFFF" }]}>
+                              <MaterialCommunityIcons name={(cat?.icon as any) || icon as any} size={14} color={cat?.color || colors.primary} />
+                            </View>
+                          </View>
+                          <View style={styles.cardContent}>
+                            <Text style={[styles.serviceTitle, { color: colors.foreground }]} numberOfLines={1}>{service.title_ar}</Text>
+                            <Text style={[styles.serviceDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{service.desc_ar}</Text>
+                            <View style={styles.cardFooter}>
+                              <View style={[styles.arrowBtn, { backgroundColor: colors.primary }]}>
+                                <Feather name={I18nManager.isRTL ? "arrow-left" : "arrow-right"} size={14} color="#FFF" />
+                              </View>
+                              <Text style={[styles.priceText, { color: colors.foreground }]}>
+                                {t("starts_from")} <Text style={{ color: colors.primary, fontFamily: "Tajawal_700Bold" }}>{Number(service.base_price)}</Text> {t("sar")}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                    {pair.length === 1 && <View style={{ flex: 1 }} />}
                   </View>
-                  <View style={styles.cardContent}>
-                    <Text style={[styles.serviceTitle, { color: colors.foreground }]} numberOfLines={1}>{service.title_ar}</Text>
-                    <Text style={[styles.serviceDesc, { color: colors.mutedForeground }]} numberOfLines={2}>{service.desc_ar}</Text>
-                    <View style={styles.cardFooter}>
-                      <View style={[styles.arrowBtn, { backgroundColor: colors.primary }]}>
-                        <Feather name={I18nManager.isRTL ? "arrow-left" : "arrow-right"} size={14} color="#FFF" />
-                      </View>
-                      <Text style={[styles.priceText, { color: colors.foreground }]}>
-                        {t("starts_from")} <Text style={{ color: colors.primary, fontFamily: "Tajawal_700Bold" }}>{Number(service.base_price)}</Text> {t("sar")}
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-            {filtered.length === 0 && (
-              <View style={{ width: "100%", alignItems: "center", padding: 40 }}>
-                <Text style={{ fontFamily: "Tajawal_500Medium", color: colors.mutedForeground }}>{t("no_services_in_cat")}</Text>
-              </View>
-            )}
+                );
+                // Inject promo banner after every 2 rows (every 2nd pair), not after last
+                if (i + 2 < filtered.length && (i / 2) % 2 === 1) {
+                  const bannerIdx = Math.floor(i / 4) % SVC_BANNERS.length;
+                  rows.push(
+                    <TouchableOpacity
+                      key={`svc-ban-${i}`}
+                      activeOpacity={0.92}
+                      onPress={() => router.push("/(tabs)/offers" as any)}
+                      style={{ width: "100%", aspectRatio: SVC_BANNER_AR, borderRadius: 16, overflow: "hidden", marginVertical: 4 }}
+                    >
+                      <Image
+                        source={SVC_BANNERS[bannerIdx]}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  );
+                }
+              }
+              return rows;
+            })()}
           </View>
         )}
       </ScrollView>
@@ -196,7 +231,8 @@ const styles = StyleSheet.create({
   categoryPill: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1, gap: 6, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   categoryText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 12 },
-  serviceCard: { width: "47%", borderRadius: 22, overflow: "hidden", padding: 0, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 3 },
+  svcRow: { flexDirection: "row", justifyContent: "space-between", gap: 12, marginBottom: 0 },
+  serviceCard: { flex: 1, borderRadius: 22, overflow: "hidden", padding: 0, shadowColor: "#0F172A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 3 },
   imageWrap: { width: "100%", height: 130, position: "relative", backgroundColor: "#F1F5F9" },
   img: { width: "100%", height: "100%" },
   categoryIndicator: { position: "absolute", top: 10, start: 10, width: 30, height: 30, borderRadius: 12, alignItems: "center", justifyContent: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 3 },
