@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, RefreshControl, Alert, ActivityIndicator, I18nManager } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, RefreshControl, Alert, ActivityIndicator, I18nManager, AppState } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -49,6 +49,10 @@ export default function ProviderHome() {
   const [stats, setStats] = useState({ today: 0, earnings: 0, rating: 0 });
   const [myLoc, setMyLoc] = useState<ResolvedAddress | null>(null);
   const [mapAnimTrigger, setMapAnimTrigger] = useState(0);
+
+  // Ref to read online state inside AppState callback without stale closure
+  const onlineRef = useRef(false);
+  useEffect(() => { onlineRef.current = online; }, [online]);
 
   const loadAll = useCallback(async () => {
     if (!session?.user) {
@@ -179,7 +183,30 @@ export default function ProviderHome() {
     [refreshOrders],
   );
 
-  // T020 — Live location broadcast every 5s while provider is online.
+  // Layer 1: AppState listener — immediately marks provider offline when app is backgrounded/killed
+  // This catches: home-button press, task-switcher close, phone call taking focus, screen lock.
+  // Force-kill / battery death are handled by Layer 3 (server TTL sweep in providerSweep.ts).
+  useEffect(() => {
+    if (!session?.user) return;
+    const uid = session.user.id;
+    const sub = AppState.addEventListener("change", async (nextState) => {
+      if ((nextState === "background" || nextState === "inactive") && onlineRef.current) {
+        try {
+          await supabase.from("providers").update({
+            available: false,
+            current_lat: null,
+            current_lng: null,
+          }).eq("id", uid);
+          setOnline(false);
+          onlineRef.current = false;
+        } catch {}
+      }
+    });
+    return () => sub.remove();
+  }, [session]);
+
+  // T020 — Live location broadcast (heartbeat) every 5s while provider is online.
+  // Also writes location_updated_at so the server TTL sweep (Layer 3) can detect stale entries.
   useEffect(() => {
     if (!online || !session?.user) return;
     let cancelled = false;
@@ -188,7 +215,11 @@ export default function ProviderHome() {
       try {
         const r = await getCurrentResolved();
         if (cancelled || !r) return;
-        await supabase.from("providers").update({ current_lat: r.lat, current_lng: r.lng }).eq("id", uid);
+        await supabase.from("providers").update({
+          current_lat: r.lat,
+          current_lng: r.lng,
+          location_updated_at: new Date().toISOString(),
+        }).eq("id", uid);
         setMyLoc(r);
       } catch {}
     };

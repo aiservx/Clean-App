@@ -71,7 +71,8 @@ create table if not exists providers (
   current_lng double precision,
   service_ids uuid[],
   experience_years int default 0,
-  iban text
+  iban text,
+  location_updated_at timestamptz default now()
 );
 
 create table if not exists bookings (

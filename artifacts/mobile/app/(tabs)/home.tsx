@@ -133,14 +133,31 @@ export default function HomeScreen() {
 
   const loadProviders = async () => {
     try {
-      const { data } = await supabase
+      // Layer 4: only show providers whose heartbeat is fresh (≤ 8 min old).
+      // Falls back to basic query if location_updated_at column doesn't exist yet.
+      const cutoff = new Date(Date.now() - 8 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
         .from("providers")
         .select("id, rating, experience_years, current_lat, current_lng, available, hourly_rate, profiles(full_name, avatar_url)")
         .eq("available", true)
         .not("current_lat", "is", null)
         .not("current_lng", "is", null)
+        .gte("location_updated_at", cutoff)
         .limit(20);
-      if (data) setProviders(data as any);
+
+      if (error) {
+        // Column not yet migrated — fall back to the unfiltered query
+        const { data: fallback } = await supabase
+          .from("providers")
+          .select("id, rating, experience_years, current_lat, current_lng, available, hourly_rate, profiles(full_name, avatar_url)")
+          .eq("available", true)
+          .not("current_lat", "is", null)
+          .not("current_lng", "is", null)
+          .limit(20);
+        if (fallback) setProviders(fallback as any);
+      } else if (data) {
+        setProviders(data as any);
+      }
     } catch {}
   };
 
