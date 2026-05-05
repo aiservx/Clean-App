@@ -7,29 +7,32 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "credentialsSource": "remote",
       "android": {
         "buildType": "apk"
       },
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8",
-        "EXPO_PUBLIC_API_URL": "https://8080-3aaa9ac5-2480-43dc-90b1-4cf6f59737ff-00-2kteh850huenj.riker.replit.dev"
+        "EXPO_PUBLIC_API_URL": "https://clean-app--hady201.replit.app"
       }
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
+      "credentialsSource": "remote",
       "android": {
         "buildType": "apk"
       },
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8",
-        "EXPO_PUBLIC_API_URL": "https://8080-3aaa9ac5-2480-43dc-90b1-4cf6f59737ff-00-2kteh850huenj.riker.replit.dev"
+        "EXPO_PUBLIC_API_URL": "https://clean-app--hady201.replit.app"
       }
     },
     "production": {
       "channel": "production",
+      "credentialsSource": "remote",
       "android": {
         "buildType": "app-bundle"
       },
@@ -37,7 +40,7 @@
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8",
-        "EXPO_PUBLIC_API_URL": "https://8080-3aaa9ac5-2480-43dc-90b1-4cf6f59737ff-00-2kteh850huenj.riker.replit.dev"
+        "EXPO_PUBLIC_API_URL": "https://clean-app--hady201.replit.app"
       }
     }
   },

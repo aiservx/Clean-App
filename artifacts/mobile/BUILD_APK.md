@@ -73,33 +73,45 @@
 
 ## متطلبات ما قبل البناء
 
-### 1. EXPO_PUBLIC_API_URL — العنوان الثابت للـ API Server
+### 1. EXPO_PUBLIC_API_URL — العنوان الثابت للـ API Server ✅ مكتمل
 
-هذا العنوان يُحفَر داخل الـ APK ولا يمكن تغييره بدون إعادة بناء.
+| البيئة | العنوان المضبوط في `eas.json` |
+|--------|-------------------------------|
+| development | `https://clean-app--hady201.replit.app` |
+| preview | `https://clean-app--hady201.replit.app` |
+| production | `https://clean-app--hady201.replit.app` |
 
-**الخطوات:**
-1. انشر API Server من Replit (زر Deploy)
-2. احصل على العنوان الثابت (مثال: `https://nazafa-api.aiservx1.replit.app`)
-3. حدّث `eas.json` في المقاطع الثلاث (development / preview / production):
-```json
-"EXPO_PUBLIC_API_URL": "https://YOUR-DEPLOYED-URL.replit.app"
+> ⚠️ لا تستخدم عناوين `*.riker.replit.dev` في الـ APK — هذه عناوين مؤقتة تتغير مع كل جلسة تطوير. العنوان الثابت أعلاه من Replit Deployments.
+
+### 2. Android Keystore (توقيع الـ APK) ✅ مُهيَّأ
+
+أُضيف `"credentialsSource": "remote"` لكل البيئات الثلاث في `eas.json`. هذا يعني EAS يُدير Keystore تلقائياً على expo.dev ولا تحتاج لرفع ملف `.jks` يدوياً.
+
+**إذا ظهر طلب Keystore عند البناء:**
+```bash
+# في أول بناء سيسألك EAS: هل تريد إنشاء keystore جديدة؟
+# اختر: "Generate new keystore" (الخيار الأول)
+# EAS ستحفظها تلقائياً على expo.dev للبنيات المستقبلية
 ```
-4. أعد بناء الـ APK
 
-> ⚠️ لا تستخدم عناوين `*.riker.replit.dev` في الـ APK النهائي — هذه عناوين مؤقتة تتغير مع كل جلسة تطوير.
+### 3. FCM v1 في Expo Dashboard ⏳ خطوة يدوية مطلوبة
 
-### 2. FCM v1 في Expo Dashboard
+لكي تصل الإشعارات لشريط الحالة عند إغلاق التطبيق، يحتاج Expo لصلاحية إرسال FCM v1.
 
-لكي يستطيع خادم Expo إرسال الإشعارات لأجهزة Android عبر FCM v1:
-1. اذهب إلى [expo.dev](https://expo.dev) → مشروع `mobile` → Credentials
-2. أضف Firebase Service Account JSON (من Firebase Console → Project Settings → Service Accounts → Generate new private key)
-3. هذا يختلف عن `google-services.json` — ذاك للبناء، وهذا للإرسال.
+**الخطوات (مرة واحدة فقط):**
+1. اذهب إلى [expo.dev/accounts/aiservx1/projects/mobile/credentials](https://expo.dev/accounts/aiservx1/projects/mobile/credentials)
+2. اختر **Android** → قسم **FCM V1 service account key**
+3. اضغط **Upload** وارفع ملف Service Account JSON من Firebase:
+   - Project: `nazafa-46eb7`
+   - Client email: `firebase-adminsdk-fbsvc@nazafa-46eb7.iam.gserviceaccount.com`
+4. احفظ
 
-### 3. SUPABASE_SERVICE_ROLE_KEY
+> هذا يختلف عن `google-services.json` — ذاك يُحفَر في الـ APK وقت البناء للاتصال بـ FCM، أما ملف Service Account فيستخدمه خادم Expo لإرسال الإشعارات في الخلفية.
+
+### 4. SUPABASE_SERVICE_ROLE_KEY ✅ مضبوط
 
 مطلوب في Replit Secrets لكي يستطيع API Server:
 - جلب push tokens من Supabase (يتجاوز RLS)
-- تشغيل provider sweep التلقائي
 - التحقق من صلاحيات المرسِل
 
 ---
@@ -132,14 +144,16 @@ eas build --platform android --profile preview
 
 | الحقل | القيمة |
 |-------|--------|
-| الإصلاحات | projectId، google-services.json، EXPO_PUBLIC_API_URL، timeout handling |
-| الحالة | **يحتاج بناء جديد بعد نشر API Server** |
+| الإصلاحات | projectId، google-services.json، EXPO_PUBLIC_API_URL، Keystore، timeout handling |
+| API URL المستخدم | `https://clean-app--hady201.replit.app` (ثابت دائماً) |
+| الحالة | **جاهز للبناء بعد رفع FCM v1 Service Account على expo.dev** |
 
-#### ما يجب فعله قبل البناء:
+#### حالة المتطلبات قبل البناء:
 1. ✅ `lib/notifications.ts` — projectId يُقرأ تلقائياً من Constants
-2. ✅ `google-services.json` — استُبدل بالملف الحقيقي (project_number: 549775812329)
-3. ⏳ `eas.json` → `EXPO_PUBLIC_API_URL` — يحتاج تحديث بعنوان Deploy الثابت
-4. ⏳ FCM v1 credentials في Expo Dashboard
+2. ✅ `google-services.json` — الملف الحقيقي (project_number: `549775812329`)
+3. ✅ `eas.json` → `EXPO_PUBLIC_API_URL` — `https://clean-app--hady201.replit.app`
+4. ✅ `eas.json` → `credentialsSource: "remote"` — EAS يدير Keystore تلقائياً
+5. ⏳ FCM v1 Service Account JSON — يجب رفعه على expo.dev (انظر القسم أعلاه)
 
 ---
 
