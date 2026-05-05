@@ -140,20 +140,25 @@ eas build --platform android --profile preview
 
 ## سجل البناءات
 
-### Build #12 — إصلاح الإشعارات الكامل 🔧 (مايو 2026)
+### Build #12 — إصلاح الإشعارات الكامل ✅ (مايو 2026)
 
 | الحقل | القيمة |
 |-------|--------|
-| الإصلاحات | projectId، google-services.json، EXPO_PUBLIC_API_URL، Keystore، timeout handling |
-| API URL المستخدم | `https://clean-app--hady201.replit.app` (ثابت دائماً) |
-| الحالة | **جاهز للبناء بعد رفع FCM v1 Service Account على expo.dev** |
+| Build ID | `3313c84b-c96f-4f1a-be03-f9f9050d5f58` |
+| Platform | Android / preview |
+| الحساب | aiservx1 |
+| EAS Project ID | `c1d243e2-193e-4a27-ad30-87468c74e92b` |
+| API URL | `https://clean-app--hady201.replit.app` (ثابت دائماً ✅) |
+| Keystore | `Build Credentials txt_65s4Tz` (EAS managed ✅) |
+| صفحة البناء | https://expo.dev/accounts/aiservx1/projects/mobile/builds/3313c84b-c96f-4f1a-be03-f9f9050d5f58 |
+| الحالة | **🔄 جارٍ الآن** |
 
-#### حالة المتطلبات قبل البناء:
-1. ✅ `lib/notifications.ts` — projectId يُقرأ تلقائياً من Constants
+#### الإصلاحات المضمّنة في هذا البناء:
+1. ✅ `lib/notifications.ts` — projectId يُقرأ تلقائياً من Constants (لا hardcoding)
 2. ✅ `google-services.json` — الملف الحقيقي (project_number: `549775812329`)
-3. ✅ `eas.json` → `EXPO_PUBLIC_API_URL` — `https://clean-app--hady201.replit.app`
+3. ✅ `eas.json` → `EXPO_PUBLIC_API_URL` — `https://clean-app--hady201.replit.app` (ثابت)
 4. ✅ `eas.json` → `credentialsSource: "remote"` — EAS يدير Keystore تلقائياً
-5. ⏳ FCM v1 Service Account JSON — يجب رفعه على expo.dev (انظر القسم أعلاه)
+5. ⏳ FCM v1 Service Account JSON — ارفعه على expo.dev للإشعارات في الخلفية (انظر القسم أعلاه)
 
 ---
 
