@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { supabase } from "./supabase";
 
@@ -141,9 +142,12 @@ export async function registerForPush(userId: string): Promise<string | null> {
       return null;
     }
 
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: "09e4ce5c-f181-49b0-b379-68b832e1f292",
-    });
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId ??
+      "c1d243e2-193e-4a27-ad30-87468c74e92b";
+
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
     const token = tokenData.data;
 
     console.log("[notifications] push token:", token.slice(0, 30) + "…");
@@ -190,33 +194,46 @@ export async function sendPushNotification(
   categoryIdentifier?: string,
   channelId?: string,
 ) {
+  if (!PUSH_API_URL) {
+    console.warn("[notifications] EXPO_PUBLIC_API_URL not set — push skipped. Set it in eas.json and rebuild.");
+    return;
+  }
+
   try {
-    // ── Preferred: route through API server (bypasses RLS) ──────────────
-    if (PUSH_API_URL) {
-      const accessToken = await getAccessToken();
-      if (!accessToken) {
-        console.log("[notifications] sendPush: no session token — skipping server route");
-        return;
-      }
-      const res = await fetch(`${PUSH_API_URL}/api/push`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ userId, title, body, data, categoryIdentifier, channelId }),
-      });
-      const json = await res.json().catch(() => null);
-      console.log(
-        `[notifications] sendPush via server → sent=${json?.sent ?? "?"}/${json?.total ?? "?"}`,
-      );
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      console.warn("[notifications] sendPush: no session token — skipping");
       return;
     }
 
-    // No API URL configured — push cannot be sent without server relay
-    console.warn("[notifications] EXPO_PUBLIC_API_URL not set — push skipped. Set it in eas.json and rebuild.");
-  } catch (e) {
-    console.log("[notifications] sendPush failed:", (e as Error).message);
+    // Timeout after 10 seconds so a dead API URL fails fast instead of hanging
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10_000);
+
+    const res = await fetch(`${PUSH_API_URL}/api/push`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ userId, title, body, data, categoryIdentifier, channelId }),
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timer));
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn(`[notifications] sendPush server error ${res.status}: ${errText}`);
+      return;
+    }
+
+    const json = await res.json().catch(() => null);
+    console.log(`[notifications] sendPush ✓ sent=${json?.sent ?? "?"}/${json?.total ?? "?"}`);
+  } catch (e: any) {
+    if (e?.name === "AbortError") {
+      console.warn(`[notifications] sendPush TIMEOUT — API URL unreachable: ${PUSH_API_URL}`);
+    } else {
+      console.warn("[notifications] sendPush failed:", (e as Error).message, "API_URL:", PUSH_API_URL);
+    }
   }
 }
 
@@ -282,27 +299,38 @@ export async function notifyAvailableProviders(
     if (PUSH_API_URL) {
       const accessToken = await getAccessToken();
       if (!accessToken) {
-        console.log("[notifications] notifyProviders: no session token — skipping server route");
+        console.warn("[notifications] notifyProviders: no session token — skipping");
         return;
       }
-      const res = await fetch(`${PUSH_API_URL}/api/push/batch`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          userIds: providerIds,
-          title,
-          body,
-          data: data ?? {},
-          categoryIdentifier: "new_booking",
-          channelId: "new_booking",
-          ...(bookingId ? { bookingId } : {}),
-        }),
-      }).catch(() => null);
-      const json = await res?.json().catch(() => null);
-      console.log(`[notifications] notifyProviders batch → sent=${json?.sent ?? "?"}/${json?.total ?? "?"}`);
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10_000);
+        const res = await fetch(`${PUSH_API_URL}/api/push/batch`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            userIds: providerIds,
+            title,
+            body,
+            data: data ?? {},
+            categoryIdentifier: "new_booking",
+            channelId: "new_booking",
+            ...(bookingId ? { bookingId } : {}),
+          }),
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timer));
+        const json = await res?.json().catch(() => null);
+        console.log(`[notifications] notifyProviders batch ✓ sent=${json?.sent ?? "?"}/${json?.total ?? "?"}`);
+      } catch (e: any) {
+        if (e?.name === "AbortError") {
+          console.warn(`[notifications] notifyProviders TIMEOUT — API URL unreachable: ${PUSH_API_URL}`);
+        } else {
+          console.warn("[notifications] notifyProviders batch failed:", (e as Error).message);
+        }
+      }
     } else {
       console.warn("[notifications] notifyAvailableProviders: EXPO_PUBLIC_API_URL not set — push skipped. Set it in eas.json and rebuild.");
     }

@@ -12,8 +12,8 @@
       },
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
-        "EXPO_PUBLIC_API_URL": "https://8080-3fa449b8-abd5-416a-8267-91da1cce91e4-00-1yxmmo6e09abh.worf.replit.dev"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8",
+        "EXPO_PUBLIC_API_URL": "https://8080-3aaa9ac5-2480-43dc-90b1-4cf6f59737ff-00-2kteh850huenj.riker.replit.dev"
       }
     },
     "preview": {
@@ -24,8 +24,8 @@
       },
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
-        "EXPO_PUBLIC_API_URL": "https://8080-3fa449b8-abd5-416a-8267-91da1cce91e4-00-1yxmmo6e09abh.worf.replit.dev"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8",
+        "EXPO_PUBLIC_API_URL": "https://8080-3aaa9ac5-2480-43dc-90b1-4cf6f59737ff-00-2kteh850huenj.riker.replit.dev"
       }
     },
     "production": {
@@ -36,8 +36,8 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://mffdpjwtwseftaqrslgx.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kZL_PGlnqQGstC3iZQI8Cw_7JYZP96D",
-        "EXPO_PUBLIC_API_URL": "https://8080-3fa449b8-abd5-416a-8267-91da1cce91e4-00-1yxmmo6e09abh.worf.replit.dev"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8",
+        "EXPO_PUBLIC_API_URL": "https://8080-3aaa9ac5-2480-43dc-90b1-4cf6f59737ff-00-2kteh850huenj.riker.replit.dev"
       }
     }
   },
