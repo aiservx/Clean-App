@@ -291,8 +291,9 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: "#F8FAFC" }]}>
-      {/* INTERACTIVE MAP — sits at the top and receives touch events for drag / zoom */}
-      <View style={[styles.mapBg, { height: mapHeight, backgroundColor: "#0F172A" }]}>
+      {/* INTERACTIVE MAP — absolutely positioned behind the scroll sheet so that
+          the sheet can scroll all the way up to the greeting header */}
+      <View style={[styles.mapBg, { position: "absolute", top: 0, start: 0, end: 0, height: mapHeight, backgroundColor: "#0F172A" }]}>
         <AppMap
           style={StyleSheet.absoluteFill}
           region={region}
@@ -450,13 +451,19 @@ export default function HomeScreen() {
         onPress={() => providerScrollRef.current?.scrollTo({ y: 99999, animated: true })}
       />
 
-      {/* SCROLLABLE SHEET below the map */}
+      {/* SCROLLABLE SHEET — spans the full screen so content can scroll up
+          into the map / greeting area. A transparent spacer at the top lets
+          the map show through and passes pointer events on web. */}
       <ScrollView
         ref={providerScrollRef}
-        style={{ flex: 1, marginTop: -28 }}
+        style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Transparent spacer — map shows behind here; pointer-events:none lets
+            web touch events fall through to the map below */}
+        <View style={{ height: mapHeight - 28 }} pointerEvents="none" />
+
         {/* SHEET */}
         <View style={styles.sheet}>
           <View style={styles.sheetGrabber} />
