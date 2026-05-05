@@ -35,6 +35,7 @@ import { ProviderOrderBadgeProvider } from "@/lib/providerOrderBadge";
 import { registerForPush } from "@/lib/notifications";
 import { RealtimeProvider } from "@/lib/realtimeStore";
 import { RatingBottomSheetController } from "@/components/RatingBottomSheet";
+import InAppBanner, { navigateForType } from "@/components/InAppBanner";
 import { useOTAUpdate } from "@/lib/useOTAUpdate";
 
 function OTAUpdater() {
@@ -42,13 +43,65 @@ function OTAUpdater() {
   return null;
 }
 
+// ── Handle a single notification response (tap) ─────────────────────────
+async function handleNotifResponse(
+  response: Notifications.NotificationResponse,
+  sessionRef: React.MutableRefObject<Session | null>,
+) {
+  const data      = (response.notification.request.content.data as any) ?? {};
+  const bookingId = data?.bookingId || data?.booking_id;
+  const type      = (data?.type as string) || "";
+  const actionId  = response.actionIdentifier;
+
+  // ── Provider: Accept / Reject action buttons ───────────────────────────
+  if (bookingId && (actionId === "accept" || actionId === "reject")) {
+    if (actionId === "reject") {
+      console.log("[push] provider rejected booking notification — dismissed");
+      return;
+    }
+    try {
+      const { supabase: sb } = await import("@/lib/supabase");
+      const providerId = sessionRef.current?.user?.id;
+      const payload: any = { status: "accepted" };
+      if (providerId) payload.provider_id = providerId;
+
+      const { error } = await sb
+        .from("bookings").update(payload)
+        .eq("id", bookingId).eq("status", "pending");
+
+      if (error) { console.log("[push] accept booking failed:", error.message); return; }
+
+      if (providerId) {
+        await sb.from("providers").update({ available: false }).eq("id", providerId);
+      }
+
+      const { createNotification: cn } = await import("@/lib/notifications");
+      const { data: bk } = await sb
+        .from("bookings").select("user_id, services(title_ar)").eq("id", bookingId).maybeSingle();
+      if (bk?.user_id) {
+        const svcTitle = (bk.services as any)?.title_ar || "الخدمة";
+        cn(bk.user_id, "booking_accepted", "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
+      }
+      try { router.push(`/(provider)/booking-details?id=${bookingId}` as any); } catch {}
+    } catch (e) {
+      console.log("[push] accept action failed:", (e as Error).message);
+    }
+    return;
+  }
+
+  // ── User taps notification body — navigate to correct screen ──────────
+  try {
+    navigateForType(type, data);
+  } catch {}
+}
+
 function PushRegistrar() {
   const { session } = useAuth();
   const registered = useRef<string | null>(null);
-  // Keep session in a ref so the notification listener always has fresh session
   const sessionRef = useRef<Session | null>(null);
   useEffect(() => { sessionRef.current = session; }, [session]);
 
+  // Register push token on login
   useEffect(() => {
     if (!session?.user?.id || registered.current === session.user.id) return;
     registered.current = session.user.id;
@@ -57,83 +110,22 @@ function PushRegistrar() {
 
   useEffect(() => {
     if (Platform.OS === "web") return;
-    const sub = Notifications.addNotificationResponseReceivedListener(async (response) => {
-      const data = response.notification.request.content.data as any;
-      const bookingId = data?.bookingId || data?.booking_id;
-      const type = data?.type || "";
-      const actionId = response.actionIdentifier;
 
-      // ── Provider taps Accept / Reject on a new-booking notification ──────
-      if (bookingId && (actionId === "accept" || actionId === "reject")) {
-        if (actionId === "reject") {
-          // Reject = just dismiss — don't change booking status so other
-          // providers still see the request in their dashboard.
-          console.log("[push] provider rejected booking notification, dismissing");
-          return;
-        }
-
-        // Accept: claim the booking for this provider
-        try {
-          const { supabase: sb } = await import("@/lib/supabase");
-          const providerId = sessionRef.current?.user?.id;
-
-          const updatePayload: any = { status: "accepted" };
-          if (providerId) updatePayload.provider_id = providerId;
-
-          const { error } = await sb
-            .from("bookings")
-            .update(updatePayload)
-            .eq("id", bookingId)
-            .eq("status", "pending"); // only accept if still pending (race-safe)
-
-          if (error) {
-            console.log("[push] accept booking failed:", error.message);
-            return;
-          }
-
-          // Mark provider unavailable
-          if (providerId) {
-            await sb.from("providers").update({ available: false }).eq("id", providerId);
-          }
-
-          // Notify the customer
-          const { createNotification: cn, sendPushNotification: spn } = await import("@/lib/notifications");
-          const { data: bk } = await sb
-            .from("bookings")
-            .select("user_id, services(title_ar)")
-            .eq("id", bookingId)
-            .maybeSingle();
-          if (bk?.user_id) {
-            const svcTitle = (bk.services as any)?.title_ar || "الخدمة";
-            cn(bk.user_id, "booking_accepted", "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
-            spn(bk.user_id, "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
-          }
-
-          // Navigate provider to booking details
-          try {
-            router.push(`/(provider)/booking-details?id=${bookingId}` as any);
-          } catch {}
-        } catch (e) {
-          console.log("[push] accept action failed:", (e as Error).message);
-        }
-        return;
+    // ── Cold-start: app was killed, user tapped a notification ────────────
+    // Must be called once after the app launches to replay the missed tap.
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        console.log("[push] cold-start notification tap replayed:", response.notification.request.content.data);
+        // Delay navigation so the root navigator is ready
+        setTimeout(() => handleNotifResponse(response, sessionRef), 800);
       }
+    }).catch(() => {});
 
-      // ── User taps the notification body (no action button) ─────────────
-      try {
-        if (type === "chat_message") {
-          const roomId = data?.roomId || data?.room_id;
-          const senderName = data?.senderName || data?.name || "";
-          router.push({ pathname: "/chat-detail", params: { roomId, bookingId, name: senderName } } as any);
-        } else if (bookingId) {
-          if (type === "booking_created") {
-            router.push(`/(provider)/booking-details?id=${bookingId}` as any);
-          } else {
-            router.push({ pathname: "/tracking", params: { id: bookingId } } as any);
-          }
-        }
-      } catch {}
+    // ── Foreground + background tap listener ──────────────────────────────
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      handleNotifResponse(response, sessionRef);
     });
+
     return () => sub.remove();
   }, []);
 
@@ -281,6 +273,8 @@ export default function RootLayout() {
                             <BookingProvider>
                               <RootLayoutNav />
                               <RatingBottomSheetController />
+                              {/* WhatsApp-style in-app notification banner */}
+                              <InAppBanner />
                             </BookingProvider>
                           </NotifBadgeProvider>
                         </ChatBadgeProvider>

@@ -10,7 +10,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import { sendPushNotification, createNotification } from "@/lib/notifications";
+import { createNotification } from "@/lib/notifications";
 import { markRoomRead } from "@/lib/chatRoomRead";
 
 type Msg = { id: string; sender_id: string; body: string; created_at: string };
@@ -224,20 +224,13 @@ export default function ChatDetail() {
     const other = otherUserId;
     if (other) {
       const senderName = name || "مستخدم نظافة";
-      sendPushNotification(
-        other,
-        `💬 رسالة من ${senderName}`,
-        body.length > 80 ? body.slice(0, 80) + "…" : body,
-        { bookingId: bookingId ?? rid, roomId: rid, type: "chat_message" },
-        undefined,
-        "chat",
-      ).catch(() => {});
+      // createNotification handles both DB insert + push in one call (no duplicate push)
       createNotification(
         other,
         "chat_message",
         `💬 رسالة من ${senderName}`,
-        body,
-        { bookingId: bookingId ?? rid, roomId: rid },
+        body.length > 120 ? body.slice(0, 120) + "…" : body,
+        { bookingId: bookingId ?? rid, roomId: rid, senderName },
       ).catch(() => {});
     }
   };

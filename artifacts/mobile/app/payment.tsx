@@ -300,13 +300,26 @@ export default function PaymentScreen() {
                 scheduled_at: booking.scheduledIso || new Date().toISOString(),
                 address_id: resolvedAddressId,
               };
+              // Verify selected provider is still available before booking
+              if (isProvUuid && insertData.provider_id) {
+                const { data: provCheck } = await supabase
+                  .from("providers")
+                  .select("available")
+                  .eq("id", cleanerId)
+                  .maybeSingle();
+                if (!provCheck?.available) {
+                  // Provider became unavailable — clear assignment and let system find one
+                  insertData.provider_id = null;
+                  console.log("[payment] selected provider unavailable, cleared provider_id");
+                }
+              }
               const { data: row, error } = await supabase.from("bookings").insert(insertData).select("id").maybeSingle();
               if (error) console.log("[v0] booking insert error:", error.message);
               if (row?.id) {
                 const svcTitle = booking.service?.title || "خدمة تنظيف";
                 const svcPrice = booking.service?.price ?? 0;
 
-                createNotification(
+                await createNotification(
                   user.id,
                   "booking_created",
                   "✅ تم استلام طلبك!",

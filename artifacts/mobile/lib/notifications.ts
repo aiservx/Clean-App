@@ -61,6 +61,16 @@ async function createAndroidChannels() {
       sound: "default",
       description: "رسائل المحادثة بين العملاء والمزودين",
     });
+    await Notifications.setNotificationChannelAsync("payment", {
+      name: "المدفوعات والأرباح",
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 300, 100, 300],
+      lightColor: "#16C47F",
+      sound: "default",
+      description: "إشعارات المدفوعات ووصول الأرباح",
+      enableVibrate: true,
+      showBadge: true,
+    });
     await Notifications.setNotificationChannelAsync("promotions", {
       name: "العروض والتخفيضات",
       importance: Notifications.AndroidImportance.LOW,
@@ -154,6 +164,9 @@ export async function registerForPush(userId: string): Promise<string | null> {
     _currentDeviceToken = token;
 
     if (token && userId) {
+      // Remove stale tokens for this user (from old APK/project installs) before saving the current one.
+      // This prevents PUSH_TOO_MANY_EXPERIENCE_IDS errors when Expo receives tokens from multiple projects.
+      await supabase.from("push_tokens").delete().eq("user_id", userId).neq("token", token);
       await supabase
         .from("push_tokens")
         .upsert({ user_id: userId, token, platform: Platform.OS }, { onConflict: "token" });
@@ -266,11 +279,21 @@ export async function createNotification(
 
   // Also fire push notification so the user gets it on their device
   if (!skipPush) {
-    const channelId = type === "booking_created" ? "new_booking"
-      : type === "booking_update"  ? "booking_status"
-      : type === "message"         ? "chat"
+    const channelId =
+      type === "booking_created"                   ? "new_booking"
+      : type === "booking_accepted"
+        || type === "booking_on_way"
+        || type === "booking_started"
+        || type === "booking_completed"
+        || type === "booking_update"
+        || type === "booking_cancelled"             ? "booking_status"
+      : type === "message" || type === "chat_message" ? "chat"
+      : type === "payment" || type === "payment_received" ? "payment"
+      : type === "review_received" || type === "review_request" ? "default"
+      : type === "offer"  || type === "promo"      ? "promotions"
       : "default";
-    await sendPushNotification(userId, title, body, data, type, channelId);
+    // Embed type in data so InAppBanner + deep-link handler can read it
+    await sendPushNotification(userId, title, body, { ...(data ?? {}), type }, type, channelId);
   }
 }
 

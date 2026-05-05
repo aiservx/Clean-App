@@ -12,9 +12,11 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/location";
 import { useRealtimeEvents } from "@/lib/realtimeStore";
+import { createNotification } from "@/lib/notifications";
 
 type NearbyOrder = {
   id: string;
+  user_id: string | null;
   status: string;
   service_title: string;
   client_name: string;
@@ -67,7 +69,7 @@ export default function ProviderHome() {
         getCurrentResolved(),
         supabase
           .from("bookings")
-          .select("id, status, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
+          .select("id, user_id, status, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
           .or(`and(provider_id.is.null,status.eq.pending),and(provider_id.eq.${uid},status.in.(pending,accepted,on_the_way,in_progress))`)
           .order("created_at", { ascending: false })
           .limit(30),
@@ -99,6 +101,7 @@ export default function ProviderHome() {
         const d = ref && lat && lng ? distanceKm(ref, { lat, lng }) : null;
         return {
           id: b.id,
+          user_id: b.user_id ?? null,
           status: b.status || "pending",
           service_title: b.services?.title_ar || "خدمة",
           client_name: b.profiles?.full_name || "عميل",
@@ -154,6 +157,7 @@ export default function ProviderHome() {
         const d = ref && lat && lng ? distanceKm(ref, { lat, lng }) : null;
         return {
           id: b.id,
+          user_id: b.user_id ?? null,
           status: b.status || "pending",
           service_title: b.services?.title_ar || "خدمة",
           client_name: b.profiles?.full_name || "عميل",
@@ -257,6 +261,8 @@ export default function ProviderHome() {
   const accept = async (id: string) => {
     if (!session?.user) return;
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Capture order data before optimistic removal (needed for notification)
+    const order = orders.find((o) => o.id === id);
     // Optimistically remove from list immediately
     setOrders((prev) => prev.filter((o) => o.id !== id));
     const { error } = await supabase
@@ -274,6 +280,16 @@ export default function ProviderHome() {
       supabase.from("providers").update({ available: false }).eq("id", session.user.id),
     ]);
     setOnline(false);
+    // Notify the client that their booking was accepted
+    if (order?.user_id) {
+      createNotification(
+        order.user_id,
+        "booking_accepted",
+        "✅ تم قبول طلبك!",
+        `المزود قبل طلب ${order.service_title} وسيتوجه إليك قريباً`,
+        { bookingId: id },
+      );
+    }
     Alert.alert("✓ تم القبول", "تم تخصيص الطلب لك");
   };
 

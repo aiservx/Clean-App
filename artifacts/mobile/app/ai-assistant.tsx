@@ -555,20 +555,25 @@ export default function ChatScreen() {
   const renderServiceGrid = () => (
     <View style={s.svcGrid}>
       {services.length === 0 ? (
-        <View style={[s.svcCardGrid, { alignItems: "center", justifyContent: "center", height: 100 }]}>
-          <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: "#64748B" }}>لا توجد خدمات الآن</Text>
+        <View style={[s.svcCardGrid, { alignItems: "center", justifyContent: "center", height: 100, backgroundColor: colors.card }]}>
+          <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: colors.mutedForeground }}>لا توجد خدمات الآن</Text>
         </View>
       ) : services.map((svc) => {
         const ico = iconForService(svc.title);
         const col = colorForService(svc.title);
         return (
-          <TouchableOpacity key={svc.id} style={[s.svcCardGrid, { backgroundColor: col + "11" }]} activeOpacity={0.85} onPress={() => handleSelectService(svc)}>
+          <TouchableOpacity
+            key={svc.id}
+            style={[s.svcCardGrid, { backgroundColor: colors.card }]}
+            activeOpacity={0.85}
+            onPress={() => handleSelectService(svc)}
+          >
             <View style={[s.svcIconBox, { backgroundColor: col + "22" }]}>
               <MaterialCommunityIcons name={ico as any} size={28} color={col} />
             </View>
-            <Text style={s.svcCardTitle} numberOfLines={1}>{svc.title}</Text>
+            <Text style={[s.svcCardTitle, { color: colors.foreground }]} numberOfLines={2}>{svc.title}</Text>
             <Text style={[s.svcCardPrice, { color: col }]}>{svc.price} ر.س</Text>
-            <Text style={s.svcCardDur}>⏱ ~{svc.duration} د</Text>
+            <Text style={[s.svcCardDur, { color: colors.mutedForeground }]}>⏱ ~{svc.duration} د</Text>
           </TouchableOpacity>
         );
       })}
@@ -580,7 +585,7 @@ export default function ChatScreen() {
       {providers.length === 0 ? (
         <View style={[s.provCard, { alignItems: "center", backgroundColor: colors.card }]}>
           <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 12, color: colors.mutedForeground }}>لا يوجد فنيون متاحون الآن</Text>
-          <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: "#94A3B8", marginTop: 4 }}>سيتم تخصيص أقرب فنّي تلقائياً</Text>
+          <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: colors.mutedForeground, marginTop: 4 }}>سيتم تخصيص أقرب فنّي تلقائياً</Text>
           <TouchableOpacity style={[s.confirmBtn, { marginTop: 10 }]} onPress={() => handleSelectProvider({ id: "auto", name: "أقرب فنّي", rating: 4.8, distance_km: null, exp: 0, rate: 0 })}>
             <Text style={s.confirmBtnText}>تخصيص تلقائي</Text>
           </TouchableOpacity>
@@ -590,12 +595,12 @@ export default function ChatScreen() {
           <View style={s.provAvatar}>
             <Text style={s.provInitials}>{prov.name.split(" ").map((w) => w[0]).join("").slice(0,2)}</Text>
           </View>
-          <Text style={s.provName} numberOfLines={1}>{prov.name}</Text>
+          <Text style={[s.provName, { color: colors.foreground }]} numberOfLines={1}>{prov.name}</Text>
           <View style={s.provRow}>
             <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
-            <Text style={s.provRating}>{prov.rating.toFixed(1)}</Text>
+            <Text style={[s.provRating, { color: colors.foreground }]}>{prov.rating.toFixed(1)}</Text>
             {prov.distance_km != null && (
-              <Text style={s.provDist}>{prov.distance_km < 1 ? `${Math.round(prov.distance_km * 1000)}م` : `${prov.distance_km.toFixed(1)} كم`}</Text>
+              <Text style={[s.provDist, { color: colors.mutedForeground }]}>{prov.distance_km < 1 ? `${Math.round(prov.distance_km * 1000)}م` : `${prov.distance_km.toFixed(1)} كم`}</Text>
             )}
           </View>
           <Text style={s.provRate}>{prov.rate || "—"} ر.س/ساعة</Text>
@@ -815,22 +820,22 @@ const s = StyleSheet.create({
   qaChip: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderColor: "#EDE9FE", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },
   qaChipT: { fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#7C3AED" },
 
-  // Service grid
+  // Service grid — no elevation/shadow (avoids black borders on Android in both modes)
   svcGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 6 },
-  svcCardGrid: { width: "31%", borderRadius: 16, padding: 10, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
+  svcCardGrid: { width: "31%", borderRadius: 16, padding: 10, alignItems: "center" },
   svcIconBox: { width: 48, height: 48, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 8 },
-  svcCardTitle: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A", textAlign: "center", marginBottom: 4 },
+  svcCardTitle: { fontFamily: "Tajawal_700Bold", fontSize: 11, textAlign: "center", marginBottom: 4 },
   svcCardPrice: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
-  svcCardDur: { fontFamily: "Tajawal_400Regular", fontSize: 9, color: "#64748B", marginTop: 2 },
+  svcCardDur: { fontFamily: "Tajawal_400Regular", fontSize: 9, marginTop: 2 },
 
   // Provider cards (horizontal)
-  provCard: { width: 150, borderRadius: 18, padding: 14, alignItems: "center", shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
+  provCard: { width: 150, borderRadius: 18, padding: 14, alignItems: "center" },
   provAvatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: "#EDE9FE", alignItems: "center", justifyContent: "center", marginBottom: 8 },
   provInitials: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#7C3AED" },
-  provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#0F172A", marginBottom: 4 },
+  provName: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginBottom: 4 },
   provRow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 4 },
-  provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
-  provDist: { fontFamily: "Tajawal_400Regular", fontSize: 10, color: "#64748B" },
+  provRating: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  provDist: { fontFamily: "Tajawal_400Regular", fontSize: 10 },
   provRate: { fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#7C3AED" },
 
   // Confirm address/phone inline

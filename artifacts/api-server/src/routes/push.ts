@@ -180,6 +180,31 @@ type ExpoMessage = {
   categoryId?: string;
 };
 
+async function sendSingleToExpo(message: ExpoMessage): Promise<boolean> {
+  try {
+    const res = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Accept-Encoding": "gzip, deflate",
+      },
+      body: JSON.stringify([message]),
+    });
+    if (!res.ok) return false;
+    const json: unknown = await res.json().catch(() => null);
+    const results =
+      typeof json === "object" && json !== null && "data" in json &&
+      Array.isArray((json as Record<string, unknown>).data)
+        ? ((json as Record<string, unknown>).data as unknown[]) : [];
+    return results.some(
+      (d) => typeof d === "object" && d !== null && (d as Record<string, unknown>).status === "ok",
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function sendToExpoWithRetry(messages: ExpoMessage[], maxAttempts: number): Promise<number> {
   let attempt = 0;
   while (attempt < maxAttempts) {
@@ -200,6 +225,27 @@ async function sendToExpoWithRetry(messages: ExpoMessage[], maxAttempts: number)
         continue;
       }
       const pushJson: unknown = await pushRes.json().catch(() => null);
+
+      // If Expo returns PUSH_TOO_MANY_EXPERIENCE_IDS it means tokens from
+      // multiple Expo projects were batched together. Fall back to sending
+      // each token individually so valid tokens still get delivered.
+      if (
+        typeof pushJson === "object" && pushJson !== null &&
+        "errors" in pushJson &&
+        Array.isArray((pushJson as Record<string, unknown>).errors) &&
+        ((pushJson as Record<string, unknown>).errors as unknown[]).some(
+          (e) =>
+            typeof e === "object" && e !== null &&
+            (e as Record<string, unknown>).code === "PUSH_TOO_MANY_EXPERIENCE_IDS",
+        )
+      ) {
+        logger.warn({ tokens: messages.length }, "push: PUSH_TOO_MANY_EXPERIENCE_IDS — falling back to per-token sends");
+        const results = await Promise.all(messages.map((m) => sendSingleToExpo(m)));
+        const sent = results.filter(Boolean).length;
+        logger.info({ sent, total: messages.length }, "push: per-token fallback done");
+        return sent;
+      }
+
       const results =
         typeof pushJson === "object" &&
         pushJson !== null &&
@@ -259,18 +305,39 @@ router.post("/push", async (req: Request, res: Response) => {
         ? channelId
         : categoryIdentifier === "new_booking"
         ? "new_booking"
-        : categoryIdentifier === "booking_update"
+        : categoryIdentifier === "booking_update"   ||
+          categoryIdentifier === "booking_accepted"  ||
+          categoryIdentifier === "booking_on_way"    ||
+          categoryIdentifier === "booking_started"   ||
+          categoryIdentifier === "booking_completed" ||
+          categoryIdentifier === "booking_cancelled"
         ? "booking_status"
+        : categoryIdentifier === "payment" || categoryIdentifier === "payment_received"
+        ? "payment"
+        : categoryIdentifier === "message" || categoryIdentifier === "chat_message"
+        ? "chat"
         : "default";
+
+    // TTL: new_booking = 30 min (stale bookings must not ring), chat = 7 days, others = 24h
+    const ttl =
+      resolvedChannel === "new_booking" ? 1800
+      : resolvedChannel === "chat"      ? 604800
+      : 86400;
+
+    const msgData = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
 
     const messages = tokens.map((token) => ({
       to: token,
       title,
       body,
-      data: (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>,
+      // Always embed type so InAppBanner + deep-link handler can read it
+      data: { ...msgData, type: categoryIdentifier ?? "" },
       sound: "default",
       priority: "high",
       channelId: resolvedChannel,
+      badge: 1,
+      ttl,
+      expiration: Math.floor(Date.now() / 1000) + ttl,
       ...(typeof categoryIdentifier === "string" && categoryIdentifier
         ? { categoryId: categoryIdentifier }
         : {}),
@@ -387,16 +454,38 @@ router.post("/push/batch", async (req: Request, res: Response) => {
         ? channelId
         : categoryIdentifier === "new_booking"
         ? "new_booking"
+        : categoryIdentifier === "booking_update"   ||
+          categoryIdentifier === "booking_accepted"  ||
+          categoryIdentifier === "booking_on_way"    ||
+          categoryIdentifier === "booking_started"   ||
+          categoryIdentifier === "booking_completed" ||
+          categoryIdentifier === "booking_cancelled"
+        ? "booking_status"
+        : categoryIdentifier === "payment" || categoryIdentifier === "payment_received"
+        ? "payment"
+        : categoryIdentifier === "message" || categoryIdentifier === "chat_message"
+        ? "chat"
         : "default";
+
+    // TTL: new_booking = 30 min (stale bookings must not ring), chat = 7 days, others = 24h
+    const batchTtl =
+      resolvedChannel === "new_booking" ? 1800
+      : resolvedChannel === "chat"      ? 604800
+      : 86400;
+
+    const batchData = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
 
     const messages = tokens.map((token) => ({
       to: token,
       title,
       body,
-      data: (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>,
+      data: { ...batchData, type: categoryIdentifier ?? "" },
       sound: "default",
       priority: "high",
       channelId: resolvedChannel,
+      badge: 1,
+      ttl: batchTtl,
+      expiration: Math.floor(Date.now() / 1000) + batchTtl,
       ...(typeof categoryIdentifier === "string" && categoryIdentifier
         ? { categoryId: categoryIdentifier }
         : {}),

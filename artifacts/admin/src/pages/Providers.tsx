@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { CRUDPage } from "@/components/CRUDPage";
 import { supabase } from "@/lib/supabase";
 
@@ -6,15 +6,25 @@ export default function Providers() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [providerIds, setProviderIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    Promise.all([
+  const loadData = useCallback(async () => {
+    const [{ data: profs }, { data: provs }] = await Promise.all([
       supabase.from("profiles").select("id, full_name, phone, email, role").order("created_at", { ascending: false }),
       supabase.from("providers").select("id"),
-    ]).then(([{ data: profs }, { data: provs }]) => {
-      setProfiles(profs ?? []);
-      setProviderIds(new Set((provs ?? []).map((p: any) => p.id)));
-    });
+    ]);
+    setProfiles(profs ?? []);
+    setProviderIds(new Set((provs ?? []).map((p: any) => p.id)));
   }, []);
+
+  useEffect(() => {
+    loadData();
+    // Realtime: reload when providers or profiles change
+    const ch = supabase
+      .channel("admin-providers-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "providers" }, loadData)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, loadData)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [loadData]);
 
   const profileOptions = profiles
     .filter((p) => !providerIds.has(p.id))

@@ -67,6 +67,9 @@ export type RealtimeEvent =
   | { type: "new_booking"; bookingId: string }
   | { type: "notification_received"; notifId: string; notifType: string | null }
   | { type: "provider_order_updated"; bookingId: string; status: string }
+  | { type: "provider_booking_changed"; bookingId: string; status: string }
+  | { type: "provider_location_updated"; providerId: string; lat: number; lng: number }
+  | { type: "chat_message_received"; roomId: string; senderId: string }
   | { type: "badge_updated"; unreadCount: number };
 
 type EventListener = (event: RealtimeEvent) => void;
@@ -369,17 +372,44 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         .subscribe((s) => console.log(`[realtime] store-notifs-${userId}: ${s}`));
       registerChannel(notifCh);
 
-      // Channel 3: provider pending orders (global bookings watcher)
+      // Channel 3: provider — new pending orders (all INSERT, no filter — provider_id is null on insert)
       if (isProvider) {
-        const provCh = supabase
-          .channel(`store-provider-orders`)
+        const provNewCh = supabase
+          .channel(`store-provider-new`)
           .on(
             "postgres_changes",
-            { event: "*", schema: "public", table: "bookings" },
+            { event: "INSERT", schema: "public", table: "bookings" },
             (payload: any) => {
-              const bk = payload.new ?? payload.old;
+              const bk = payload.new;
               if (!bk?.id) return;
-              console.log(`[realtime] [store-provider-orders] ${payload.eventType} id=${bk.id} status=${bk.status}`);
+              console.log(`[realtime] [store-provider-new] NEW booking id=${bk.id}`);
+              realtimeEvents.dispatch({ type: "new_booking", bookingId: bk.id });
+            },
+          )
+          .subscribe((s) => console.log(`[realtime] store-provider-new: ${s}`));
+        registerChannel(provNewCh);
+
+        // Channel 4: provider — their accepted/in-progress bookings (filter by provider_id)
+        const provAcceptedCh = supabase
+          .channel(`store-provider-accepted-${userId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              schema: "public",
+              table: "bookings",
+              filter: `provider_id=eq.${userId}`,
+            },
+            (payload: any) => {
+              const bk = payload.new;
+              if (!bk?.id) return;
+              console.log(`[realtime] [store-provider-accepted] UPDATE id=${bk.id} status=${bk.status}`);
+              realtimeEvents.dispatch({
+                type: "provider_booking_changed",
+                bookingId: bk.id,
+                status: bk.status ?? "unknown",
+              });
+              // Also dispatch the legacy event so existing listeners still work
               realtimeEvents.dispatch({
                 type: "provider_order_updated",
                 bookingId: bk.id,
@@ -387,11 +417,32 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
               });
             },
           )
-          .subscribe((s) => console.log(`[realtime] store-provider-orders: ${s}`));
-        registerChannel(provCh);
+          .subscribe((s) => console.log(`[realtime] store-provider-accepted-${userId}: ${s}`));
+        registerChannel(provAcceptedCh);
+
+        // Channel 5: provider location updates (for customers tracking this provider)
+        // Broadcasts lat/lng changes on the providers table
+        const provLocCh = supabase
+          .channel(`store-provider-locations`)
+          .on(
+            "postgres_changes",
+            { event: "UPDATE", schema: "public", table: "providers" },
+            (payload: any) => {
+              const prov = payload.new;
+              if (!prov?.id || prov.current_lat == null || prov.current_lng == null) return;
+              realtimeEvents.dispatch({
+                type: "provider_location_updated",
+                providerId: prov.id,
+                lat: prov.current_lat,
+                lng: prov.current_lng,
+              });
+            },
+          )
+          .subscribe((s) => console.log(`[realtime] store-provider-locations: ${s}`));
+        registerChannel(provLocCh);
       }
 
-      // Channel 4: admin dashboard — new booking inserts
+      // Channel 6: admin dashboard + customers — new booking inserts
       const adminCh = supabase
         .channel(`store-admin-bookings`)
         .on(

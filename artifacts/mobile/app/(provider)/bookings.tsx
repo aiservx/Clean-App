@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { useRealtimeEvents } from "@/lib/realtimeStore";
 
 const TABS = [
   { key: "new", label: "جديدة", statuses: ["pending"] },
@@ -67,6 +68,17 @@ export default function ProviderBookings() {
   }, [session]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Auto-refresh when a new booking arrives or status changes (realtime)
+  useRealtimeEvents((event) => {
+    if (
+      event.type === "new_booking" ||
+      event.type === "provider_booking_changed" ||
+      event.type === "provider_order_updated"
+    ) {
+      load();
+    }
+  }, [load]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

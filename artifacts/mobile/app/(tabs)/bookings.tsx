@@ -9,7 +9,7 @@ import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import { sendPushNotification, createNotification } from "@/lib/notifications";
+import { createNotification } from "@/lib/notifications";
 import { useRealtimeBookings } from "@/lib/realtimeStore";
 import GuestEmpty from "@/components/GuestEmpty";
 import FloatingTabBar from "@/components/FloatingTabBar";
@@ -99,14 +99,6 @@ export default function BookingsScreen() {
               booking_id: item.id, status: "cancelled", note: "ألغي بواسطة العميل",
             });
             if (item.provider_id) {
-              sendPushNotification(
-                item.provider_id,
-                "❌ تم إلغاء الطلب",
-                `قام العميل بإلغاء طلب ${item.service_title || ""}`,
-                { bookingId: item.id },
-                undefined,
-                "booking_status",
-              );
               createNotification(item.provider_id, "booking_cancelled", "❌ تم إلغاء الطلب", `قام العميل بإلغاء طلب ${item.service_title || ""}`, { bookingId: item.id });
             }
             refresh();

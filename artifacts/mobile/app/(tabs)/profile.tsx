@@ -24,11 +24,16 @@ export default function ProfileScreen() {
   const { session, profile, signOut } = useAuth();
   const MENU = MENU_KEYS.map((m) => ({ ...m, title: t(m.titleKey), sub: t(m.subKey) }));
   const [addresses, setAddresses] = useState<any[]>([]);
+  const [bookingsCount, setBookingsCount] = useState(0);
 
   const loadData = useCallback(async () => {
     if (!session?.user) return;
-    const { data } = await supabase.from("addresses").select("*").eq("user_id", session.user.id).order("is_default", { ascending: false });
-    if (data) setAddresses(data);
+    const [addrRes, cntRes] = await Promise.all([
+      supabase.from("addresses").select("*").eq("user_id", session.user.id).order("is_default", { ascending: false }),
+      supabase.from("bookings").select("*", { count: "exact", head: true }).eq("user_id", session.user.id).eq("status", "completed"),
+    ]);
+    if (addrRes.data) setAddresses(addrRes.data);
+    if (cntRes.count != null) setBookingsCount(cntRes.count);
   }, [session]);
 
   useEffect(() => { loadData(); }, [loadData]);
@@ -93,17 +98,53 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Membership Banner */}
-        <LinearGradient colors={["#8B5CF6", "#A78BFA"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.memberBanner}>
-          <TouchableOpacity style={s.memberBtn} onPress={() => router.push("/premium-membership" as any)}>
-            <Text style={s.memberBtnText}>عرض المميزات</Text>
-          </TouchableOpacity>
-          <View style={s.memberContent}>
-            <Text style={s.memberTitle}>عضوية مميزة</Text>
-            <Text style={s.memberDesc}>استمتع بخدمات حصرية وعروض خاصة</Text>
-          </View>
-          <MaterialCommunityIcons name="star" size={36} color="#FDE68A" />
-        </LinearGradient>
+        {/* Premium Membership Card */}
+        <TouchableOpacity activeOpacity={0.92} onPress={() => router.push("/premium-membership" as any)} style={s.premiumWrap}>
+          <LinearGradient colors={["#3B0764", "#6D28D9", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.premiumCard}>
+            {/* Decorative circles */}
+            <View style={s.premCircle1} />
+            <View style={s.premCircle2} />
+
+            {/* Top row */}
+            <View style={s.premTopRow}>
+              <View style={s.premBadge}>
+                <MaterialCommunityIcons name="crown" size={13} color="#FDE68A" />
+                <Text style={s.premBadgeText}>Premium</Text>
+              </View>
+              <View style={s.premIconBox}>
+                <MaterialCommunityIcons name="crown" size={32} color="#FDE68A" />
+              </View>
+            </View>
+
+            {/* Title & subtitle */}
+            <Text style={s.premTitle}>عضوية مميزة</Text>
+            <Text style={s.premSubtitle}>أولوية الخدمة • خصومات حصرية • دعم VIP</Text>
+
+            {/* Stats */}
+            <View style={s.premStatsRow}>
+              <View style={s.premStat}>
+                <Text style={s.premStatVal}>{bookingsCount}</Text>
+                <Text style={s.premStatLabel}>طلب مكتمل</Text>
+              </View>
+              <View style={s.premStatDiv} />
+              <View style={s.premStat}>
+                <Text style={s.premStatVal}>15%</Text>
+                <Text style={s.premStatLabel}>توفير دائم</Text>
+              </View>
+              <View style={s.premStatDiv} />
+              <View style={s.premStat}>
+                <Text style={s.premStatVal}>VIP</Text>
+                <Text style={s.premStatLabel}>مستواك</Text>
+              </View>
+            </View>
+
+            {/* CTA */}
+            <View style={s.premCTA}>
+              <Feather name={I18nManager.isRTL ? "arrow-left" : "arrow-right"} size={14} color="#7C3AED" />
+              <Text style={s.premCTAText}>استكشف جميع المميزات</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
 
         {/* Saved Addresses */}
         <View style={s.secHeader}>
@@ -209,12 +250,23 @@ const s = StyleSheet.create({
   avatar: { width: 90, height: 90, borderRadius: 45 },
   cameraBadge: { position: "absolute", bottom: 0, end: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: "#3B82F6", borderWidth: 3, borderColor: "#FFF", alignItems: "center", justifyContent: "center" },
 
-  memberBanner: { marginHorizontal: 16, borderRadius: 20, padding: 18, flexDirection: rowDir, alignItems: "center", marginBottom: 20 },
-  memberContent: { flex: 1, alignItems: colAlign, marginEnd: 12 },
-  memberTitle: { fontFamily: "Tajawal_700Bold", fontSize: 16, color: "#FFF" },
-  memberDesc: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "rgba(255,255,255,0.8)", marginTop: 2 },
-  memberBtn: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
-  memberBtnText: { fontFamily: "Tajawal_600SemiBold", fontSize: 12, color: "#FFF" },
+  premiumWrap: { marginHorizontal: 16, marginBottom: 20 },
+  premiumCard: { borderRadius: 24, padding: 20, overflow: "hidden" },
+  premCircle1: { position: "absolute", width: 160, height: 160, borderRadius: 80, backgroundColor: "rgba(255,255,255,0.06)", top: -40, start: -40 },
+  premCircle2: { position: "absolute", width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.05)", bottom: -20, end: 30 },
+  premTopRow: { flexDirection: rowDir, justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
+  premBadge: { flexDirection: rowDir, alignItems: "center", gap: 5, backgroundColor: "rgba(255,255,255,0.15)", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 100 },
+  premBadgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FDE68A" },
+  premIconBox: { width: 52, height: 52, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
+  premTitle: { fontFamily: "Tajawal_700Bold", fontSize: 22, color: "#FFF", textAlign: colAlign === "flex-end" ? "right" : "left", marginBottom: 4 },
+  premSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 12, color: "rgba(255,255,255,0.75)", textAlign: colAlign === "flex-end" ? "right" : "left", marginBottom: 18 },
+  premStatsRow: { flexDirection: rowDir, backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 16, padding: 14, marginBottom: 16, gap: 0 },
+  premStat: { flex: 1, alignItems: "center" },
+  premStatVal: { fontFamily: "Tajawal_700Bold", fontSize: 20, color: "#FFF" },
+  premStatLabel: { fontFamily: "Tajawal_400Regular", fontSize: 10, color: "rgba(255,255,255,0.65)", marginTop: 2 },
+  premStatDiv: { width: 1, backgroundColor: "rgba(255,255,255,0.2)", marginHorizontal: 4 },
+  premCTA: { flexDirection: rowDir, alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: "#FFF", borderRadius: 14, paddingVertical: 12 },
+  premCTAText: { fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#6D28D9" },
 
   secHeader: { flexDirection: rowDir, justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12 },
   secTitleRow: { flexDirection: rowDir, alignItems: "center", gap: 8 },

@@ -72,6 +72,39 @@ The artifact-specific workflows (artifacts/mobile: expo, artifacts/admin: web, a
 - **Push notifications**: Routed through API server (`POST /api/push`) to bypass Supabase RLS on `push_tokens`. Requires `SUPABASE_SERVICE_ROLE_KEY` secret (set in Replit Secrets) + `EXPO_PUBLIC_API_URL` in eas.json (must be the deployed API server URL — never a dev URL).
 - **Admin check**: `is_admin()` function in DB, RLS policies for all tables
 
+## 2026-05-05 — Comprehensive Push + Realtime overhaul
+
+### Push Notifications — Now WhatsApp-grade
+| Feature | Before | After |
+|---------|--------|-------|
+| App closed + tap notification | ❌ Lost | ✅ `getLastNotificationResponseAsync` replays tap on cold start |
+| App open foreground banner | ❌ None | ✅ `InAppBanner` component — WhatsApp-style slide-in banner |
+| Payment channel | ❌ Missing | ✅ Android `payment` channel with HIGH importance + green LED |
+| Deep-link on tap | ✅ Basic | ✅ Full — all types mapped in `navigateForType()` |
+| `type` in push payload | ❌ Sometimes missing | ✅ Always embedded by API server + `createNotification()` |
+| Provider action buttons | ✅ Accept/Reject | ✅ Same, now routes through shared `handleNotifResponse()` |
+
+**Files changed:** `components/InAppBanner.tsx` (new), `app/_layout.tsx`, `lib/notifications.ts`, `api-server/src/routes/push.ts`
+
+### Realtime Sync — All screens update without manual refresh
+| Channel | Subscribes to | Dispatches |
+|---------|--------------|-----------|
+| `store-bookings-{uid}` | bookings WHERE user_id = uid | `booking_status_changed` |
+| `store-notifs-{uid}` | notifications WHERE user_id = uid | `notification_received`, `badge_updated` |
+| `store-provider-new` | bookings INSERT (all) | `new_booking` |
+| `store-provider-accepted-{uid}` | bookings UPDATE WHERE provider_id = uid (**NEW**) | `provider_booking_changed`, `provider_order_updated` |
+| `store-provider-locations` | providers UPDATE (**NEW**) | `provider_location_updated` |
+| `store-admin-bookings` | bookings INSERT (all) | `new_booking` |
+| `chat-room-{roomId}` | messages INSERT + broadcast | live chat (per-screen) |
+
+**New event types:** `provider_booking_changed`, `provider_location_updated`, `chat_message_received`
+
+Provider bookings screen (`(provider)/bookings.tsx`) now uses `useRealtimeEvents` to auto-reload on `new_booking` / `provider_booking_changed` — no refresh needed.
+
+### Premium Card & Dark Mode Fixes (same session)
+- `(tabs)/profile.tsx`: Premium membership card fully redesigned (deep gradient, stats row, CTA)
+- `ai-assistant.tsx`: Service + provider cards fixed for dark/light mode (no more hardcoded `#0F172A` / `elevation: 1` black borders)
+
 ## Push Notifications — Architecture & Known Bugs Fixed (May 2026)
 
 **Flow:** Mobile app → `sendPushNotification()` → API Server `/api/push` → Expo Push Service → Firebase FCM → Android status bar

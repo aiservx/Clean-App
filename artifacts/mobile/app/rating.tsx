@@ -18,7 +18,7 @@ try {
 }
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
-import { sendPushNotification, createNotification } from "@/lib/notifications";
+import { createNotification } from "@/lib/notifications";
 
 const TAGS = [
   { label: "الاهتمام بالتفاصيل", icon: "checkbox-marked-outline" },
@@ -109,7 +109,6 @@ export default function RatingScreen() {
 
     const notifTitle = "⭐ تقييم جديد!";
     const notifBody = `حصلت على تقييم ${rating} نجوم${comment.trim() ? ` — "${comment.trim().slice(0, 60)}"` : ""}`;
-    sendPushNotification(providerId, notifTitle, notifBody, { bookingId }, undefined, "default");
     createNotification(providerId, "review_received", notifTitle, notifBody, { bookingId });
 
     setSubmitting(false);
