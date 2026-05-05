@@ -65,12 +65,31 @@ The artifact-specific workflows (artifacts/mobile: expo, artifacts/admin: web, a
 
 ## Supabase
 
-- **URL**: `https://ppokdtzlisaxsrmtwlrb.supabase.co`
-- **Env vars**: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` (in `.replit` userenv)
+- **URL**: `https://mffdpjwtwseftaqrslgx.supabase.co`
+- **Env vars**: `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` (set as Replit shared env vars)
 - **Auth**: email/password; roles stored in `profiles.role` (user/provider/admin)
 - **Key tables**: `profiles`, `providers`, `bookings`, `services`, `addresses`, `payouts`, `notifications`, `reviews`, `push_tokens`
-- **Push notifications**: Routed through API server (`POST /api/push`) to bypass Supabase RLS on `push_tokens`. Requires `SUPABASE_SERVICE_ROLE_KEY` secret + `EXPO_PUBLIC_API_URL` in eas.json (set to deployed app URL before building APK).
+- **Push notifications**: Routed through API server (`POST /api/push`) to bypass Supabase RLS on `push_tokens`. Requires `SUPABASE_SERVICE_ROLE_KEY` secret (set in Replit Secrets) + `EXPO_PUBLIC_API_URL` in eas.json (must be the deployed API server URL — never a dev URL).
 - **Admin check**: `is_admin()` function in DB, RLS policies for all tables
+
+## Push Notifications — Architecture & Known Bugs Fixed (May 2026)
+
+**Flow:** Mobile app → `sendPushNotification()` → API Server `/api/push` → Expo Push Service → Firebase FCM → Android status bar
+
+**Three bugs were found and fixed (May 2026):**
+
+| Bug | Root Cause | Fix |
+|-----|-----------|-----|
+| Tokens registered to wrong Expo project | `getExpoPushTokenAsync` used hardcoded wrong projectId `09e4ce5c-...` (old account `hadystow`) | Now reads dynamically from `Constants.expoConfig.extra.eas.projectId` |
+| All pushes silently failing | `EXPO_PUBLIC_API_URL` in `eas.json` pointed to a dead old Replit dev domain | Updated to current domain; must use stable deployed URL for production APK |
+| No status-bar notifications when app is closed | `google-services.json` had a fake `mobilesdk_app_id` (wrong length) | Replaced with real file from Firebase project `nazafa-46eb7` (project_number: `549775812329`) |
+
+**Critical rule for APK builds:** `EXPO_PUBLIC_API_URL` is baked into the APK at build time. Always set it to the **deployed** API server URL (e.g. `https://nazafa.USERNAME.replit.app`), never a `.riker.replit.dev` dev URL. See `artifacts/mobile/BUILD_APK.md` for full details.
+
+**FCM v1 setup (required for background notifications on Android):**
+1. `google-services.json` must be real — ✅ done (Firebase project `nazafa-46eb7`)
+2. Upload Firebase Service Account JSON to [expo.dev](https://expo.dev) → project → Credentials → FCM v1
+3. `SUPABASE_SERVICE_ROLE_KEY` must be set in Replit Secrets — ✅ done
 
 ## Mobile App Structure
 
