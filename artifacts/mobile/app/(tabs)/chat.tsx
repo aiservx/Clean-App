@@ -182,14 +182,16 @@ export default function ChatInboxScreen() {
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
-        <View style={{ width: 44 }} />
+        {/* Bell on start edge (right in RTL) */}
+        <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/notifications")}>
+          <Feather name="bell" size={20} color={colors.foreground} />
+        </TouchableOpacity>
         <View style={s.hCenter}>
           <Text style={[s.hTitle, { color: colors.foreground }]}>{t("messages")}</Text>
           <Text style={[s.hSub, { color: colors.mutedForeground }]}>{t("messages_sub")}</Text>
         </View>
-        <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/notifications")}>
-          <Feather name="bell" size={20} color={colors.foreground} />
-        </TouchableOpacity>
+        {/* Spacer on end edge (left in RTL) — keeps title centered */}
+        <View style={{ width: 44 }} />
       </View>
 
       <ScrollView

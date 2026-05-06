@@ -67,6 +67,7 @@ Key commands:
 ## Architecture decisions
 
 - **Push Notifications via API Server**: Push notifications are routed through the API server to bypass Supabase RLS, using the `SUPABASE_SERVICE_ROLE_KEY`. This ensures reliable notification delivery regardless of user RLS policies.
+- **AI Assistant TTS/STT**: `expo-speech` for TTS (Arabic ar-SA / English en-US), language auto-detected from user text (`/[\u0600-\u06FF]/`). Wave animation uses 5 `Animated.Value` refs with `Animated.loop`. TTS enabled state uses both React state + ref (`ttsEnabledRef`) to avoid stale closure in `addBotMessage` useCallback.
 - **RTL-first Design**: Global RTL enforcement via `I18nManager.forceRTL(true)` in `app/_layout.tsx` ensures consistent Arabic layout direction. Language switching triggers an app reload for correct layout adjustments.
 - **Realtime for Core Features**: Supabase Realtime is extensively used for bookings, provider location tracking, and notifications to provide a live, responsive user experience without manual refreshes.
 - **Dynamic Profile Creation**: `lib/auth.tsx` automatically creates a profile row from `user_metadata` on login/signup, preventing deadlocks if a profile is missing.
@@ -78,7 +79,7 @@ Key commands:
 - **Provider-facing App**: Home dashboard, booking management, wallet/earnings, profile management, withdrawal requests, earnings statements.
 - **Admin Dashboard**: Comprehensive CRUD operations for providers, bookings, services, categories, customers, withdrawals, refunds, and notifications. Real-time booking management with status updates and push notifications.
 - **Chat System**: Real-time per-booking chat rooms between users and providers, including a smart assistant with voice input and rule-based knowledge.
-- **AI Assistant**: Rule-based KB + real DB hybrid. Booking flow (services→providers→address→phone→invoice→confirmed). Intent detection for tracking/invoice queries fetches live Supabase data and renders rich inline cards (TrackingCard, InvoiceCard). Confirmation card has a primary "تتبع الطلب" gradient button.
+- **AI Assistant**: Rule-based KB + real DB hybrid. Booking flow (services→providers→address→phone→invoice→confirmed). Intent detection for tracking/invoice queries fetches live Supabase data and renders rich inline cards (TrackingCard, InvoiceCard). Confirmation card has a primary "تتبع الطلب" gradient button. Voice input via web SpeechRecognition API with animated wave bars (5-bar scaleY). TTS via expo-speech with auto-language detection (Arabic/English) — toggleable via speaker icon in header. Bot auto-speaks short responses (≤250 chars, no card). Speech stops on back nav and new user input.
 - **Location & Mapping**: Real-time GPS lookup, reverse geocoding, and map display for service tracking, provider location, and address selection.
 - **Push Notifications**: Comprehensive system including background notifications, in-app banners, deep linking, and localized rich messages for various events (e.g., booking status changes).
 - **Internationalization**: Full Arabic (default) and English support with RTL layout management.

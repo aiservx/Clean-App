@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
   RefreshControl, Image, Alert, I18nManager,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -77,6 +78,9 @@ export default function BookingsScreen() {
     return bookings;
   }, [bookings, filter]);
 
+  const activeCount    = useMemo(() => bookings.filter(b => ["pending","accepted","on_the_way","in_progress"].includes(b.status)).length, [bookings]);
+  const completedCount = useMemo(() => bookings.filter(b => b.status === "completed").length, [bookings]);
+
   const reorder = (serviceTitle: string) => {
     Alert.alert("إعادة الطلب", `هل تريد إعادة طلب "${serviceTitle}"؟`, [
       { text: "إلغاء", style: "cancel" },
@@ -119,13 +123,53 @@ export default function BookingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <View style={styles.headerTitleContainer}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>حجوزاتي</Text>
-          <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>تابع جميع طلباتك</Text>
+      {/* ── Header — gradient with stats ─────────────────────────────── */}
+      <LinearGradient
+        colors={["#7C3AED", "#4F46E5"]}
+        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + 10 }]}
+      >
+        {/* Title row */}
+        <View style={styles.headerTopRow}>
+          {/* Icon on start edge (right in RTL) */}
+          <View style={styles.headerIconCircle}>
+            <MaterialCommunityIcons name="calendar-check" size={22} color="rgba(255,255,255,0.95)" />
+          </View>
+
+          {/* Title + subtitle — centered */}
+          <View style={styles.headerTextBlock}>
+            <Text style={styles.headerTitle}>حجوزاتي</Text>
+            <Text style={styles.headerSubtitle}>تابع جميع طلباتك</Text>
+          </View>
+
+          {/* Active badge OR equal-width spacer to keep title centered */}
+          {activeCount > 0 ? (
+            <View style={styles.headerActiveBadge}>
+              <View style={styles.headerActiveDot} />
+              <Text style={styles.headerActiveBadgeT}>{activeCount} نشطة</Text>
+            </View>
+          ) : (
+            <View style={{ width: 46 }} />
+          )}
         </View>
-      </View>
+
+        {/* Stats row */}
+        <View style={styles.statsRow}>
+          {[
+            { num: bookings.length,  label: "إجمالي الطلبات" },
+            { num: activeCount,       label: "جاري التنفيذ"   },
+            { num: completedCount,    label: "مكتملة"          },
+          ].map((s, i, arr) => (
+            <React.Fragment key={i}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNum}>{s.num}</Text>
+                <Text style={styles.statLabel}>{s.label}</Text>
+              </View>
+              {i < arr.length - 1 && <View style={styles.statDivider} />}
+            </React.Fragment>
+          ))}
+        </View>
+      </LinearGradient>
 
       <ScrollView
         contentContainerStyle={{ paddingBottom: 130 }}
@@ -301,10 +345,35 @@ const colAlign = I18nManager.isRTL ? ("flex-start" as const) : ("flex-end" as co
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 16, marginBottom: 12, alignItems: colAlign },
-  headerTitleContainer: { alignItems: colAlign },
-  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 22 },
-  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 14 },
+  // ── Gradient header ────────────────────────────────────────────────────
+  header: { paddingHorizontal: 16, paddingBottom: 18 },
+  headerTopRow: { flexDirection: rowDir, alignItems: "center", gap: 12, marginBottom: 18 },
+  headerIconCircle: {
+    width: 46, height: 46, borderRadius: 23,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center", justifyContent: "center",
+  },
+  headerTextBlock: { flex: 1, alignItems: "center" },
+  headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 22, color: "#FFF" },
+  headerSubtitle: { fontFamily: "Tajawal_400Regular", fontSize: 13, color: "rgba(255,255,255,0.82)", marginTop: 2 },
+  headerActiveBadge: {
+    flexDirection: "row", alignItems: "center", gap: 5,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100,
+  },
+  headerActiveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#22C55E" },
+  headerActiveBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#FFF" },
+
+  // ── Stats row ──────────────────────────────────────────────────────────
+  statsRow: {
+    flexDirection: rowDir,
+    backgroundColor: "rgba(255,255,255,0.13)",
+    borderRadius: 18, paddingVertical: 14, paddingHorizontal: 8,
+  },
+  statItem: { flex: 1, alignItems: "center", gap: 3 },
+  statNum: { fontFamily: "Tajawal_700Bold", fontSize: 22, color: "#FFF" },
+  statLabel: { fontFamily: "Tajawal_400Regular", fontSize: 10, color: "rgba(255,255,255,0.8)", textAlign: "center" },
+  statDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.22)", marginVertical: 4 },
 
   // RTL filter pills
   filtersScroll: {

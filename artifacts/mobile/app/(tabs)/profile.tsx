@@ -181,8 +181,11 @@ export default function ProfileScreen() {
                       <Text style={s.defaultBadgeText}>الرئيسي</Text>
                     </View>
                   )}
-                  <TouchableOpacity>
-                    <Text style={s.addrMore}>...</Text>
+                  <TouchableOpacity onPress={() => Alert.alert("الخيارات", "ماذا تريد أن تفعل؟", [
+                    { text: "تعديل", onPress: () => router.push("/address-form") },
+                    { text: "إلغاء", style: "cancel" },
+                  ])}>
+                    <Text style={s.addrMore}>···</Text>
                   </TouchableOpacity>
                 </View>
               ))}

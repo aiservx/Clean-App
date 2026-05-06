@@ -17,6 +17,7 @@ import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/loca
 import { iconForService, colorForService } from "@/lib/serviceIcons";
 import GuestEmpty from "@/components/GuestEmpty";
 import { SEASONAL_PROMOS, findPromotionAnswer } from "@/lib/promotions";
+import * as Speech from "expo-speech";
 
 const AI_AVATAR_LIGHT = require("@/assets/images/ai-avatar-light.png");
 
@@ -131,6 +132,12 @@ function getWebSpeechRecognition(): any | null {
   try { const w = globalThis as any; return w.SpeechRecognition || w.webkitSpeechRecognition || null; } catch { return null; }
 }
 
+// ── Language detection ─────────────────────────────────────────────────────
+const ARABIC_RE = /[\u0600-\u06FF]/;
+function detectLanguage(text: string): "ar-SA" | "en-US" {
+  return ARABIC_RE.test(text) ? "ar-SA" : "en-US";
+}
+
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function AiAssistantScreen() {
@@ -159,6 +166,12 @@ export default function AiAssistantScreen() {
   const [hasOpenBooking, setHasOpenBooking] = useState(false);
   const typingAnim = useRef(new Animated.Value(0)).current;
   const recognitionRef = useRef<any>(null);
+
+  // ── TTS + Wave state ─────────────────────────────────────────────────────
+  const [ttsEnabled, setTtsEnabled] = useState(true);
+  const ttsEnabledRef = useRef(true);
+  const waveAnims = useRef([0.3, 0.7, 1.0, 0.7, 0.3].map(v => new Animated.Value(v))).current;
+  const waveAnimLoops = useRef<any[]>([]);
 
   // ── Profile autofill
   const savedPhone = profile?.phone || "";
@@ -238,13 +251,15 @@ export default function AiAssistantScreen() {
     return () => { cancelled = true; };
   }, [session]);
 
-  const addBotMessage = useCallback((text: string, cardType?: CardType, extra?: Partial<ChatMessage>) => {
+  const addBotMessage = useCallback((text: string, cardType?: CardType, extra?: Partial<ChatMessage>, lang?: "ar-SA" | "en-US") => {
     setTyping(true);
     setTimeout(() => {
       setTyping(false);
       setMessages((prev) => [...prev, { id: nextId(), role: "bot", text, cardType, ...extra }]);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+      if (!cardType) speakResponse(text, lang ?? "ar-SA");
     }, 600);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addUserMessage = useCallback((text: string) => {
@@ -293,6 +308,44 @@ export default function AiAssistantScreen() {
   };
 
   const openLink = (url: string) => { Linking.openURL(url).catch(() => {}); };
+
+  // ── TTS + wave helpers ───────────────────────────────────────────────────
+
+  const speakResponse = (text: string, lang: "ar-SA" | "en-US") => {
+    if (!ttsEnabledRef.current || Platform.OS === "web") return;
+    const clean = text
+      .replace(/[🎁✅❌⭐📌💰⏱🎯🎉🎊👋💳🔔📞💬📧📖🗓✨]/g, " ")
+      .replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+    if (clean.length < 3 || clean.length > 250) return;
+    try {
+      Speech.stop();
+      Speech.speak(clean, {
+        language: lang,
+        rate: lang === "ar-SA" ? 0.82 : 0.9,
+        pitch: lang === "ar-SA" ? 1.05 : 1.0,
+        onError: () => {},
+      });
+    } catch {}
+  };
+
+  const startWaveAnimation = () => {
+    waveAnimLoops.current.forEach((l: any) => { try { l?.stop(); } catch {} });
+    waveAnimLoops.current = waveAnims.map((anim, i) => {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, { toValue: 1.0, duration: 200 + i * 55, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0.15, duration: 200 + i * 55, useNativeDriver: true }),
+        ])
+      );
+      loop.start();
+      return loop;
+    });
+  };
+
+  const stopWaveAnimation = () => {
+    waveAnimLoops.current.forEach((l: any) => { try { l?.stop(); } catch {} });
+    waveAnims.forEach(a => a.setValue(0.3));
+  };
 
   // ── Real-data fetchers ───────────────────────────────────────────────────
 
@@ -487,6 +540,10 @@ export default function AiAssistantScreen() {
 
   const handleSendText = () => {
     const text = inputText.trim(); if (!text) return;
+    // Auto-detect language and stop any ongoing speech before responding
+    const lang = detectLanguage(text);
+    setVoiceLang(lang);
+    try { Speech.stop(); } catch {}
     setInputText(""); addUserMessage(text);
     if (step === "address") { setChosenAddress(text); askPhone(); return; }
     if (step === "phone") { finalizeInvoice(chosenAddress || text, text); return; }
@@ -497,8 +554,13 @@ export default function AiAssistantScreen() {
     if (/(شكوى|بلاغ|تذكرة|دعم|support)/i.test(text)) { pushSupportContact(); return; }
     if (/(عروض|كوبون|خصم|promo)/i.test(text)) { pushCouponCard(); return; }
     const ans = answerFromKb(text, { hasOpenBooking });
-    if (ans) { addBotMessage(ans); return; }
-    addBotMessage("سؤال جيد! يمكنني مساعدتك بـ: تتبع الطلب، الفاتورة، العروض، الاسترداد، أو الدعم. اختر من الأزرار السريعة أو اكتب سؤالك.");
+    if (ans) { addBotMessage(ans, undefined, undefined, lang); return; }
+    addBotMessage(
+      lang === "en-US"
+        ? "Good question! I can help with: order tracking, invoice, offers, refunds, or support."
+        : "سؤال جيد! يمكنني مساعدتك بـ: تتبع الطلب، الفاتورة، العروض، الاسترداد، أو الدعم. اختر من الأزرار السريعة أو اكتب سؤالك.",
+      undefined, undefined, lang
+    );
   };
 
   const handleConfirmBooking = async () => {
@@ -538,14 +600,35 @@ export default function AiAssistantScreen() {
     const SR = getWebSpeechRecognition();
     if (!SR) { Alert.alert("غير مدعوم", "حاول من Chrome."); return; }
     try {
+      Speech.stop();
       const r = new SR(); r.lang = voiceLang; r.continuous = false; r.interimResults = false;
-      r.onresult = (ev: any) => { const t: string = ev.results?.[0]?.[0]?.transcript || ""; if (t) setInputText((p) => (p ? p + " " : "") + t); };
-      r.onerror = () => setVoiceListening(false); r.onend = () => setVoiceListening(false);
+      r.onresult = (ev: any) => {
+        const t: string = ev.results?.[0]?.[0]?.transcript || "";
+        if (t) {
+          setInputText((p) => (p ? p + " " : "") + t);
+          setVoiceLang(detectLanguage(t));
+        }
+        stopWaveAnimation(); setVoiceListening(false);
+      };
+      r.onerror = () => { stopWaveAnimation(); setVoiceListening(false); };
+      r.onend = () => { stopWaveAnimation(); setVoiceListening(false); };
       r.start(); recognitionRef.current = r; setVoiceListening(true);
+      startWaveAnimation();
     } catch (e) { Alert.alert("خطأ", (e as Error).message); setVoiceListening(false); }
   };
-  const stopVoiceWeb = () => { try { recognitionRef.current?.stop?.(); } catch {} setVoiceListening(false); };
-  const onMicPress = () => { if (Platform.OS === "web") { voiceListening ? stopVoiceWeb() : startVoiceWeb(); } else { Alert.alert("الإدخال الصوتي", "متاح على نسخة الويب حالياً."); } };
+  const stopVoiceWeb = () => {
+    try { recognitionRef.current?.stop?.(); } catch {}
+    stopWaveAnimation(); setVoiceListening(false);
+  };
+  const onMicPress = () => {
+    try { Speech.stop(); } catch {}
+    if (Platform.OS === "web") {
+      voiceListening ? stopVoiceWeb() : startVoiceWeb();
+    } else {
+      if (voiceListening) { stopWaveAnimation(); setVoiceListening(false); return; }
+      Alert.alert("الإدخال الصوتي", "استخدم زر المايكروفون على لوحة المفاتيح للإدخال الصوتي، أو اكتب رسالتك مباشرةً.", [{ text: "حسناً" }]);
+    }
+  };
 
   // ── Renderers ─────────────────────────────────────────────────────────────
 
@@ -965,15 +1048,42 @@ export default function AiAssistantScreen() {
       {/* Header — outside KAV so it stays fixed */}
       <LinearGradient colors={["#7C3AED", "#4F46E5"]} style={[s.header, { paddingTop: insets.top + 8 }]}>
         <View style={s.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={{ padding: 6 }}>
-            <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color="#FFF" />
+          {/* Back — start edge (right in RTL) */}
+          <TouchableOpacity onPress={() => { try { Speech.stop(); } catch {} router.back(); }} style={s.headerBackBtn}>
+            <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={24} color="#FFF" />
           </TouchableOpacity>
-          <Image source={AI_AVATAR_LIGHT} style={{ width: 44, height: 44, borderRadius: 22 }} />
-          <View style={s.headerInfo}>
-            <Text style={s.headerTitle}>المساعد الذكي ✨</Text>
-            <Text style={s.headerSub}>متصل الآن • يفهم العربية والإنجليزية</Text>
+
+          {/* AI Avatar with online indicator */}
+          <View style={s.headerAvatarWrap}>
+            <Image source={AI_AVATAR_LIGHT} style={s.headerAvatar} />
+            <View style={s.headerAvatarOnline} />
           </View>
-          <View style={s.headerBadge}><Text style={s.headerBadgeText}>AI</Text></View>
+
+          {/* Name + status — flex:1 aligned to flex-start (right in RTL) */}
+          <View style={s.headerInfo}>
+            <Text style={s.headerTitle}>مني • المساعد الذكي</Text>
+            <View style={s.headerStatusRow}>
+              <View style={s.headerOnlineDot} />
+              <Text style={s.headerSub}>متصلة الآن • ع + EN</Text>
+            </View>
+          </View>
+
+          {/* TTS toggle + AI badge — end edge (left in RTL) */}
+          <View style={s.headerActions}>
+            <TouchableOpacity
+              style={[s.headerTtsBtn, { backgroundColor: ttsEnabled ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.1)" }]}
+              onPress={() => {
+                const next = !ttsEnabled;
+                ttsEnabledRef.current = next;
+                setTtsEnabled(next);
+                if (!next) { try { Speech.stop(); } catch {} }
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name={ttsEnabled ? "volume-high" : "volume-off"} size={18} color="#FFF" />
+            </TouchableOpacity>
+            <View style={s.headerBadge}><Text style={s.headerBadgeText}>AI</Text></View>
+          </View>
         </View>
       </LinearGradient>
 
@@ -1036,29 +1146,54 @@ export default function AiAssistantScreen() {
 
           {/* ── Input bar — always at bottom of KAV, above keyboard ── */}
           <View style={[s.inputBar, { paddingBottom: insets.bottom + 10, backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border ?? "#E2E8F0" }]}>
-            <View style={[s.inputRow, { backgroundColor: colors.card }]}>
-              <TouchableOpacity style={s.sendBtn} onPress={handleSendText} activeOpacity={0.85}>
-                <Feather name="send" size={18} color="#FFF" style={{ transform: [{ scaleX: -1 }] }} />
-              </TouchableOpacity>
-              <TouchableOpacity style={[s.micBtn, { backgroundColor: voiceListening ? "#EF4444" : colors.primaryLight ?? "#EDE9FE" }]} onPress={onMicPress} activeOpacity={0.85}>
-                <MaterialCommunityIcons name={voiceListening ? "microphone" : "microphone-outline"} size={20} color={voiceListening ? "#FFF" : "#7C3AED"} />
-              </TouchableOpacity>
-              <TouchableOpacity style={[s.micBtn, { backgroundColor: voiceLang === "en-US" ? "#3B82F6" : colors.card }]} onPress={() => setVoiceLang((l) => l === "ar-SA" ? "en-US" : "ar-SA")} activeOpacity={0.85}>
-                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: voiceLang === "en-US" ? "#FFF" : colors.mutedForeground }}>
-                  {voiceLang === "ar-SA" ? "ع" : "EN"}
-                </Text>
-              </TouchableOpacity>
-              <TextInput
-                style={[s.textInput, { color: colors.foreground }]}
-                value={inputText}
-                onChangeText={setInputText}
-                placeholder={step === "address" ? "اكتب العنوان..." : step === "phone" ? "اكتب رقم الهاتف..." : "اكتب رسالتك أو اضغط على المايك..."}
-                placeholderTextColor={colors.mutedForeground ?? "#94A3B8"}
-                onSubmitEditing={handleSendText}
-                returnKeyType="send"
-                blurOnSubmit={false}
-              />
-            </View>
+            {voiceListening ? (
+              /* ── Recording state: wave + stop ─────────────────────── */
+              <View style={s.recordingBar}>
+                {/* Stop recording button */}
+                <TouchableOpacity style={s.recordingStopBtn} onPress={onMicPress} activeOpacity={0.85}>
+                  <Feather name="square" size={12} color="#FFF" />
+                </TouchableOpacity>
+
+                {/* Animated wave bars */}
+                <View style={s.waveContainer}>
+                  {waveAnims.map((anim, i) => (
+                    <Animated.View key={i} style={[s.waveBar, { transform: [{ scaleY: anim }] }]} />
+                  ))}
+                </View>
+
+                <Text style={s.recordingLabel}>جاري الاستماع...</Text>
+
+                {/* Cancel = discard transcript */}
+                <TouchableOpacity onPress={() => { stopVoiceWeb(); setInputText(""); }} style={{ padding: 8 }}>
+                  <Feather name="x" size={18} color="#94A3B8" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              /* ── Normal input ──────────────────────────────────────── */
+              <View style={[s.inputRow, { backgroundColor: colors.card }]}>
+                <TouchableOpacity style={s.sendBtn} onPress={handleSendText} activeOpacity={0.85}>
+                  <Feather name="send" size={18} color="#FFF" style={{ transform: [{ scaleX: -1 }] }} />
+                </TouchableOpacity>
+                <TouchableOpacity style={[s.micBtn, { backgroundColor: colors.primaryLight ?? "#EDE9FE" }]} onPress={onMicPress} activeOpacity={0.85}>
+                  <MaterialCommunityIcons name="microphone-outline" size={20} color="#7C3AED" />
+                </TouchableOpacity>
+                <TouchableOpacity style={[s.micBtn, { backgroundColor: voiceLang === "en-US" ? "#3B82F6" : colors.card }]} onPress={() => setVoiceLang((l) => l === "ar-SA" ? "en-US" : "ar-SA")} activeOpacity={0.85}>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: voiceLang === "en-US" ? "#FFF" : colors.mutedForeground }}>
+                    {voiceLang === "ar-SA" ? "ع" : "EN"}
+                  </Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={[s.textInput, { color: colors.foreground }]}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  placeholder={step === "address" ? "اكتب العنوان..." : step === "phone" ? "اكتب رقم الهاتف..." : "اكتب رسالتك أو اضغط المايك..."}
+                  placeholderTextColor={colors.mutedForeground ?? "#94A3B8"}
+                  onSubmitEditing={handleSendText}
+                  returnKeyType="send"
+                  blurOnSubmit={false}
+                />
+              </View>
+            )}
           </View>
         </KeyboardAvoidingView>
       )}
@@ -1073,7 +1208,7 @@ const s = StyleSheet.create({
 
   header: { paddingBottom: 14, paddingHorizontal: 16 },
   headerRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  headerInfo: { flex: 1, alignItems: "flex-end" },
+  headerInfo: { flex: 1, alignItems: "flex-start" },
   headerTitle: { fontFamily: "Tajawal_700Bold", fontSize: 17, color: "#FFF" },
   headerSub: { fontFamily: "Tajawal_400Regular", fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2 },
   headerBadge: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100 },
@@ -1252,4 +1387,21 @@ const s = StyleSheet.create({
   textInput: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 14, paddingHorizontal: 12, paddingVertical: 8 },
   sendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#7C3AED", alignItems: "center", justifyContent: "center" },
   micBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+
+  // ── Header extras ──────────────────────────────────────────────────────
+  headerBackBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.15)", alignItems: "center", justifyContent: "center" },
+  headerAvatarWrap: { position: "relative" },
+  headerAvatar: { width: 44, height: 44, borderRadius: 22 },
+  headerAvatarOnline: { position: "absolute", bottom: 1, end: 1, width: 11, height: 11, borderRadius: 6, backgroundColor: "#22C55E", borderWidth: 2, borderColor: "#7C3AED" },
+  headerStatusRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 2 },
+  headerOnlineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#22C55E" },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerTtsBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+
+  // ── Wave recording ──────────────────────────────────────────────────────
+  recordingBar: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 100, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: "#FEF2F2", shadowColor: "#EF4444", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 2 },
+  recordingStopBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#EF4444", alignItems: "center", justifyContent: "center" },
+  waveContainer: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, height: 36 },
+  waveBar: { width: 4, height: 28, borderRadius: 2, backgroundColor: "#EF4444" },
+  recordingLabel: { fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#EF4444" },
 });

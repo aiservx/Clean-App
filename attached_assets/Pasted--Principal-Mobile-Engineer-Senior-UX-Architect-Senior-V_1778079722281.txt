@@ -1,0 +1,215 @@
+أنت الآن تعمل كـ:
+
+Principal Mobile Engineer
+Senior UX Architect
+Senior Voice AI Engineer
+Senior QA Engineer
+Release Engineer
+
+المشروع الآن دخل مرحلة polish + voice AI + production release.
+
+ممنوع:
+
+mock implementations
+placeholder UI
+partial fixes
+إيقاف العمل قبل إنهاء كل المطلوب
+إعادة تحليل المشروع من الصفر بشكل يهدر التوكنز
+
+اعتمد على:
+
+PROJECT_MEMORY.md
+
+وكل ملفات التوثيق السابقة بدل إعادة استهلاك التوكنز.
+
+إذا احتجت معرفة شيء راجع ملفات الذاكرة أولًا.
+
+المرحلة 1: إصلاح هيدر محادثة المساعد الذكي (Arabic RTL Fix)
+
+الهيدر الحالي في شاشة المساعد الذكي غير منظم بشكل صحيح مع اللغة العربية.
+
+أريد:
+
+عكس ترتيب العناصر بالكامل ليتماشى مع RTL
+ترتيب:
+زر الرجوع
+اسم المساعد
+الحالة
+الأيقونات
+
+بحيث يكون مناسب للعربية.
+
+راجع:
+
+alignment
+spacing
+icon direction
+paddings
+safe areas
+
+يجب أن يبدو Native جدًا للمستخدم العربي.
+
+المرحلة 2: مراجعة شاملة لكل التطبيق بالكامل
+
+قم بعمل Full UI/UX audit لكل الشاشات:
+
+onboarding
+login
+signup
+home
+booking
+tracking
+payment
+invoices
+offers
+support
+profile
+AI assistant
+notifications
+settings
+
+لكل شاشة افحص:
+
+alignment
+RTL/LTR
+spacing
+responsive issues
+safe area
+typography
+button consistency
+loading states
+empty states
+animations
+navigation bugs
+broken actions
+
+قم بإصلاح كل المشاكل بالكامل.
+
+المرحلة 3: إضافة التحدث مع المساعد عبر المايك
+
+أريد داخل شاشة المساعد الذكي:
+
+زر مايك واضح جدًا.
+
+عند الضغط:
+
+يبدأ تسجيل الصوت
+تحويل الصوت إلى نص
+إدخال النص داخل الشات تلقائيًا
+إرسال الرسالة
+
+استخدم أفضل حل مناسب داخل المشروع مثل:
+
+Expo voice APIs
+أو
+Google speech recognition
+أو أي implementation production-ready.
+
+المرحلة 4: المساعد يرد بالصوت
+
+بعد أن يرسل المستخدم رسالة:
+
+المساعد يجب أن يرد:
+
+نصيًا
+وصوتيًا
+
+استخدم:
+
+Text To Speech
+
+بحيث ينطق الرد.
+
+المرحلة 5: شخصية المساعد الصوتية
+
+أريد شخصية صوتية:
+
+مرحة
+ودودة
+احترافية
+خدمة عملاء ممتازة
+ليست روبوتية
+اللغة العربية
+
+نبرة عربية احترافية لطيفة.
+
+اللغة الإنجليزية
+
+Professional friendly customer service tone.
+
+المرحلة 6: Language Detection
+
+إذا المستخدم تحدث بالعربية:
+
+المساعد يرد عربي صوت + نص.
+
+إذا المستخدم تحدث بالإنجليزية:
+
+المساعد يرد English voice + text.
+
+المرحلة 7: Voice UX
+
+أريد:
+
+wave animation أثناء التسجيل
+recording state
+cancel recording
+retry
+permission handling
+error handling
+المرحلة 8: Performance Optimization
+
+راجع:
+
+unnecessary re-renders
+memory leaks
+slow screens
+API overfetching
+heavy animations
+
+قم بتحسين الأداء.
+
+المرحلة 9: Update Memory
+
+قم بتحديث:
+
+PROJECT_MEMORY.md
+
+بكل:
+
+الملفات الجديدة
+voice architecture
+dependencies
+fixes
+release notes
+المرحلة 10: Production Build
+
+بعد الانتهاء الكامل:
+
+قم بعمل:
+
+Android APK build
+
+باستخدام:
+
+Expo EAS Build
+
+سأرسل لك Expo token لاحقًا.
+
+قم فقط بتجهيز المشروع بالكامل للبناء النهائي.
+
+مهم جدًا
+
+لا تتوقف عند منتصف العمل.
+
+نفذ جميع المراحل كاملة.
+
+إذا وجدت مشاكل أصلية أصلحها.
+
+اعمل بعقلية:
+
+CTO + Principal Engineer + Release Manager
+
+وليس مجرد coder.
+
+استخدم ملفات الذاكرة لتقليل استهلاك التوكنز وعدم إعادة تحليل المشروع من الصفر.

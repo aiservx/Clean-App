@@ -94,6 +94,8 @@ A **production-grade Arabic RTL mobile cleaning-services marketplace** built for
 | `routes/auth.ts` | `POST /api/auth/register` |
 | `routes/push.ts` | `POST /api/push`, `POST /api/push/batch` |
 | `routes/bookings.ts` | `GET /api/bookings/active`, `GET /api/bookings/:id`, `GET /api/bookings/:id/tracking` |
+| `routes/tickets.ts` | `POST /api/tickets`, `GET /api/tickets/:id`, `GET /api/tickets/history`, `PATCH /api/tickets/:id` |
+| `routes/refunds.ts` | `POST /api/refunds/request`, `GET /api/refunds/:id`, `GET /api/refunds/history`, `PATCH /api/refunds/:id` |
 | `lib/logger.ts` | Pino logger |
 | `lib/providerSweep.ts` | Provider availability sweep |
 
@@ -114,6 +116,8 @@ A **production-grade Arabic RTL mobile cleaning-services marketplace** built for
 | `push_tokens` | Expo push tokens per user |
 | `wallet_transactions` | Earnings / withdrawals |
 | `withdrawal_requests` | Provider withdrawal requests |
+| `support_tickets` | User support tickets (category, description, status) — see `db/migration_tickets_refunds.sql` |
+| `refund_requests` | Refund requests (booking_id, amount, reason, status) — see `db/migration_tickets_refunds.sql` |
 
 **Booking statuses (ordered):**
 `pending` → `accepted` → `on_the_way` → `in_progress` → `completed` | `cancelled`
@@ -146,6 +150,9 @@ User types / taps QuickAction
 | `"confirmation"` | `renderConfirmation()` | Booking success card with **"تتبع الطلب"** button |
 | `"tracking_card"` | `renderTrackingCard()` | **Live tracking card** (real DB) |
 | `"invoice_card"` | `renderInvoiceDetail()` | **Existing booking invoice** (real DB) |
+| `"coupon_card"` | `renderCouponCard()` | Seasonal promo cards with copy-to-clipboard |
+| `"support_contact"` | `renderSupportContact()` | Contact channels + inline ticket form |
+| `"refund_status_card"` | `renderRefundCard()` | Refund status viewer + submission form |
 
 ### Booking Flow Steps (Step enum)
 `welcome` → `services` → `service_selected` → `providers` → `provider_selected` → `address` → `phone` → `invoice` → `confirmed` → `qa`
@@ -153,8 +160,23 @@ User types / taps QuickAction
 ### Real-Data Fetchers
 - `fetchActiveTracking()` — latest booking + status log → `TrackingData`
 - `fetchLatestInvoice()` — latest booking invoice breakdown → `InvoiceData`
+- `fetchRefundStatus()` — latest refund request → `RefundStatusData`
 - `pushTrackingCard()` — shows typing indicator, fetches, appends card
 - `pushInvoiceCard()` — shows typing indicator, fetches, appends card
+- `pushCouponCard()` — shows `SEASONAL_PROMOS` as tappable coupon cards
+- `pushSupportContact()` — shows support contact channels + ticket form
+- `pushRefundCard()` — shows refund status or submission form
+
+### Voice / TTS System
+- **STT**: Web `SpeechRecognition` API (`startVoiceWeb` / `stopVoiceWeb`). On native, shows keyboard mic instruction.
+- **TTS**: `expo-speech` — `speakResponse(text, lang)` — speaks bot responses ≤ 250 chars (no card type). Rate 0.82 (ar-SA), 0.9 (en-US). Toggle button in header (volume-high / volume-off icon). Uses `ttsEnabledRef` to avoid stale closure in `addBotMessage` useCallback.
+- **Language auto-detection**: `detectLanguage(text)` tests `/[\u0600-\u06FF]/` → `"ar-SA"` else `"en-US"`. Set on every user send + STT transcript.
+- **Wave animation**: 5 `Animated.Value` bars (`waveAnims` ref) with `Animated.loop` + staggered timing (200–420ms). Shown in place of input bar when `voiceListening === true`. Red stop button + "جاري الاستماع..." label.
+- **Speech stops** on: back navigation, new user send, TTS toggle off, mic stop.
+
+### RTL Header Fix
+- `headerInfo: { alignItems: "flex-start" }` — In RTL, `flex-start` = physical RIGHT. Previously `"flex-end"` caused name/status to appear on the wrong (left) side. Fixed.
+- Back button now uses `s.headerBackBtn` pill style with frosted glass background.
 
 ---
 
@@ -227,6 +249,10 @@ Lightweight real-time tracking data: status, provider GPS, latest log.
 - **Auth username flow**: `POST /api/auth/register` hashes username → fake email for Supabase Auth
 - **Map**: Web preview uses OpenStreetMap iframe; native uses `react-native-maps` — split via `.native.tsx`
 - **`booking_status_log` table**: Must exist for tracking card to show history. If empty, tracking card still renders with current status only.
+- **`support_tickets` + `refund_requests` tables**: Must be created by running `db/migration_tickets_refunds.sql` manually in Supabase SQL editor before ticket/refund features work.
+- **expo-speech on web**: `Speech.speak()` is skipped on web (poor Arabic support). TTS only fires on native (iOS/Android). Always guarded with `Platform.OS !== "web"` check.
+- **Bookings header**: Now uses `LinearGradient` with stats row (total/active/completed counts). `activeCount` and `completedCount` computed via `useMemo`.
+- **Chat header RTL**: `bell` icon is first child in `rowDir` row → appears on physical RIGHT in RTL (start edge). Spacer is last child → physical LEFT.
 
 ---
 
@@ -244,6 +270,18 @@ Lightweight real-time tracking data: status, provider GPS, latest log.
 | AI assistant — real DB tracking card | ✅ |
 | AI assistant — real DB invoice card | ✅ |
 | AI assistant — intent detection (track/invoice) | ✅ |
+| AI assistant — coupon cards (SEASONAL_PROMOS) | ✅ |
+| AI assistant — support contact + inline ticket form | ✅ |
+| AI assistant — refund status viewer + submission | ✅ |
+| AI assistant — TTS via expo-speech (ar-SA / en-US) | ✅ |
+| AI assistant — voice wave animation (5-bar scaleY) | ✅ |
+| AI assistant — language auto-detection (Arabic/English) | ✅ |
+| AI assistant — RTL header fix (flex-start, TTS toggle, online dot) | ✅ |
+| Bookings — gradient header with stats row | ✅ |
+| Chat inbox — RTL bell icon fix | ✅ |
+| Support tickets API (POST/GET/PATCH) | ✅ |
+| Refunds API (POST/GET/PATCH) | ✅ |
+| DB: support_tickets + refund_requests schema | ✅ (manual migration required) |
 | Push notifications (full system) | ✅ |
 | Provider dashboard | ✅ |
 | Admin dashboard | ✅ |
