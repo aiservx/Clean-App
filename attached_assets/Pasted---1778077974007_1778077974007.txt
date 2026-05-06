@@ -1,0 +1,148 @@
+التنفيذ السابق كان غير مكتمل بالكامل رغم أنه جيد تقنيًا.
+
+المشكلة الآن فيها جزئين:
+
+أولًا: مشكلة حقل إدخال المحادثة (Critical UX Bug)
+
+واضح أن:
+
+input field مختفي
+أو
+نازل تحت الكيبورد
+أو
+keyboard overlay issue
+
+غالبًا في React Native / Expo يوجد مشكلة:
+
+KeyboardAvoidingView
+SafeAreaView
+ScrollView
+bottom padding
+absolute positioning
+
+اطلب منه هذا:
+
+حل مشكلة chat input بشكل نهائي:
+
+حالياً حقل الكتابة غير ظاهر أو يختفي خلف الكيبورد.
+
+أريد:
+
+1- input field ثابت دائمًا بأسفل الشاشة
+2- عند فتح الكيبورد يرتفع فوق الكيبورد مباشرة
+3- المستخدم يرى النص أثناء الكتابة
+4- دعم iOS + Android
+5- استخدام:
+KeyboardAvoidingView
+react-native-keyboard-controller
+safe area handling
+
+6- منع اختفاء زر الإرسال
+7- smooth animation عند فتح الكيبورد
+8- auto scroll لأحدث رسالة
+
+افحص ai-assistant.tsx بالكامل وأصلح المشكلة root cause وليس patch سريع.
+ثانيًا: نظام الشكاوى غير مكتمل
+
+أنت طلبت فتح شكوى وهو لم ينفذه.
+
+اطلب:
+
+بناء support ticket system كامل:
+
+- زر "فتح شكوى جديدة"
+- اختيار نوع المشكلة
+- كتابة الوصف
+- رفع صور إن لزم
+- إنشاء ticket حقيقي في database
+
+ثم:
+
+- متابعة حالة الشكوى
+- timeline
+- آخر رد
+- assigned agent
+
+إنشاء APIs:
+
+POST /tickets
+GET /tickets/:id
+GET /tickets/history
+ثالثًا: الاسترداد غير مكتمل
+
+اطلب:
+
+تنفيذ refund tracking كامل:
+
+- طلب استرداد
+- حالة الطلب
+- timeline
+- المبلغ
+- تاريخ التنفيذ
+
+APIs:
+
+POST /refunds/request
+GET /refunds/:id
+GET /refunds/history
+رابعًا: الكوبونات والعروض سيئة جدًا UX
+
+هذه نقطة مهمة جدًا.
+
+اطلب منه:
+
+العروض الحالية ضعيفة جدًا.
+
+أريد:
+
+- coupon cards حديثة
+- gradient cards
+- expiration countdown
+- copy coupon button
+- one-click copy
+- زر:
+"عرض جميع العروض"
+
+ينقل لصفحة offers screen
+
+- personalized recommendations
+
+مثال:
+
+SAVE20
+[نسخ الكود]
+[عرض التفاصيل]
+خامسًا: صفحة الدعم والتواصل غير موجودة
+
+اطلب:
+
+إضافة support/help section:
+
+داخل المساعد الذكي:
+
+- اتصل بنا
+- واتساب
+- بريد إلكتروني
+- مركز المساعدة
+- FAQ
+- live chat
+
+مع زر:
+
+"الانتقال إلى صفحة الدعم"
+
+يفتح support page كاملة.
+سادسًا: UI responses تحتاج تطوير
+
+اطلب أيضًا:
+
+richer cards
+better spacing
+better animations
+empty states
+loading states
+
+باستخدام:
+
+Framer Motion
+أو animations المناسبة في React Native
