@@ -75,22 +75,44 @@ export default function BookingScreen() {
   const [loadingProvs, setLoadingProvs] = useState(true);
   const [bookingType, setBookingType] = useState<"instant" | "scheduled">("scheduled");
 
-  // Load real nearby providers from DB
+  // Load real nearby providers from DB — instant mode filters by fresh heartbeat
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoadingProvs(true);
       try {
         const me: ResolvedAddress | null = await getCurrentResolved();
-        const { data } = await supabase
+        let query = supabase
           .from("providers")
-          .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, profiles(full_name, avatar_url)")
+          .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, location_updated_at, profiles(full_name, avatar_url)")
           .eq("available", true)
           .not("current_lat", "is", null)
           .not("current_lng", "is", null)
           .limit(15);
+
+        // Instant booking: only show providers with a fresh heartbeat (≤5 min old)
+        if (bookingType === "instant") {
+          const cutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          query = (query as any).gte("location_updated_at", cutoff);
+        }
+
+        const { data, error } = await (query as any);
         if (cancelled) return;
-        const mapped: Provider[] = (data ?? []).map((p: any) => {
+
+        // If location_updated_at column not yet migrated, fall back to basic query
+        let rows = data;
+        if (error && bookingType === "instant") {
+          const { data: fallback } = await supabase
+            .from("providers")
+            .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, profiles(full_name, avatar_url)")
+            .eq("available", true)
+            .not("current_lat", "is", null)
+            .not("current_lng", "is", null)
+            .limit(15);
+          rows = fallback;
+        }
+
+        const mapped: Provider[] = (rows ?? []).map((p: any) => {
           const lat = p.current_lat;
           const lng = p.current_lng;
           const d = me && lat && lng ? distanceKm({ lat: me.lat, lng: me.lng }, { lat, lng }) : null;
@@ -116,7 +138,7 @@ export default function BookingScreen() {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [bookingType]);
 
   const selectedProvider = providers.find((p) => p.id === booking.cleanerId) ?? providers[0] ?? null;
   const selectedDate = dates[booking.dateIndex] ?? dates[0];
@@ -298,8 +320,26 @@ export default function BookingScreen() {
         ) : providers.length === 0 ? (
           <View style={[styles.emptyProv, { backgroundColor: colors.card }]}>
             <MaterialCommunityIcons name="account-search" size={40} color={colors.mutedForeground} />
-            <Text style={[styles.emptyProvT, { color: colors.foreground }]}>لا يوجد فنيون متاحون الآن</Text>
-            <Text style={[styles.emptyProvS, { color: colors.mutedForeground }]}>سيتم تخصيص أقرب فني فور قبول الطلب</Text>
+            <Text style={[styles.emptyProvT, { color: colors.foreground }]}>
+              {bookingType === "instant" ? "لا يوجد فنيون متاحون الآن" : "لا يوجد فنيون متاحون"}
+            </Text>
+            {bookingType === "instant" ? (
+              <>
+                <Text style={[styles.emptyProvS, { color: colors.mutedForeground }]}>
+                  جميع الفنيون مشغولون حالياً. يمكنك جدولة موعد لاحقاً
+                </Text>
+                <TouchableOpacity
+                  onPress={() => { tap(); setBookingType("scheduled"); }}
+                  style={[styles.switchToScheduled, { backgroundColor: colors.primary }]}
+                  activeOpacity={0.85}
+                >
+                  <Feather name="calendar" size={14} color="#FFF" />
+                  <Text style={styles.switchToScheduledT}>جدولة موعد</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <Text style={[styles.emptyProvS, { color: colors.mutedForeground }]}>سيتم تخصيص أقرب فني فور قبول الطلب</Text>
+            )}
           </View>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
@@ -563,6 +603,8 @@ const styles = StyleSheet.create({
   emptyProv: { marginHorizontal: 16, padding: 24, borderRadius: 18, alignItems: "center", marginBottom: 18, gap: 6 },
   emptyProvT: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 6 },
   emptyProvS: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "center" },
+  switchToScheduled: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 100, marginTop: 4 },
+  switchToScheduledT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
   summaryCard: {
     marginHorizontal: 24,
     borderRadius: 24,

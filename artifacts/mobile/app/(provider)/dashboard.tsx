@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, RefreshControl, Alert, ActivityIndicator, I18nManager, AppState } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Platform, RefreshControl, Alert, ActivityIndicator, I18nManager, AppState, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -51,6 +51,7 @@ export default function ProviderHome() {
   const [stats, setStats] = useState({ today: 0, earnings: 0, rating: 0 });
   const [myLoc, setMyLoc] = useState<ResolvedAddress | null>(null);
   const [mapAnimTrigger, setMapAnimTrigger] = useState(0);
+  const [newOrderAlert, setNewOrderAlert] = useState<NearbyOrder | null>(null);
 
   // Ref to read online state inside AppState callback without stale closure
   const onlineRef = useRef(false);
@@ -187,26 +188,94 @@ export default function ProviderHome() {
     [refreshOrders],
   );
 
-  // Layer 1: AppState listener — immediately marks provider offline when app is backgrounded/killed
-  // This catches: home-button press, task-switcher close, phone call taking focus, screen lock.
+  // ── In-app new booking notification modal ─────────────────────────────
+  // Listens for new pending bookings via Supabase Realtime and shows a modal
+  // alert so the provider can view/accept instantly without tapping a push notification.
+  useEffect(() => {
+    if (!session?.user || !online) return;
+    const topic = `provider-new-booking-modal-${session.user.id}-${Math.random().toString(36).slice(2, 8)}`;
+    const ch = supabase.channel(topic)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "bookings",
+        filter: "status=eq.pending",
+      }, async (payload: any) => {
+        const bk = payload.new;
+        if (!bk || !onlineRef.current) return;
+        try {
+          const { data } = await supabase
+            .from("bookings")
+            .select("id, total, scheduled_at, notes, services(title_ar), profiles!bookings_user_id_fkey(full_name, phone), addresses(lat, lng, street, district, city)")
+            .eq("id", bk.id)
+            .maybeSingle();
+          if (data) {
+            const addr = (data as any).addresses;
+            const loc = myLoc ? { lat: myLoc.lat, lng: myLoc.lng } : null;
+            const lat = addr?.lat ?? null;
+            const lng = addr?.lng ?? null;
+            const d = loc && lat && lng ? distanceKm(loc, { lat, lng }) : null;
+            const mapped: NearbyOrder = {
+              id: (data as any).id,
+              user_id: bk.user_id ?? null,
+              status: "pending",
+              service_title: (data as any).services?.title_ar || "خدمة",
+              client_name: (data as any).profiles?.full_name || "عميل",
+              client_phone: (data as any).profiles?.phone || null,
+              scheduled_at: (data as any).scheduled_at,
+              total: Number((data as any).total || 0),
+              notes: (data as any).notes,
+              addr_lat: lat,
+              addr_lng: lng,
+              addr_text: [addr?.street, addr?.district, addr?.city].filter(Boolean).join("، ") || "—",
+              d_km: d,
+              eta_min: d != null ? Math.max(5, Math.round((d / 30) * 60)) : null,
+            };
+            setNewOrderAlert(mapped);
+          }
+        } catch {}
+        refreshOrders();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [session, online, myLoc, refreshOrders]);
+
+  // Layer 1: AppState listener — marks provider offline after 2-minute grace period when backgrounded.
+  // The grace period prevents accidental offline when briefly switching to notifications or other apps.
   // Force-kill / battery death are handled by Layer 3 (server TTL sweep in providerSweep.ts).
   useEffect(() => {
     if (!session?.user) return;
     const uid = session.user.id;
+    let bgTimer: ReturnType<typeof setTimeout> | null = null;
+
     const sub = AppState.addEventListener("change", async (nextState) => {
       if ((nextState === "background" || nextState === "inactive") && onlineRef.current) {
-        try {
-          await supabase.from("providers").update({
-            available: false,
-            current_lat: null,
-            current_lng: null,
-          }).eq("id", uid);
-          setOnline(false);
-          onlineRef.current = false;
-        } catch {}
+        // Grace period: only mark offline after 2 minutes of being in background
+        bgTimer = setTimeout(async () => {
+          if (onlineRef.current) {
+            try {
+              await supabase.from("providers").update({
+                available: false,
+                current_lat: null,
+                current_lng: null,
+              }).eq("id", uid);
+              setOnline(false);
+              onlineRef.current = false;
+            } catch {}
+          }
+        }, 2 * 60 * 1000);
+      } else if (nextState === "active") {
+        // App returned to foreground — cancel the offline timer
+        if (bgTimer) {
+          clearTimeout(bgTimer);
+          bgTimer = null;
+        }
       }
     });
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+      if (bgTimer) clearTimeout(bgTimer);
+    };
   }, [session]);
 
   // T020 — Live location broadcast (heartbeat) every 5s while provider is online.
@@ -346,6 +415,65 @@ export default function ProviderHome() {
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
+      {/* ── New booking in-app alert modal ─────────────────────────────────── */}
+      <Modal visible={!!newOrderAlert} animationType="slide" transparent statusBarTranslucent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            {/* Bell icon */}
+            <View style={[styles.modalBellWrap, { backgroundColor: colors.primaryLight }]}>
+              <MaterialCommunityIcons name="bell-ring" size={32} color={colors.primary} />
+            </View>
+            <Text style={[styles.modalTitle, { color: colors.foreground }]}>طلب جديد وصلك!</Text>
+            {newOrderAlert && (
+              <>
+                <View style={[styles.modalInfoBox, { backgroundColor: colors.background }]}>
+                  <View style={styles.modalRow}>
+                    <Feather name="tool" size={13} color={colors.mutedForeground} />
+                    <Text style={[styles.modalInfoV, { color: colors.foreground }]}>{newOrderAlert.service_title}</Text>
+                  </View>
+                  <View style={styles.modalRow}>
+                    <Feather name="user" size={13} color={colors.mutedForeground} />
+                    <Text style={[styles.modalInfoV, { color: colors.foreground }]}>{newOrderAlert.client_name}</Text>
+                  </View>
+                  {newOrderAlert.addr_text !== "—" && (
+                    <View style={styles.modalRow}>
+                      <Feather name="map-pin" size={13} color={colors.mutedForeground} />
+                      <Text style={[styles.modalInfoV, { color: colors.foreground }]} numberOfLines={1}>{newOrderAlert.addr_text}</Text>
+                    </View>
+                  )}
+                  {newOrderAlert.eta_min != null && (
+                    <View style={styles.modalRow}>
+                      <MaterialCommunityIcons name="car-clock" size={13} color={colors.warning} />
+                      <Text style={[styles.modalInfoV, { color: colors.warning }]}>~ {newOrderAlert.eta_min} دقيقة</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.modalPrice, { color: colors.primary }]}>{newOrderAlert.total} ر.س</Text>
+              </>
+            )}
+            <View style={styles.modalBtns}>
+              <TouchableOpacity
+                onPress={() => setNewOrderAlert(null)}
+                style={[styles.modalDismissBtn, { borderColor: colors.border }]}
+              >
+                <Text style={[styles.modalDismissT, { color: colors.mutedForeground }]}>تجاهل</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  const id = newOrderAlert?.id;
+                  setNewOrderAlert(null);
+                  if (id) router.push(`/(provider)/booking-details?id=${id}` as any);
+                }}
+                style={[styles.modalViewBtn, { backgroundColor: colors.primary }]}
+              >
+                <Feather name="eye" size={14} color="#FFF" />
+                <Text style={styles.modalViewT}>عرض الطلب</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <Image source={profile?.avatar_url ? { uri: profile.avatar_url } : require("@/assets/images/default-avatar.png")} style={styles.avatar} />
         <View style={{ flex: 1, alignItems: "center" }}>
@@ -578,6 +706,19 @@ const styles = StyleSheet.create({
   acceptBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100 },
   acceptT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   rejectBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1 },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },
+  modalCard: { borderTopStartRadius: 28, borderTopEndRadius: 28, padding: 24, alignItems: "center", gap: 14, paddingBottom: 36 },
+  modalBellWrap: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 4 },
+  modalTitle: { fontFamily: "Tajawal_700Bold", fontSize: 20, textAlign: "center" },
+  modalInfoBox: { width: "100%", padding: 14, borderRadius: 14, gap: 10 },
+  modalRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  modalInfoV: { fontFamily: "Tajawal_500Medium", fontSize: 13, flex: 1 },
+  modalPrice: { fontFamily: "Tajawal_700Bold", fontSize: 28 },
+  modalBtns: { flexDirection: "row", gap: 10, width: "100%", marginTop: 4 },
+  modalDismissBtn: { flex: 1, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center", borderWidth: 1 },
+  modalDismissT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
+  modalViewBtn: { flex: 2, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 },
+  modalViewT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 13 },
   rejectT: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   emptyCard: { padding: 32, borderRadius: 16, alignItems: "center", gap: 8 },
   emptyT: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginTop: 8 },

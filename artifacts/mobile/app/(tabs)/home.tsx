@@ -291,9 +291,10 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: "#F8FAFC" }]}>
-      {/* INTERACTIVE MAP — absolutely positioned behind the scroll sheet so that
-          the sheet can scroll all the way up to the greeting header */}
-      <View style={[styles.mapBg, { position: "absolute", top: 0, start: 0, end: 0, height: mapHeight, backgroundColor: "#0F172A" }]}>
+      {/* INTERACTIVE MAP — fixed-height block so native MapView receives touch events
+          (previously this was absolutely positioned which caused the ScrollView to
+          intercept all pan/zoom gestures before they reached the native map) */}
+      <View style={{ height: mapHeight, backgroundColor: "#0F172A", overflow: "hidden" }}>
         <AppMap
           style={StyleSheet.absoluteFill}
           region={region}
@@ -456,15 +457,12 @@ export default function HomeScreen() {
           the map show through and passes pointer events on web. */}
       <ScrollView
         ref={providerScrollRef}
-        style={{ flex: 1 }}
+        style={{ flex: 1, marginTop: -28 }}
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Transparent spacer — map shows behind here; pointer-events:none lets
-            web touch events fall through to the map below */}
-        <View style={{ height: mapHeight - 28 }} pointerEvents="none" />
-
-        {/* SHEET */}
+        {/* SHEET — negative marginTop on ScrollView creates a 28px visual overlap
+            with the map bottom so the rounded-corner sheet peeks over the map edge */}
         <View style={styles.sheet}>
           <View style={styles.sheetGrabber} />
 

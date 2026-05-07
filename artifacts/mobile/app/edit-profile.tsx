@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Platform, Alert, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Platform, Alert, ActivityIndicator, I18nManager } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -47,15 +47,32 @@ export default function EditProfile() {
       // Upload photo if changed
       if (photoChanged && photo && !photo.startsWith("http")) {
         const ext = photo.split(".").pop() || "jpg";
+        const mimeType = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : `image/${ext}`;
         const fileName = `${session.user.id}/avatar-${Date.now()}.${ext}`;
-        const response = await fetch(photo);
-        const blob = await response.blob();
-        const { error: uploadErr } = await supabase.storage
-          .from("avatars")
-          .upload(fileName, blob, { contentType: `image/${ext}`, upsert: true });
+
+        let uploadErr: any = null;
+        if (Platform.OS !== "web") {
+          // Native: FormData approach avoids blob fetch issues on iOS/Android
+          const fd = new FormData();
+          fd.append("file", { uri: photo, type: mimeType, name: `avatar.${ext}` } as any);
+          const { error } = await supabase.storage
+            .from("avatars")
+            .upload(fileName, fd as any, { upsert: true, contentType: mimeType });
+          uploadErr = error;
+        } else {
+          const response = await fetch(photo);
+          const blob = await response.blob();
+          const { error } = await supabase.storage
+            .from("avatars")
+            .upload(fileName, blob, { contentType: mimeType, upsert: true });
+          uploadErr = error;
+        }
+
         if (!uploadErr) {
           const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(fileName);
           avatarUrl = urlData.publicUrl;
+        } else {
+          console.warn("[edit-profile] avatar upload:", uploadErr?.message);
         }
       }
 

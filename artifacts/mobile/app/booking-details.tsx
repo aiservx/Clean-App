@@ -202,6 +202,44 @@ export default function BookingDetails() {
             <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 16, color: colors.primary }}>{booking.total.toFixed(0)} ر.س</Text>
           </View>
         </View>
+
+        {/* Refund request — only for completed non-cash bookings */}
+        {booking.status === "completed" && booking.payment_method !== "cash" && (
+          <TouchableOpacity
+            style={[styles.refundBtn, { backgroundColor: "#FEF3C7", borderColor: "#F59E0B", borderWidth: 1 }]}
+            activeOpacity={0.85}
+            onPress={() => {
+              Alert.alert(
+                "طلب استرداد المبلغ",
+                "هل تريد تقديم طلب استرداد قيمة هذا الطلب؟ سيتم مراجعته خلال 3-5 أيام عمل.",
+                [
+                  { text: "إلغاء", style: "cancel" },
+                  {
+                    text: "تقديم الطلب",
+                    onPress: async () => {
+                      try {
+                        const { error } = await supabase.from("refund_requests").insert({
+                          booking_id: booking.id,
+                          user_id: session?.user?.id,
+                          amount: booking.total,
+                          reason: "طلب استرداد من العميل",
+                          status: "pending",
+                        });
+                        if (error) throw error;
+                        Alert.alert("✓ تم التقديم", "تم استلام طلب الاسترداد وسيتم مراجعته خلال 3-5 أيام عمل.");
+                      } catch {
+                        Alert.alert("خطأ", "فشل تقديم طلب الاسترداد، يرجى المحاولة مرة أخرى.");
+                      }
+                    },
+                  },
+                ]
+              );
+            }}
+          >
+            <Feather name="rotate-ccw" size={14} color="#B45309" />
+            <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#92400E" }}>طلب استرداد المبلغ</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
 
       <View style={[styles.bottom, { backgroundColor: colors.card }]}>
@@ -245,6 +283,7 @@ const styles = StyleSheet.create({
   dL: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
   dV: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
   bottom: { position: "absolute", bottom: 0, start: 0, end: 0, padding: 14, paddingBottom: 24, flexDirection: "row", gap: 10 },
+  refundBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 14, marginBottom: 10 },
   cancelBtn: { paddingHorizontal: 16, height: 48, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   cancelT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
   trackBtn: { flex: 1, height: 48, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
