@@ -144,6 +144,11 @@ export default function BookingScreen() {
   const selectedDate = dates[booking.dateIndex] ?? dates[0];
   const selectedTime = TIMES[booking.timeIndex] ?? TIMES[1];
 
+  // ── Booking gate: cannot proceed without a provider ──────────────────────
+  // Instant: needs a fresh provider (non-empty list after heartbeat filter)
+  // Scheduled: needs at least one available provider selected
+  const canConfirm = !loadingProvs && selectedProvider !== null;
+
   // Pricing derived from selected service
   const totals = useMemo(() => {
     const base = service.price;
@@ -458,9 +463,22 @@ export default function BookingScreen() {
 
       {/* Sticky Bottom Bar */}
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16, backgroundColor: colors.card }]}>
+        {/* Blocking hint — shown when user cannot proceed */}
+        {!canConfirm && !loadingProvs && (
+          <View style={[styles.blockHint, { backgroundColor: colors.muted }]}>
+            <Feather name="alert-circle" size={13} color={colors.mutedForeground} />
+            <Text style={[styles.blockHintT, { color: colors.mutedForeground }]}>
+              {bookingType === "instant"
+                ? "لا يوجد فنيون متاحون الآن — جدِّل موعداً أو حاول لاحقاً"
+                : "يرجى اختيار فني لإتمام الحجز"}
+            </Text>
+          </View>
+        )}
         <TouchableOpacity
-          activeOpacity={0.9}
+          activeOpacity={canConfirm ? 0.9 : 1}
+          disabled={!canConfirm}
           onPress={() => {
+            if (!canConfirm) return;
             if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             // Persist scheduled date so payment screen creates the booking with the correct time
             if (bookingType === "scheduled" && selectedDate) {
@@ -472,6 +490,7 @@ export default function BookingScreen() {
             }
             router.push("/payment");
           }}
+          style={{ opacity: canConfirm ? 1 : 0.4 }}
         >
           <LinearGradient
             colors={[colors.primary, colors.primaryDark]}
@@ -479,7 +498,7 @@ export default function BookingScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.confirmBtn}
           >
-            <Feather name="lock" size={18} color="#FFFFFF" />
+            <Feather name={canConfirm ? "lock" : "slash"} size={18} color="#FFFFFF" />
             <View style={styles.confirmTextContainer}>
               <Text style={styles.confirmTitle}>تأكيد الحجز</Text>
               <Text style={styles.confirmSubtitle}>{totals.total} ر.س | الإجمالي</Text>
@@ -605,6 +624,8 @@ const styles = StyleSheet.create({
   emptyProvS: { fontFamily: "Tajawal_500Medium", fontSize: 11, textAlign: "center" },
   switchToScheduled: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 100, marginTop: 4 },
   switchToScheduledT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 12 },
+  blockHint: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, marginBottom: 10 },
+  blockHintT: { fontFamily: "Tajawal_500Medium", fontSize: 12, flex: 1 },
   summaryCard: {
     marginHorizontal: 24,
     borderRadius: 24,
