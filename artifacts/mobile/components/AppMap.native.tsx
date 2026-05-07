@@ -2,7 +2,6 @@ import React, { useRef, useEffect, Component } from "react";
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT, AnimatedRegion } from "react-native-maps";
 import { StyleSheet, View, Image, Animated } from "react-native";
 
-// ── Map ErrorBoundary: catches any render error from MapView ───────────────
 class MapErrorBoundary extends Component<
   { children: React.ReactNode; style?: any },
   { crashed: boolean }
@@ -29,7 +28,6 @@ export type MapMarker = {
   color?: string;
   title?: string;
   avatarUrl?: string | null;
-  /** If true, animates smoothly when coordinate changes (for live tracking) */
   animated?: boolean;
 };
 
@@ -42,11 +40,9 @@ type Props = {
   zoomEnabled?: boolean;
   pointerEvents?: any;
   onMarkerPress?: (id: string) => void;
-  /** Increment this number to force the map to animate to `region` even if lat/lng didn't change */
   animateTrigger?: number;
 };
 
-// ── Animated marker that smoothly moves to new coordinates ─────────────────
 function AnimatedMarker({
   marker,
   onPress,
@@ -66,7 +62,6 @@ function AnimatedMarker({
   const markerRef = useRef<any>(null);
 
   useEffect(() => {
-    // Animate to the new coordinate using the native driver for smoothness
     if (markerRef.current?.animateMarkerToCoordinate) {
       markerRef.current.animateMarkerToCoordinate(marker.coordinate, 600);
     } else {
@@ -98,7 +93,6 @@ function AnimatedMarker({
       ) : (
         <View style={styles.providerDot}>
           <View style={[styles.providerDotInner, { backgroundColor: marker.color ?? "#10B981" }]} />
-          {/* Pulse ring */}
           <View style={[styles.pulseRing, { borderColor: (marker.color ?? "#10B981") + "50" }]} />
         </View>
       )}
@@ -106,7 +100,6 @@ function AnimatedMarker({
   );
 }
 
-// ── Static marker ──────────────────────────────────────────────────────────
 function StaticMarker({
   marker,
   onPress,
@@ -130,7 +123,6 @@ function StaticMarker({
   );
 }
 
-// ── Main AppMap ────────────────────────────────────────────────────────────
 export default function AppMap({
   region,
   style,
@@ -155,7 +147,16 @@ export default function AppMap({
 
   return (
     <MapErrorBoundary style={[styles.wrap, style]}>
-      <View style={[styles.wrap, style]} pointerEvents={pointerEvents}>
+      {/*
+        collapsable={false} prevents Android from optimizing away this View,
+        which can silently block touch events on some devices.
+        pointerEvents is forwarded from parent; undefined = "auto" (full interaction).
+      */}
+      <View
+        style={[styles.wrap, style]}
+        pointerEvents={pointerEvents}
+        collapsable={false}
+      >
         <MapView
           ref={mapRef}
           provider={PROVIDER_DEFAULT}
@@ -163,10 +164,18 @@ export default function AppMap({
           initialRegion={region}
           scrollEnabled={scrollEnabled}
           zoomEnabled={zoomEnabled}
+          zoomTapEnabled={zoomEnabled}
+          rotateEnabled={false}
+          pitchEnabled={false}
+          moveOnMarkerPress={false}
           showsUserLocation={false}
           showsMyLocationButton={false}
+          showsCompass={false}
+          showsScale={false}
+          toolbarEnabled={false}
+          loadingEnabled={true}
+          loadingIndicatorColor="#7C3AED"
         >
-          {/* Route polyline */}
           {polyline && polyline.coordinates.length > 1 && (
             <Polyline
               coordinates={polyline.coordinates}
@@ -178,7 +187,6 @@ export default function AppMap({
             />
           )}
 
-          {/* Markers */}
           {markers?.map((m) =>
             m.animated ? (
               <AnimatedMarker key={m.id} marker={m} onPress={onMarkerPress} />

@@ -37,6 +37,7 @@ const TYPE_META: Record<string, { icon: string; color: string }> = {
   booking_started:    { icon: "broom",              color: "#F59E0B" },
   booking_completed:  { icon: "check-all",          color: "#22C55E" },
   booking_cancelled:  { icon: "close-circle",       color: "#EF4444" },
+  booking_rejected:   { icon: "close-circle",       color: "#EF4444" },
   booking_update:     { icon: "refresh",            color: "#3B82F6" },
   message:            { icon: "message-text",       color: "#2F80ED" },
   chat_message:       { icon: "message-text",       color: "#2F80ED" },
@@ -91,7 +92,8 @@ export function navigateForType(type: string, data: Record<string, any>) {
       type === "booking_started"   ||
       type === "booking_completed" ||
       type === "booking_update"    ||
-      type === "booking_cancelled"
+      type === "booking_cancelled" ||
+      type === "booking_rejected"
     ) {
       // Client taps booking status update → go to tracking
       if (bookingId) router.push({ pathname: "/tracking", params: { id: bookingId } } as any);

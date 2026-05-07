@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Switch, ActivityIndicator, Alert, I18nManager,
+  Switch, ActivityIndicator, Alert, TextInput, I18nManager,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -58,6 +58,8 @@ export default function ProviderServiceArea() {
 
   const [radius, setRadius]           = useState(20);
   const [hours,  setHours]            = useState<WorkingHours>(DEFAULT_HOURS);
+  const [city,   setCity]             = useState("");
+  const [district, setDistrict]       = useState("");
   const [loading, setLoading]         = useState(true);
   const [saving,  setSaving]          = useState(false);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
@@ -66,12 +68,14 @@ export default function ProviderServiceArea() {
     if (!session?.user) { setLoading(false); return; }
     const { data } = await supabase
       .from("providers")
-      .select("service_radius_km, working_hours")
+      .select("service_radius_km, working_hours, service_city, service_district")
       .eq("id", session.user.id)
       .maybeSingle();
     if (data) {
       if (data.service_radius_km) setRadius(data.service_radius_km);
       if (data.working_hours)     setHours(data.working_hours as WorkingHours);
+      if ((data as any).service_city)     setCity((data as any).service_city);
+      if ((data as any).service_district) setDistrict((data as any).service_district);
     }
     setLoading(false);
   }, [session]);
@@ -89,7 +93,12 @@ export default function ProviderServiceArea() {
     setSaving(true);
     const { error } = await supabase
       .from("providers")
-      .update({ service_radius_km: radius, working_hours: hours })
+      .update({
+        service_radius_km: radius,
+        working_hours: hours,
+        service_city: city.trim() || null,
+        service_district: district.trim() || null,
+      })
       .eq("id", session.user.id);
     setSaving(false);
     if (error) {
@@ -114,6 +123,40 @@ export default function ProviderServiceArea() {
       <ScreenHeader title="منطقة الخدمة" subtitle="نطاق التنقل ومواعيد العمل" />
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+
+        {/* ── Primary service location ──────────────────────────────── */}
+        <View style={[styles.section, { backgroundColor: colors.card }]}>
+          <View style={styles.sectionHead}>
+            <MaterialCommunityIcons name="map-marker" size={22} color={colors.primary} />
+            <View style={{ flex: 1, marginStart: 10 }}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>منطقة الخدمة الأساسية</Text>
+              <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>المدينة والحي الذي تعمل فيه بالدرجة الأولى</Text>
+            </View>
+          </View>
+
+          <View style={styles.fieldRow}>
+            <View style={[styles.fieldWrap, { backgroundColor: colors.background, flex: 1 }]}>
+              <Feather name="home" size={14} color={colors.mutedForeground} />
+              <TextInput
+                style={[styles.fieldInput, { color: colors.foreground }]}
+                value={city}
+                onChangeText={setCity}
+                placeholder="المدينة (مثال: الرياض)"
+                placeholderTextColor={colors.mutedForeground}
+              />
+            </View>
+            <View style={[styles.fieldWrap, { backgroundColor: colors.background, flex: 1 }]}>
+              <Feather name="map-pin" size={14} color={colors.mutedForeground} />
+              <TextInput
+                style={[styles.fieldInput, { color: colors.foreground }]}
+                value={district}
+                onChangeText={setDistrict}
+                placeholder="الحي (مثال: العليا)"
+                placeholderTextColor={colors.mutedForeground}
+              />
+            </View>
+          </View>
+        </View>
 
         {/* ── Radius picker ─────────────────────────────────────────── */}
         <View style={[styles.section, { backgroundColor: colors.card }]}>
@@ -147,7 +190,6 @@ export default function ProviderServiceArea() {
             })}
           </View>
 
-          {/* Info box */}
           <View style={[styles.infoBox, { backgroundColor: colors.background }]}>
             <Feather name="info" size={13} color={colors.mutedForeground} />
             <Text style={[styles.infoT, { color: colors.mutedForeground }]}>
@@ -225,7 +267,6 @@ export default function ProviderServiceArea() {
         })}
       </ScrollView>
 
-      {/* ── Save button ───────────────────────────────────────────── */}
       <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 12 }]}>
         <TouchableOpacity
           style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 }]}
@@ -256,6 +297,10 @@ const styles = StyleSheet.create({
   sectionSub:   { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
   radiusBadge:  { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100 },
   radiusBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
+
+  fieldRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
+  fieldWrap: { flexDirection: "row", alignItems: "center", gap: 8, height: 44, borderRadius: 12, paddingHorizontal: 12, borderWidth: 1, borderColor: "#E5E7EB" },
+  fieldInput: { flex: 1, fontFamily: "Tajawal_500Medium", fontSize: 13 },
 
   chipGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
   chip:     { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 100, borderWidth: 1.5 },

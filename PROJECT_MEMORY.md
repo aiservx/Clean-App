@@ -1,7 +1,7 @@
 # PROJECT_MEMORY.md
 # نظافة — Cleaning Services App
 
-> Last updated: 2026-05-06
+> Last updated: 2026-05-07
 
 ---
 
@@ -241,7 +241,33 @@ Lightweight real-time tracking data: status, provider GPS, latest log.
 
 ---
 
-## 13. Development Gotchas
+## 13. Bug Fixes Log (2026-05-07 — Full Audit)
+
+### Previously Fixed (earlier sessions)
+- `AppMap.native.tsx` — props mismatch corrected
+- `admin/Refunds.tsx` — wallet deduction on refund approval now inserts payouts row correctly
+- `edit-profile.tsx` — city field wired to form state
+- `provider/profile.tsx` — `lastToggleRef` guard prevents availability toggle race condition
+- `provider-service-area.tsx` — city + district fields linked
+- `lib/notifications.ts` — `isProvider` flag, channel mapping, `booking_rejected` type added
+- `components/InAppBanner.tsx` — `booking_rejected` type handled correctly
+
+### Fixed in This Session (2026-05-07)
+| File | Bug | Fix |
+|---|---|---|
+| `app/settings.tsx` | Signout button called `router.replace("/onboarding")` without calling `signOut()` — Supabase session stayed alive | Added `useAuth` import; signout now calls `await signOut()` then navigates; wrapped in `Alert.alert` confirmation dialog |
+| `app/notifications.tsx` `notifMeta()` | Missing cases for `booking_rejected`, `withdrawal`, `withdrawal_approved` — fell through to generic `bell` icon | Added cases: `booking_rejected` → `x-circle` red, `withdrawal` → `dollar-sign` green, `withdrawal_approved` → `credit-card` green |
+| `app/notifications.tsx` `targetForNotif()` | `booking_rejected` was not listed → routing fell through to tracking screen instead of bookings list | Added `booking_rejected` to the `completed/cancelled` → `/(tabs)/bookings` branch |
+| `app/referrals.tsx` | Copy button had no `onPress` — tapping it did nothing; `expo-clipboard` not imported | Added `Clipboard.setStringAsync(code)` + 2-second visual feedback (checkmark + green tint); installed `expo-clipboard` package |
+| `app/booking-details.tsx` | VAT breakdown used `tax = total × 0.15` (wrong) — over-stated tax, under-stated base | Fixed to `base = total / 1.15`, `tax = total − base` (mathematically correct reverse-VAT) |
+| `app/(tabs)/bookings.tsx` | `cancelled` filter (`r.status === "cancelled"`) excluded `rejected` bookings — they appeared in no tab except "الكل", invisible to users | Fixed: filter now includes `r.status === "cancelled" \|\| r.status === "rejected"` |
+| `app/(tabs)/bookings.tsx` | `STATUS_AR` map missing `rejected` key — rejected bookings showed blank status label in the list | Added `rejected: "مرفوض"` to `STATUS_AR` |
+| `app/(tabs)/bookings.tsx` | `STATUS_COLOR` map missing `rejected` key — rejected bookings showed no status badge colour | Added `rejected: "#EF4444"` to `STATUS_COLOR` |
+| `app/rating.tsx` | `submitBtn` and `doneBtn` styles had hardcoded `backgroundColor: "#3B82F6"` — ignored theme/dark-mode `colors.primary` | Applied `{ backgroundColor: colors.primary }` as inline style override on all three `TouchableOpacity` instances |
+
+---
+
+## 14. Development Gotchas
 
 - **APK builds**: `EXPO_PUBLIC_API_URL` baked at build time — always set to deployed URL
 - **DB migrations**: `db/migration_v2.sql`, `db/migration_messages.sql`, and `trg_booking_status_notify` trigger must be run manually in Supabase SQL editor

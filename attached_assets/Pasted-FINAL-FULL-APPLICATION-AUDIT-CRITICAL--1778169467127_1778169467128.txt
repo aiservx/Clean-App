@@ -1,0 +1,599 @@
+FINAL FULL APPLICATION AUDIT (CRITICAL)
+أنت الآن في مرحلة أخيرة وحاسمة جدًا.
+يجب تنفيذ مراجعة شاملة جدًا جدًا جدًا للتطبيق بالكامل من أول شاشة إلى آخر شاشة.
+أولًا:
+اقرأ:
+PROJECT_MEMORY.md
+واستخدمه بالكامل لتقليل استهلاك التوكنز.
+ممنوع إعادة تحليل المشروع من الصفر.
+ممنوع كسر النظام الحالي.
+ممنوع mock data.
+ممنوع أي حلول تجميلية سطحية.
+ممنوع ترك أي bug بدون علاج.
+أنت الآن تعمل كـ:
+
+
+Principal Product Engineer
+
+
+Principal Mobile Engineer
+
+
+Principal Backend Engineer
+
+
+Principal QA Engineer
+
+
+Principal UX Auditor
+
+
+Principal DevOps Engineer
+
+
+
+المطلوب:
+قم بعمل Full Deep Audit لكل شيء داخل التطبيق:
+
+1) Authentication Flow
+راجع:
+
+
+login
+
+
+signup
+
+
+OTP
+
+
+forgot password
+
+
+social login
+
+
+session handling
+
+
+logout
+
+
+account deletion
+
+
+افحص:
+
+
+validation
+
+
+edge cases
+
+
+broken states
+
+
+security
+
+
+
+2) Onboarding
+راجع:
+
+
+onboarding screens
+
+
+navigation
+
+
+skip logic
+
+
+localization
+
+
+UI consistency
+
+
+
+3) Home Screen
+راجع بالكامل:
+
+
+map
+
+
+banners
+
+
+offers
+
+
+categories
+
+
+referral card
+
+
+search
+
+
+location handling
+
+
+animations
+
+
+responsiveness
+
+
+
+4) Booking Flow
+راجع بالكامل:
+
+
+instant booking
+
+
+scheduled booking
+
+
+provider matching
+
+
+availability
+
+
+payment flow
+
+
+booking confirmation
+
+
+cancellation
+
+
+refunds
+
+
+
+5) Provider Flow
+راجع بالكامل:
+
+
+provider onboarding
+
+
+provider verification
+
+
+availability toggle
+
+
+service zones
+
+
+wallet
+
+
+withdrawal
+
+
+booking requests
+
+
+accept/reject flow
+
+
+timeout logic
+
+
+
+6) Tracking System
+راجع:
+
+
+real-time tracking
+
+
+provider location
+
+
+ETA
+
+
+map updates
+
+
+booking states
+
+
+
+7) AI Assistant
+راجع بالكامل:
+
+
+chat UI
+
+
+keyboard
+
+
+voice input
+
+
+voice output
+
+
+tracking cards
+
+
+invoice cards
+
+
+refund cards
+
+
+support cards
+
+
+offers cards
+
+
+RTL support
+
+
+
+8) Notifications System
+راجع بالكامل:
+
+
+in-app notifications
+
+
+push notifications
+
+
+background notifications
+
+
+foreground notifications
+
+
+Android notifications
+
+
+notification permissions
+
+
+notification actions
+
+
+deep linking
+
+
+
+9) Messaging / Chat
+راجع:
+
+
+customer chat
+
+
+provider chat
+
+
+support chat
+
+
+attachments
+
+
+message delivery
+
+
+real-time updates
+
+
+
+10) Payments
+راجع بالكامل:
+
+
+checkout
+
+
+invoices
+
+
+wallet
+
+
+payouts
+
+
+withdrawals
+
+
+refunds
+
+
+failed payments
+
+
+
+11) Support System
+راجع:
+
+
+tickets
+
+
+complaints
+
+
+help center
+
+
+contact us
+
+
+FAQ
+
+
+
+12) Offers System
+راجع:
+
+
+coupons
+
+
+promo codes
+
+
+copy coupon
+
+
+expiration
+
+
+offers page
+
+
+
+13) Profile System
+راجع:
+
+
+edit profile
+
+
+avatar upload
+
+
+settings
+
+
+addresses
+
+
+preferences
+
+
+
+14) Provider Profile
+راجع:
+
+
+service settings
+
+
+availability
+
+
+schedule
+
+
+wallet
+
+
+documents
+
+
+profile updates
+
+
+
+15) Settings Screen
+راجع بالكامل:
+
+
+language
+
+
+notifications
+
+
+privacy
+
+
+logout
+
+
+delete account
+
+
+theme
+
+
+
+16) Admin / Backend Logic
+راجع:
+
+
+APIs
+
+
+database integrity
+
+
+permissions
+
+
+race conditions
+
+
+cron jobs
+
+
+retries
+
+
+queue handling
+
+
+
+17) UI/UX Audit
+راجع كل شاشة:
+
+
+spacing
+
+
+alignment
+
+
+overflow
+
+
+responsiveness
+
+
+RTL/LTR
+
+
+typography
+
+
+button consistency
+
+
+empty states
+
+
+loading states
+
+
+animations
+
+
+
+18) Performance Audit
+راجع:
+
+
+memory leaks
+
+
+re-renders
+
+
+slow APIs
+
+
+slow screens
+
+
+caching
+
+
+image optimization
+
+
+
+19) Security Audit
+راجع:
+
+
+auth security
+
+
+api permissions
+
+
+file uploads
+
+
+token leaks
+
+
+storage security
+
+
+
+20) Full End-to-End Testing
+اختبر السيناريو الكامل:
+مستخدم جديد → تسجيل → حجز → دفع → تنفيذ → تتبع → استرداد → تقييم → انتهاء
+ومزود جديد → قبول → تنفيذ → سحب أرباح
+واختبر جميع edge cases.
+
+المطلوب النهائي
+لا تتوقف حتى:
+
+
+تصلح جميع المشاكل
+
+
+تراجع كل الشاشات
+
+
+تصلح كل bugs
+
+
+تراجع كل flows
+
+
+
+بعد الانتهاء
+قم بتحديث:
+PROJECT_MEMORY.md
+بكل:
+
+
+المشاكل المكتشفة
+
+
+المشاكل التي تم حلها
+
+
+الملفات المعدلة
+
+
+التحسينات
+
+
+البنية الجديدة
+
+
+
+ممنوع جدًا
+
+
+partial fixes
+
+
+fake implementations
+
+
+shortcuts
+
+
+ignoring bugs
+
+
+إذا وجدت مشكلة أصلحها فورًا.
+أريد التطبيق يصبح production-grade مثل التطبيقات الكبرى في نفس المجال.

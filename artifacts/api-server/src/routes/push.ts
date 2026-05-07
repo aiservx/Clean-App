@@ -310,7 +310,9 @@ router.post("/push", async (req: Request, res: Response) => {
           categoryIdentifier === "booking_on_way"      ||
           categoryIdentifier === "booking_started"     ||
           categoryIdentifier === "booking_completed"   ||
-          categoryIdentifier === "booking_cancelled"
+          categoryIdentifier === "booking_cancelled"   ||
+          categoryIdentifier === "booking_rejected"    ||
+          categoryIdentifier === "booking_status"
         ? "booking_status"
         : categoryIdentifier === "payment"            ||
           categoryIdentifier === "payment_received"   ||
@@ -319,7 +321,9 @@ router.post("/push", async (req: Request, res: Response) => {
           categoryIdentifier === "refund_rejected"    ||
           categoryIdentifier === "refund_result"      ||
           categoryIdentifier === "withdrawal"         ||
-          categoryIdentifier === "withdrawal_approved"
+          categoryIdentifier === "withdrawal_approved"||
+          categoryIdentifier === "payout_requested"   ||
+          categoryIdentifier === "payout_approved"
         ? "payment"
         : categoryIdentifier === "message"            ||
           categoryIdentifier === "chat_message"
@@ -474,7 +478,9 @@ router.post("/push/batch", async (req: Request, res: Response) => {
           categoryIdentifier === "booking_on_way"      ||
           categoryIdentifier === "booking_started"     ||
           categoryIdentifier === "booking_completed"   ||
-          categoryIdentifier === "booking_cancelled"
+          categoryIdentifier === "booking_cancelled"   ||
+          categoryIdentifier === "booking_rejected"    ||
+          categoryIdentifier === "booking_status"
         ? "booking_status"
         : categoryIdentifier === "payment"            ||
           categoryIdentifier === "payment_received"   ||
@@ -483,7 +489,9 @@ router.post("/push/batch", async (req: Request, res: Response) => {
           categoryIdentifier === "refund_rejected"    ||
           categoryIdentifier === "refund_result"      ||
           categoryIdentifier === "withdrawal"         ||
-          categoryIdentifier === "withdrawal_approved"
+          categoryIdentifier === "withdrawal_approved"||
+          categoryIdentifier === "payout_requested"   ||
+          categoryIdentifier === "payout_approved"
         ? "payment"
         : categoryIdentifier === "message"            ||
           categoryIdentifier === "chat_message"

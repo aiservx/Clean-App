@@ -242,8 +242,8 @@ export default function BookingDetails() {
   const isDone = ["completed", "cancelled", "rejected"].includes(booking.status);
   const isCancellable = booking.status === "pending";
   const currentIdx = STATUS_FLOW.indexOf(booking.status);
-  const tax = booking.total * 0.15;
-  const base = booking.total - tax;
+  const base = Math.round((booking.total / 1.15) * 100) / 100;
+  const tax = Math.round((booking.total - base) * 100) / 100;
   const addrText = [booking.addresses?.street, booking.addresses?.district, booking.addresses?.city].filter(Boolean).join("، ") || "—";
   const bookingNum = booking.id.split("-")[0].toUpperCase();
 

@@ -15,7 +15,7 @@ type RefundRow = {
   status: "pending" | "approved" | "rejected";
   created_at: string;
   profiles: { full_name: string | null; phone: string | null } | null;
-  bookings: { total: number; status: string } | null;
+  bookings: { total: number; status: string; provider_id: string | null } | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -74,6 +74,21 @@ async function notifyRefundResult(
   } catch {}
 }
 
+async function deductProviderWallet(providerId: string | null, amount: number, bookingId: string) {
+  if (!providerId) return;
+  try {
+    await supabase.from("payouts").insert({
+      provider_id: providerId,
+      amount,
+      status: "paid",
+      type: "refund",
+      notes: `خصم استرداد للعميل — رقم الحجز ${bookingId.slice(0, 8)}`,
+    });
+  } catch (e) {
+    console.warn("[refunds] wallet deduction failed:", e);
+  }
+}
+
 export default function Refunds() {
   const [rows, setRows] = useState<RefundRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +100,7 @@ export default function Refunds() {
     setLoading(true);
     const q = supabase
       .from("refund_requests")
-      .select("id, booking_id, user_id, amount, reason, status, created_at, profiles:user_id(full_name, phone), bookings:booking_id(total, status)")
+      .select("id, booking_id, user_id, amount, reason, status, created_at, profiles:user_id(full_name, phone), bookings:booking_id(total, status, provider_id)")
       .order("created_at", { ascending: false })
       .limit(100);
     const { data, error } = await q;
@@ -104,6 +119,11 @@ export default function Refunds() {
         .update({ status: newStatus })
         .eq("id", row.id);
       if (error) throw error;
+
+      if (newStatus === "approved") {
+        const providerId = row.bookings?.provider_id ?? null;
+        await deductProviderWallet(providerId, row.amount, row.booking_id);
+      }
 
       await notifyRefundResult(row.user_id, newStatus === "approved", row.amount, row.booking_id);
 
@@ -153,6 +173,7 @@ export default function Refunds() {
         <div className="space-y-3">
           {filtered.map((row) => {
             const isPending = row.status === "pending";
+            const provId = row.bookings?.provider_id;
             return (
               <Card key={row.id}>
                 <div className="flex flex-col gap-3">
@@ -175,6 +196,16 @@ export default function Refunds() {
                       </p>
                       <p className="text-sm text-slate-500 mt-0.5">
                         رقم الحجز: <span className="font-mono text-xs">{row.booking_id.slice(0, 8)}…</span>
+                        {provId && (
+                          <span className="text-slate-400 mr-3 text-xs">
+                            (سيتم خصم المبلغ من محفظة المزود)
+                          </span>
+                        )}
+                        {!provId && isPending && (
+                          <span className="text-amber-500 mr-3 text-xs">
+                            (لا يوجد مزود مرتبط بالحجز)
+                          </span>
+                        )}
                       </p>
                       {row.reason && (
                         <p className="text-sm text-slate-600 mt-1 bg-slate-50 rounded-lg px-3 py-2">{row.reason}</p>

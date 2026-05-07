@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Platform } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -16,6 +17,7 @@ const FRIENDS = [
 export default function Referrals() {
   const colors = useColors();
   const code = "AHMED2025";
+  const [copied, setCopied] = useState(false);
 
   const onShare = () => {
     if (Platform.OS === "web") return;
@@ -53,9 +55,16 @@ export default function Referrals() {
           <Text style={[styles.codeLabel, { color: colors.mutedForeground }]}>كود الدعوة الخاص بك</Text>
           <View style={styles.codeRow}>
             <Text style={[styles.code, { color: colors.foreground }]}>{code}</Text>
-            <TouchableOpacity style={[styles.copyBtn, { backgroundColor: colors.primaryLight }]}>
-              <Feather name="copy" size={16} color={colors.primary} />
-              <Text style={[styles.copyT, { color: colors.primary }]}>نسخ</Text>
+            <TouchableOpacity
+              style={[styles.copyBtn, { backgroundColor: copied ? "#DCFCE7" : colors.primaryLight }]}
+              onPress={async () => {
+                await Clipboard.setStringAsync(code);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+            >
+              <Feather name={copied ? "check" : "copy"} size={16} color={copied ? "#16C47F" : colors.primary} />
+              <Text style={[styles.copyT, { color: copied ? "#16C47F" : colors.primary }]}>{copied ? "تم النسخ!" : "نسخ"}</Text>
             </TouchableOpacity>
           </View>
         </View>

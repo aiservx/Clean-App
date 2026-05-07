@@ -134,7 +134,7 @@ export default function RatingScreen() {
               <MaterialCommunityIcons key={s} name={s <= rating ? "star" : "star-outline"} size={28} color={s <= rating ? "#F59E0B" : "#CBD5E1"} />
             ))}
           </View>
-          <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={s.doneBtn}>
+          <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={[s.doneBtn, { backgroundColor: colors.primary }]}>
             <Text style={s.doneBtnT}>العودة للرئيسية</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -148,7 +148,7 @@ export default function RatingScreen() {
         <MaterialCommunityIcons name="star-check" size={72} color="#F59E0B" />
         <Text style={s.successTitle}>قيّمت هذه الخدمة سابقاً</Text>
         <Text style={[s.successSub, { marginBottom: 24 }]}>شكراً لمشاركتك رأيك!</Text>
-        <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={s.doneBtn}>
+        <TouchableOpacity onPress={() => router.replace("/(tabs)/home" as any)} style={[s.doneBtn, { backgroundColor: colors.primary }]}>
           <Text style={s.doneBtnT}>العودة للرئيسية</Text>
         </TouchableOpacity>
       </View>
@@ -263,7 +263,7 @@ export default function RatingScreen() {
             activeOpacity={0.9}
             onPress={handleSubmit}
             disabled={submitting}
-            style={[s.submitBtn, submitting && { opacity: 0.7 }]}
+            style={[s.submitBtn, { backgroundColor: colors.primary }, submitting && { opacity: 0.7 }]}
           >
             {submitting ? (
               <ActivityIndicator color="#FFF" />

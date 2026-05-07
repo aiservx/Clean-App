@@ -31,6 +31,7 @@ const STATUS_AR: Record<string, string> = {
   in_progress: "جاري التنفيذ",
   completed:   "مكتمل",
   cancelled:   "ملغي",
+  rejected:    "مرفوض",
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -40,6 +41,7 @@ const STATUS_COLOR: Record<string, string> = {
   in_progress: "#2F80ED",
   completed:   "#16C47F",
   cancelled:   "#EF4444",
+  rejected:    "#EF4444",
 };
 
 const fmtDate = (iso: string | null) => {
@@ -74,7 +76,7 @@ export default function BookingsScreen() {
     if (filter === "all")       return bookings;
     if (filter === "active")    return bookings.filter(r => ["pending", "accepted", "on_the_way", "in_progress"].includes(r.status));
     if (filter === "completed") return bookings.filter(r => r.status === "completed");
-    if (filter === "cancelled") return bookings.filter(r => r.status === "cancelled");
+    if (filter === "cancelled") return bookings.filter(r => r.status === "cancelled" || r.status === "rejected");
     return bookings;
   }, [bookings, filter]);
 

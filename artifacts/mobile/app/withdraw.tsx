@@ -8,6 +8,7 @@ import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { createNotification } from "@/lib/notifications";
 
 const METHODS = [
   { id: "bank", l: "حوالة بنكية (IBAN)", s: "خلال 24 ساعة", i: "credit-card", c: "#16C47F" },
@@ -66,14 +67,14 @@ export default function Withdraw() {
     if (method === "bank" && iban.trim()) {
       await supabase.from("providers").update({ iban: iban.trim() }).eq("id", session.user.id);
     }
-    // Notify admin via notifications table (best-effort)
-    await supabase.from("notifications").insert({
-      user_id: session.user.id,
-      title: "طلب سحب جديد",
-      body: `طلب سحب بقيمة ${amt} ر.س`,
-      type: "payout_requested",
-      data: { amount: amt, method },
-    }).then(() => null, () => null);
+    // Self-notification + push via createNotification (best-effort)
+    createNotification(
+      session.user.id,
+      "withdrawal",
+      "📤 تم إرسال طلب السحب",
+      `طلب سحب بقيمة ${amt} ر.س قيد المراجعة من الإدارة`,
+      { amount: amt, method },
+    ).catch(() => null);
 
     setBusy(false);
     Alert.alert("✓ تم الإرسال", `تم تسجيل طلب السحب بقيمة ${amt} ر.س. سيُحوَّل خلال 24 ساعة.`, [

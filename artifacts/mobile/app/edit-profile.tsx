@@ -15,7 +15,7 @@ export default function EditProfile() {
   const [name, setName] = useState(profile?.full_name || "");
   const [phone, setPhone] = useState(profile?.phone || "");
   const [email, setEmail] = useState(profile?.email || session?.user?.email || "");
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState((profile as any)?.city || "");
   const [photo, setPhoto] = useState<string | null>(profile?.avatar_url || null);
   const [saving, setSaving] = useState(false);
   const [photoChanged, setPhotoChanged] = useState(false);
@@ -44,7 +44,6 @@ export default function EditProfile() {
     try {
       let avatarUrl = profile?.avatar_url || null;
 
-      // Upload photo if changed
       if (photoChanged && photo && !photo.startsWith("http")) {
         const ext = photo.split(".").pop() || "jpg";
         const mimeType = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : `image/${ext}`;
@@ -52,7 +51,6 @@ export default function EditProfile() {
 
         let uploadErr: any = null;
         if (Platform.OS !== "web") {
-          // Native: FormData approach avoids blob fetch issues on iOS/Android
           const fd = new FormData();
           fd.append("file", { uri: photo, type: mimeType, name: `avatar.${ext}` } as any);
           const { error } = await supabase.storage
@@ -70,17 +68,17 @@ export default function EditProfile() {
 
         if (!uploadErr) {
           const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(fileName);
-          avatarUrl = urlData.publicUrl;
+          avatarUrl = urlData.publicUrl + `?t=${Date.now()}`;
         } else {
           console.warn("[edit-profile] avatar upload:", uploadErr?.message);
         }
       }
 
-      // Update profile in DB
       const { error } = await supabase.from("profiles").update({
         full_name: name.trim() || null,
         phone: phone.trim() || null,
         avatar_url: avatarUrl,
+        city: city.trim() || null,
       }).eq("id", session.user.id);
 
       if (error) {

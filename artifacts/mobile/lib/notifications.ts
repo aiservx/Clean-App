@@ -286,9 +286,13 @@ export async function createNotification(
         || type === "booking_started"
         || type === "booking_completed"
         || type === "booking_update"
-        || type === "booking_cancelled"               ? "booking_status"
+        || type === "booking_cancelled"
+        || type === "booking_rejected"                ? "booking_status"
       : type === "message" || type === "chat_message" ? "chat"
-      : type === "payment" || type === "payment_received" ? "payment"
+      : type === "payment"
+        || type === "payment_received"
+        || type === "withdrawal"
+        || type === "withdrawal_approved"             ? "payment"
       : type === "review_received" || type === "review_request" ? "default"
       : type === "refund_requested"
         || type === "refund_approved"
@@ -342,7 +346,9 @@ export async function notifyAvailableProviders(
             userIds: providerIds,
             title,
             body,
-            data: data ?? {},
+            // isProvider: true ensures cold-start / background tap routes to
+            // provider dashboard, not the user-facing tracking screen.
+            data: { ...(data ?? {}), isProvider: true },
             categoryIdentifier: "new_booking",
             channelId: "new_booking",
             ...(bookingId ? { bookingId } : {}),

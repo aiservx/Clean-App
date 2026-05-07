@@ -62,10 +62,21 @@ async function notifyUser(userId: string, status: BookingStatus, bookingId: stri
   };
   const msg = NOTIF_MESSAGES[status] ?? { title: "نظافة — تحديث طلبك", body: STATUS_AR[status] ?? status };
 
+  // Map booking status → specific notification type (matches notifMeta() in mobile app)
+  const TYPE_MAP: Record<string, string> = {
+    accepted:    "booking_accepted",
+    on_the_way:  "booking_on_way",
+    in_progress: "booking_in_progress",
+    completed:   "booking_completed",
+    cancelled:   "booking_cancelled",
+    rejected:    "booking_rejected",
+  };
+  const notifType = TYPE_MAP[status] ?? "booking_status";
+
   try {
     // 1. In-app notification (always)
     await supabase.from("notifications").insert({
-      user_id: userId, title: msg.title, body: msg.body, type: "booking_status",
+      user_id: userId, title: msg.title, body: msg.body, type: notifType,
       data: { booking_id: bookingId, status }, read: false,
     });
 
@@ -84,8 +95,8 @@ async function notifyUser(userId: string, status: BookingStatus, bookingId: stri
         userId,
         title: msg.title,
         body: msg.body,
-        data: { bookingId, status },
-        categoryIdentifier: status === "completed" ? "review_request" : "booking_update",
+        data: { bookingId, status, type: notifType },
+        categoryIdentifier: notifType,
         channelId: "booking_status",
       }),
     });

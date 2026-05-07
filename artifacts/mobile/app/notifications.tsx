@@ -32,6 +32,9 @@ function notifMeta(type: string | null): { icon: string; color: string } {
     case "booking_started":   return { icon: "play-circle",   color: "#8B5CF6" };
     case "booking_completed": return { icon: "check-circle",  color: "#22C55E" };
     case "booking_cancelled": return { icon: "x-circle",      color: "#EF4444" };
+    case "booking_rejected":  return { icon: "x-circle",      color: "#EF4444" };
+    case "withdrawal":        return { icon: "dollar-sign",   color: "#16C47F" };
+    case "withdrawal_approved": return { icon: "credit-card", color: "#16C47F" };
     case "payment":           return { icon: "credit-card",   color: "#8B5CF6" };
     case "offer":
     case "promo":             return { icon: "gift",          color: "#F59E0B" };
@@ -58,7 +61,7 @@ function targetForNotif(n: Notif): { pathname: string; params?: any } | null {
   const t = n.type ?? "";
   const bookingId = n.data?.booking_id || n.data?.bookingId;
   if (t.startsWith("booking_") && bookingId) {
-    if (t === "booking_completed" || t === "booking_cancelled") return { pathname: "/(tabs)/bookings" };
+    if (t === "booking_completed" || t === "booking_cancelled" || t === "booking_rejected") return { pathname: "/(tabs)/bookings" };
     return { pathname: "/tracking", params: { id: bookingId } };
   }
   if (t === "payment" && bookingId) return { pathname: "/tracking", params: { id: bookingId } };

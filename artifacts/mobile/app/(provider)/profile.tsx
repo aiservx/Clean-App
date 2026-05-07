@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, Alert, I18nManager } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -17,6 +17,7 @@ export default function ProviderProfile() {
   const [online, setOnline] = useState(false);
   const [stats, setStats] = useState({ rating: 0, jobs: 0, years: 0 });
   const [loading, setLoading] = useState(true);
+  const lastToggleRef = useRef(0);
 
   const load = useCallback(async () => {
     if (!session?.user) {
@@ -29,7 +30,7 @@ export default function ProviderProfile() {
       supabase.from("bookings").select("id", { count: "exact", head: true }).eq("provider_id", uid).eq("status", "completed"),
       supabase.from("reviews").select("rating").eq("provider_id", uid),
     ]);
-    if (prov) setOnline(!!prov.available);
+    if (prov && Date.now() - lastToggleRef.current > 6000) setOnline(!!prov.available);
     const ratings = (ratingRow ?? []).map((r: any) => Number(r.rating || 0)).filter((x: number) => x > 0);
     const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : Number(prov?.rating || 0);
     setStats({
@@ -43,6 +44,7 @@ export default function ProviderProfile() {
   useEffect(() => { load(); }, [load]);
 
   const toggleOnline = async (v: boolean) => {
+    lastToggleRef.current = Date.now();
     setOnline(v);
     if (!session?.user) return;
     const uid = session.user.id;

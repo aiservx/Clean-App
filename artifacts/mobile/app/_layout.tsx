@@ -91,7 +91,7 @@ async function handleNotifResponse(
             .from("bookings").select("user_id").eq("id", bookingId).maybeSingle();
           if (bk?.user_id) {
             const { createNotification: cn } = await import("@/lib/notifications");
-            await cn(bk.user_id, "booking_cancelled", "❌ رُفض طلبك", "رفض المزود طلبك. سنبحث عن مزود آخر متاح.", { bookingId });
+            await cn(bk.user_id, "booking_rejected", "❌ رُفض طلبك", "رفض المزود طلبك. سنبحث عن مزود آخر متاح.", { bookingId });
           }
         }
         try { router.push("/(provider)/dashboard" as any); } catch {}

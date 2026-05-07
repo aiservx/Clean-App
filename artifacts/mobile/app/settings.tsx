@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, Pressable , I18nManager} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, Pressable , I18nManager, Alert} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -7,6 +7,7 @@ import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
 import { useTheme, ThemeMode } from "@/lib/theme";
 import { useI18n, Lang } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 
 export default function Settings() {
   const colors = useColors();
@@ -19,6 +20,7 @@ export default function Settings() {
   const [location, setLocation] = useState(true);
   const [langOpen, setLangOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const { signOut } = useAuth();
 
   const Section = ({ title, children }: any) => (
     <View style={{ marginBottom: 14 }}>
@@ -98,7 +100,26 @@ export default function Settings() {
         </Section>
 
         <Section title={t("account")}>
-          <Item icon="log-out" label={t("signout")} onPress={() => router.replace("/onboarding")} iconBg={colors.dangerLight} iconColor={colors.danger} danger />
+          <Item
+            icon="log-out"
+            label={t("signout")}
+            onPress={() =>
+              Alert.alert(t("signout"), "هل تريد تسجيل الخروج من حسابك؟", [
+                { text: "إلغاء", style: "cancel" },
+                {
+                  text: "خروج",
+                  style: "destructive",
+                  onPress: async () => {
+                    await signOut();
+                    router.replace("/onboarding");
+                  },
+                },
+              ])
+            }
+            iconBg={colors.dangerLight}
+            iconColor={colors.danger}
+            danger
+          />
           <Item icon="trash-2" label={t("delete_account")} onPress={() => {}} iconBg={colors.dangerLight} iconColor={colors.danger} danger />
         </Section>
       </ScrollView>
