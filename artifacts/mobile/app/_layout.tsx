@@ -55,36 +55,77 @@ async function handleNotifResponse(
 
   // ── Provider: Accept / Reject action buttons ───────────────────────────
   if (bookingId && (actionId === "accept" || actionId === "reject")) {
-    if (actionId === "reject") {
-      console.log("[push] provider rejected booking notification — dismissed");
-      return;
-    }
     try {
       const { supabase: sb } = await import("@/lib/supabase");
-      const providerId = sessionRef.current?.user?.id;
-      const payload: any = { status: "accepted" };
-      if (providerId) payload.provider_id = providerId;
+
+      // Resolve provider ID — sessionRef may be null on cold-start.
+      // Poll up to 3 s waiting for AuthProvider to hydrate, then fall back to
+      // a direct Supabase session fetch (works even after a fresh cold-start).
+      let providerId: string | null = sessionRef.current?.user?.id ?? null;
+      if (!providerId) {
+        for (let i = 0; i < 15 && !providerId; i++) {
+          await new Promise((r) => setTimeout(r, 200));
+          providerId = sessionRef.current?.user?.id ?? null;
+        }
+        if (!providerId) {
+          const { data: sess } = await sb.auth.getSession();
+          providerId = sess.session?.user?.id ?? null;
+        }
+      }
+
+      if (actionId === "reject") {
+        // Mark booking rejected + log + notify user
+        console.log("[push] provider rejected from notification");
+        if (providerId) {
+          // Update booking status + set provider_id so push auth check passes
+          await sb.from("bookings")
+            .update({ status: "rejected", provider_id: providerId })
+            .eq("id", bookingId)
+            .eq("status", "pending");
+          await sb.from("booking_status_log").insert({
+            booking_id: bookingId,
+            status: "rejected",
+            note: "رفض المزود من إشعار الهاتف",
+          });
+          const { data: bk } = await sb
+            .from("bookings").select("user_id").eq("id", bookingId).maybeSingle();
+          if (bk?.user_id) {
+            const { createNotification: cn } = await import("@/lib/notifications");
+            await cn(bk.user_id, "booking_cancelled", "❌ رُفض طلبك", "رفض المزود طلبك. سنبحث عن مزود آخر متاح.", { bookingId });
+          }
+        }
+        try { router.push("/(provider)/dashboard" as any); } catch {}
+        return;
+      }
+
+      // ── Accept ──────────────────────────────────────────────────────────
+      if (!providerId) {
+        console.log("[push] accept action: no session — cannot accept");
+        return;
+      }
 
       const { error } = await sb
-        .from("bookings").update(payload)
+        .from("bookings")
+        .update({ status: "accepted", provider_id: providerId })
         .eq("id", bookingId).eq("status", "pending");
 
       if (error) { console.log("[push] accept booking failed:", error.message); return; }
 
-      if (providerId) {
-        await sb.from("providers").update({ available: false }).eq("id", providerId);
-      }
+      await Promise.all([
+        sb.from("providers").update({ available: false }).eq("id", providerId),
+        sb.from("booking_status_log").insert({ booking_id: bookingId, status: "accepted", note: "قبل المزود من الإشعار" }),
+      ]);
 
       const { createNotification: cn } = await import("@/lib/notifications");
       const { data: bk } = await sb
         .from("bookings").select("user_id, services(title_ar)").eq("id", bookingId).maybeSingle();
       if (bk?.user_id) {
         const svcTitle = (bk.services as any)?.title_ar || "الخدمة";
-        cn(bk.user_id, "booking_accepted", "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
+        await cn(bk.user_id, "booking_accepted", "✅ تم قبول طلبك!", `مزود الخدمة قبل طلبك لـ ${svcTitle}`, { bookingId });
       }
       try { router.push(`/(provider)/booking-details?id=${bookingId}` as any); } catch {}
     } catch (e) {
-      console.log("[push] accept action failed:", (e as Error).message);
+      console.log("[push] accept/reject action failed:", (e as Error).message);
     }
     return;
   }
@@ -116,8 +157,10 @@ function PushRegistrar() {
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) {
         console.log("[push] cold-start notification tap replayed:", response.notification.request.content.data);
-        // Delay navigation so the root navigator is ready
-        setTimeout(() => handleNotifResponse(response, sessionRef), 800);
+        // Delay navigation so the root navigator AND session are ready.
+        // 1500ms is the safe minimum — some mid-range Android devices need > 1s
+        // for Expo Router to finish mounting the navigation tree.
+        setTimeout(() => handleNotifResponse(response, sessionRef), 2000);
       }
     }).catch(() => {});
 
@@ -207,6 +250,7 @@ function RootLayoutNav() {
       <Stack.Screen name="withdraw" options={{ headerShown: false }} />
       <Stack.Screen name="provider-notifications" options={{ headerShown: false }} />
       <Stack.Screen name="provider-referrals" options={{ headerShown: false }} />
+      <Stack.Screen name="provider-service-area" options={{ headerShown: false }} />
       <Stack.Screen name="statement" options={{ headerShown: false }} />
     </Stack>
   );

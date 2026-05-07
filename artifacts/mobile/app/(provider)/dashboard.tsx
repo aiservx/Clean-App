@@ -46,12 +46,14 @@ export default function ProviderHome() {
   const { session, profile, signOut } = useAuth();
   const [online, setOnline] = useState(false);
   const [loading, setLoading] = useState(true);
+  const lastToggleRef = useRef(0);
   const [refreshing, setRefreshing] = useState(false);
   const [orders, setOrders] = useState<NearbyOrder[]>([]);
   const [stats, setStats] = useState({ today: 0, earnings: 0, rating: 0 });
   const [myLoc, setMyLoc] = useState<ResolvedAddress | null>(null);
   const [mapAnimTrigger, setMapAnimTrigger] = useState(0);
   const [newOrderAlert, setNewOrderAlert] = useState<NearbyOrder | null>(null);
+  const [countdown, setCountdown] = useState(300);
 
   // Ref to read online state inside AppState callback without stale closure
   const onlineRef = useRef(false);
@@ -82,7 +84,11 @@ export default function ProviderHome() {
         supabase.from("reviews").select("rating").eq("provider_id", uid),
       ]);
 
-      if (prov?.available !== undefined) setOnline(!!prov.available);
+      // Only sync DB availability to local state if the user hasn't explicitly toggled
+      // within the last 6 seconds (prevents race condition overwriting user intent)
+      if (prov?.available !== undefined && Date.now() - lastToggleRef.current > 6000) {
+        setOnline(!!prov.available);
+      }
       if (locRes) {
         setMyLoc(locRes);
         // Update provider current location in DB
@@ -309,6 +315,7 @@ export default function ProviderHome() {
 
   const toggleOnline = async (v: boolean) => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    lastToggleRef.current = Date.now();
     setOnline(v);
     if (!session?.user) return;
     if (v) {
@@ -364,20 +371,65 @@ export default function ProviderHome() {
 
   const reject = async (id: string) => {
     if (!session?.user) return;
+    const order = orders.find((o) => o.id === id);
     Alert.alert("رفض الطلب", "هل أنت متأكد من رفض هذا الطلب؟", [
       { text: "إلغاء", style: "cancel" },
       {
         text: "رفض",
         style: "destructive",
         onPress: async () => {
-          // Mark as rejected by this provider — keep available for others by setting null provider
-          await supabase.from("booking_status_log").insert({ booking_id: id, status: "rejected", note: `مزود ${session.user.id} رفض` });
-          // Remove from list locally
+          // Update booking status AND set provider_id so push auth check passes
+          await supabase.from("bookings")
+            .update({ status: "rejected", provider_id: session.user.id })
+            .eq("id", id)
+            .eq("status", "pending");
+          await supabase.from("booking_status_log").insert({ booking_id: id, status: "rejected", note: `رفض المزود الطلب` });
           setOrders((prev) => prev.filter((o) => o.id !== id));
+          // Notify the user about rejection
+          if (order?.user_id) {
+            createNotification(order.user_id, "booking_cancelled", "❌ رُفض طلبك", "رفض المزود طلبك. سنبحث عن مزود آخر متاح.", { bookingId: id });
+          }
         },
       },
     ]);
   };
+
+  // ── Auto-reject when 5-min countdown expires ──────────────────────────────
+  const handleAutoReject = useCallback(async (bookingId: string, userId: string | null, providerId: string | null) => {
+    try {
+      // Set provider_id so the shared-booking auth check passes when notifying the user
+      await supabase.from("bookings")
+        .update({ status: "rejected", ...(providerId ? { provider_id: providerId } : {}) })
+        .eq("id", bookingId)
+        .eq("status", "pending");
+      await supabase.from("booking_status_log").insert({ booking_id: bookingId, status: "rejected", note: "انتهت مهلة الرد التلقائي (5 دقائق)" });
+      if (userId) {
+        createNotification(userId, "booking_cancelled", "⏱ انتهت مهلة الرد", "لم يرد المزود في الوقت المحدد. سنبحث عن مزود آخر متاح.", { bookingId });
+      }
+    } catch {}
+    setNewOrderAlert(null);
+    setCountdown(300);
+    setOrders((prev) => prev.filter((o) => o.id !== bookingId));
+  }, []);
+
+  // ── 5-minute countdown timer ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!newOrderAlert) { setCountdown(300); return; }
+    const alertId   = newOrderAlert.id;
+    const alertUid  = newOrderAlert.user_id;
+    const alertProv = session?.user?.id ?? null;
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleAutoReject(alertId, alertUid, alertProv);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [newOrderAlert?.id, handleAutoReject, session?.user?.id]);
 
   const region = useMemo(
     () => ({
@@ -451,23 +503,58 @@ export default function ProviderHome() {
                 <Text style={[styles.modalPrice, { color: colors.primary }]}>{newOrderAlert.total} ر.س</Text>
               </>
             )}
+
+            {/* ── 5-minute countdown ───────────────────────────────────── */}
+            <View style={[styles.countdownBox, { backgroundColor: countdown <= 60 ? "#FEF3C7" : colors.muted }]}>
+              <MaterialCommunityIcons
+                name="timer-outline"
+                size={20}
+                color={countdown <= 60 ? "#B45309" : colors.mutedForeground}
+              />
+              <Text style={[styles.countdownT, { color: countdown <= 60 ? "#B45309" : colors.mutedForeground }]}>
+                {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, "0")}
+              </Text>
+              <Text style={[styles.countdownSub, { color: countdown <= 60 ? "#B45309" : colors.mutedForeground }]} numberOfLines={1}>
+                {countdown <= 60 ? "⚠️ رفض تلقائي قريباً!" : "متبقية — رفض تلقائي عند الانتهاء"}
+              </Text>
+            </View>
+
             <View style={styles.modalBtns}>
+              {/* Reject button */}
               <TouchableOpacity
-                onPress={() => setNewOrderAlert(null)}
-                style={[styles.modalDismissBtn, { borderColor: colors.border }]}
+                onPress={async () => {
+                  const id  = newOrderAlert?.id;
+                  const uid = newOrderAlert?.user_id ?? null;
+                  setNewOrderAlert(null);
+                  setCountdown(300);
+                  const pid = session?.user?.id ?? null;
+                  if (id) {
+                    // Set provider_id so push auth check passes when notifying user
+                    await supabase.from("bookings")
+                      .update({ status: "rejected", ...(pid ? { provider_id: pid } : {}) })
+                      .eq("id", id)
+                      .eq("status", "pending");
+                    await supabase.from("booking_status_log").insert({ booking_id: id, status: "rejected", note: "رفض المزود الطلب" });
+                    if (uid) createNotification(uid, "booking_cancelled", "❌ رُفض طلبك", "رفض المزود طلبك. سنبحث عن مزود آخر متاح.", { bookingId: id });
+                    setOrders((prev) => prev.filter((o) => o.id !== id));
+                  }
+                }}
+                style={[styles.modalDismissBtn, { borderColor: "#EF4444" }]}
               >
-                <Text style={[styles.modalDismissT, { color: colors.mutedForeground }]}>تجاهل</Text>
+                <Text style={[styles.modalDismissT, { color: "#EF4444" }]}>رفض ❌</Text>
               </TouchableOpacity>
+              {/* Accept button */}
               <TouchableOpacity
-                onPress={() => {
+                onPress={async () => {
                   const id = newOrderAlert?.id;
                   setNewOrderAlert(null);
-                  if (id) router.push(`/(provider)/booking-details?id=${id}` as any);
+                  setCountdown(300);
+                  if (id) await accept(id);
                 }}
-                style={[styles.modalViewBtn, { backgroundColor: colors.primary }]}
+                style={[styles.modalViewBtn, { backgroundColor: "#16C47F" }]}
               >
-                <Feather name="eye" size={14} color="#FFF" />
-                <Text style={styles.modalViewT}>عرض الطلب</Text>
+                <Feather name="check-circle" size={16} color="#FFF" />
+                <Text style={styles.modalViewT}>قبول الطلب ✅</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -714,6 +801,9 @@ const styles = StyleSheet.create({
   modalRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   modalInfoV: { fontFamily: "Tajawal_500Medium", fontSize: 13, flex: 1 },
   modalPrice: { fontFamily: "Tajawal_700Bold", fontSize: 28 },
+  countdownBox: { width: "100%", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12 },
+  countdownT: { fontFamily: "Tajawal_700Bold", fontSize: 24 },
+  countdownSub: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1 },
   modalBtns: { flexDirection: "row", gap: 10, width: "100%", marginTop: 4 },
   modalDismissBtn: { flex: 1, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center", borderWidth: 1 },
   modalDismissT: { fontFamily: "Tajawal_700Bold", fontSize: 13 },

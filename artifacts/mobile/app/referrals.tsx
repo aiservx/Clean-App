@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: "row", gap: 8, marginBottom: 16 },
   statC: { flex: 1, padding: 12, borderRadius: 14, alignItems: "center" },
   statV: { fontFamily: "Tajawal_700Bold", fontSize: 18 },
-  statL: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 2 },
+  statL: { fontFamily: "Tajawal_500Medium", fontSize: 10, marginTop: 2, textAlign: "center" },
   label: { fontFamily: "Tajawal_700Bold", fontSize: 14, marginBottom: 8 },
   steps: { padding: 12, borderRadius: 16, gap: 10 },
   step: { flexDirection: "row", alignItems: "center", gap: 10 },

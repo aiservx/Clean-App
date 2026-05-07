@@ -31,22 +31,28 @@ type BannerData = {
 /* ── Icon / colour per notification type ───────────────────────────────── */
 
 const TYPE_META: Record<string, { icon: string; color: string }> = {
-  booking_created:    { icon: "shopping-bag",  color: "#2F80ED" },
-  booking_accepted:   { icon: "check-circle",  color: "#16C47F" },
-  booking_on_way:     { icon: "car",           color: "#8B5CF6" },
-  booking_started:    { icon: "broom",         color: "#F59E0B" },
-  booking_completed:  { icon: "check-all",     color: "#22C55E" },
-  booking_cancelled:  { icon: "close-circle",  color: "#EF4444" },
-  booking_update:     { icon: "refresh",       color: "#3B82F6" },
-  message:            { icon: "message-text",  color: "#2F80ED" },
-  chat_message:       { icon: "message-text",  color: "#2F80ED" },
-  payment:            { icon: "cash",          color: "#16C47F" },
-  payment_received:   { icon: "cash-check",    color: "#16C47F" },
-  offer:              { icon: "tag",           color: "#EC4899" },
-  promo:              { icon: "tag",           color: "#EC4899" },
-  review_request:     { icon: "star",          color: "#F59E0B" },
-  review_received:    { icon: "star-circle",   color: "#F59E0B" },
-  referral:           { icon: "account-multiple", color: "#16C47F" },
+  booking_created:    { icon: "shopping-bag",       color: "#2F80ED" },
+  booking_accepted:   { icon: "check-circle",       color: "#16C47F" },
+  booking_on_way:     { icon: "car",                color: "#8B5CF6" },
+  booking_started:    { icon: "broom",              color: "#F59E0B" },
+  booking_completed:  { icon: "check-all",          color: "#22C55E" },
+  booking_cancelled:  { icon: "close-circle",       color: "#EF4444" },
+  booking_update:     { icon: "refresh",            color: "#3B82F6" },
+  message:            { icon: "message-text",       color: "#2F80ED" },
+  chat_message:       { icon: "message-text",       color: "#2F80ED" },
+  payment:            { icon: "cash",               color: "#16C47F" },
+  payment_received:   { icon: "cash-check",         color: "#16C47F" },
+  offer:              { icon: "tag",                color: "#EC4899" },
+  promo:              { icon: "tag",                color: "#EC4899" },
+  review_request:     { icon: "star",               color: "#F59E0B" },
+  review_received:    { icon: "star-circle",        color: "#F59E0B" },
+  referral:           { icon: "account-multiple",   color: "#16C47F" },
+  refund_requested:   { icon: "cash-refund",        color: "#F59E0B" },
+  refund_approved:    { icon: "cash-check",         color: "#16C47F" },
+  refund_rejected:    { icon: "cash-remove",        color: "#EF4444" },
+  refund_result:      { icon: "cash-refund",        color: "#16C47F" },
+  withdrawal:         { icon: "bank-transfer-out",  color: "#8B5CF6" },
+  withdrawal_approved:{ icon: "check-circle",       color: "#16C47F" },
 };
 
 /* ── Deep-link navigation ───────────────────────────────────────────────── */
@@ -61,13 +67,22 @@ export function navigateForType(type: string, data: Record<string, any>) {
         params: { roomId, bookingId, name: data?.senderName || data?.name || "" },
       } as any);
     } else if (type === "booking_created") {
-      // Provider taps → go to booking details
-      if (bookingId) router.push(`/(provider)/booking-details?id=${bookingId}` as any);
-      else router.push("/(provider)/dashboard" as any);
+      // isProvider flag distinguishes provider vs user notifications
+      if (data?.isProvider) {
+        if (bookingId) router.push(`/(provider)/booking-details?id=${bookingId}` as any);
+        else router.push("/(provider)/dashboard" as any);
+      } else {
+        if (bookingId) router.push({ pathname: "/tracking", params: { id: bookingId } } as any);
+        else router.push("/(tabs)/bookings" as any);
+      }
     } else if (type === "review_request" || type === "review_received") {
       // review_request → client rates; review_received → provider sees rating screen
       if (bookingId) router.push({ pathname: "/rating", params: { bookingId } } as any);
       else router.push("/(provider)/profile" as any);
+    } else if (type === "refund_requested" || type === "refund_approved" || type === "refund_rejected" || type === "refund_result") {
+      // Refund notifications → user bookings tab to see refund status
+      if (bookingId) router.push({ pathname: "/tracking", params: { id: bookingId } } as any);
+      else router.push("/(tabs)/bookings" as any);
     } else if (type === "payment" || type === "payment_received") {
       router.push("/(provider)/wallet" as any);
     } else if (

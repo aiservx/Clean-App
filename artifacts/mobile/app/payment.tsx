@@ -300,17 +300,19 @@ export default function PaymentScreen() {
                 scheduled_at: booking.scheduledIso || new Date().toISOString(),
                 address_id: resolvedAddressId,
               };
-              // Verify selected provider is still available before booking
-              if (isProvUuid && insertData.provider_id) {
+              // For IMMEDIATE bookings only: verify the provider is still available.
+              // Scheduled advance bookings skip this check — offline providers can be pre-booked.
+              const scheduledMs = new Date(booking.scheduledIso || Date.now()).getTime();
+              const isImmediateBooking = scheduledMs - Date.now() < 30 * 60 * 1000;
+              if (isProvUuid && insertData.provider_id && isImmediateBooking) {
                 const { data: provCheck } = await supabase
                   .from("providers")
                   .select("available")
                   .eq("id", cleanerId)
                   .maybeSingle();
                 if (!provCheck?.available) {
-                  // Provider became unavailable — clear assignment and let system find one
                   insertData.provider_id = null;
-                  console.log("[payment] selected provider unavailable, cleared provider_id");
+                  console.log("[payment] instant provider unavailable, cleared provider_id");
                 }
               }
               const { data: row, error } = await supabase.from("bookings").insert(insertData).select("id").maybeSingle();
@@ -318,20 +320,40 @@ export default function PaymentScreen() {
               if (row?.id) {
                 const svcTitle = booking.service?.title || "خدمة تنظيف";
                 const svcPrice = booking.service?.price ?? 0;
+                const assignedProviderId = insertData.provider_id as string | null;
 
+                // Always notify the customer first
                 await createNotification(
                   user.id,
                   "booking_created",
                   "✅ تم استلام طلبك!",
-                  `طلبك لـ${svcTitle} في طور البحث عن أفضل مزود قريب منك`,
+                  assignedProviderId
+                    ? `طلبك لـ${svcTitle} وصل للمزود — لديه 5 دقائق للرد`
+                    : `طلبك لـ${svcTitle} في طور البحث عن أفضل مزود قريب منك`,
                   { bookingId: row.id }
                 );
-                notifyAvailableProviders(
-                  `🔔 طلب ${svcTitle} جديد!`,
-                  `قيمة الطلب ${svcPrice} ر.س — اضغط قبول للحجز الفوري`,
-                  { bookingId: row.id, type: "booking_created" },
-                  row.id
-                );
+
+                if (assignedProviderId) {
+                  // Targeted urgent notification to the pre-selected provider
+                  const scheduledDate = new Date(booking.scheduledIso || Date.now());
+                  const dateStr = scheduledDate.toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" });
+                  const timeStr = scheduledDate.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
+                  createNotification(
+                    assignedProviderId,
+                    "booking_created",
+                    `🔔 طلب جديد: ${svcTitle}`,
+                    `📅 ${dateStr}  ⏰ ${timeStr}\n💰 ${totals.total} ر.س — لديك 5 دقائق للرد`,
+                    { bookingId: row.id, type: "booking_created", urgent: true, isProvider: true }
+                  );
+                } else {
+                  // No specific provider — broadcast to all available providers
+                  notifyAvailableProviders(
+                    `🔔 طلب ${svcTitle} جديد!`,
+                    `قيمة الطلب ${svcPrice} ر.س — اضغط قبول للحجز الفوري`,
+                    { bookingId: row.id, type: "booking_created", isProvider: true },
+                    row.id
+                  );
+                }
                 router.replace({ pathname: "/tracking", params: { id: row.id } } as any);
               } else router.replace("/tracking");
             } catch (e) {

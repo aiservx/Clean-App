@@ -57,6 +57,8 @@ type Provider = {
   current_lat: number | null;
   current_lng: number | null;
   d_km: number | null;
+  available: boolean;
+  providerStatus: "available" | "offline" | "booked";
 };
 
 const tap = () => {
@@ -75,62 +77,105 @@ export default function BookingScreen() {
   const [loadingProvs, setLoadingProvs] = useState(true);
   const [bookingType, setBookingType] = useState<"instant" | "scheduled">("scheduled");
 
-  // Load real nearby providers from DB — instant mode filters by fresh heartbeat
+  // Load providers from DB — instant mode: fresh-heartbeat only; scheduled: ALL + conflict check
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoadingProvs(true);
       try {
         const me: ResolvedAddress | null = await getCurrentResolved();
-        let query = supabase
-          .from("providers")
-          .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, location_updated_at, profiles(full_name, avatar_url)")
-          .eq("available", true)
-          .not("current_lat", "is", null)
-          .not("current_lng", "is", null)
-          .limit(15);
 
-        // Instant booking: only show providers with a fresh heartbeat (≤5 min old)
         if (bookingType === "instant") {
+          // ── Instant: only available providers with recent location heartbeat ────
           const cutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-          query = (query as any).gte("location_updated_at", cutoff);
-        }
-
-        const { data, error } = await (query as any);
-        if (cancelled) return;
-
-        // If location_updated_at column not yet migrated, fall back to basic query
-        let rows = data;
-        if (error && bookingType === "instant") {
-          const { data: fallback } = await supabase
+          const { data, error } = await (supabase
             .from("providers")
-            .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, profiles(full_name, avatar_url)")
+            .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, location_updated_at, profiles(full_name, avatar_url)")
             .eq("available", true)
             .not("current_lat", "is", null)
             .not("current_lng", "is", null)
-            .limit(15);
-          rows = fallback;
-        }
+            .gte("location_updated_at", cutoff)
+            .limit(15) as any);
 
-        const mapped: Provider[] = (rows ?? []).map((p: any) => {
-          const lat = p.current_lat;
-          const lng = p.current_lng;
-          const d = me && lat && lng ? distanceKm({ lat: me.lat, lng: me.lng }, { lat, lng }) : null;
-          return {
-            id: p.id,
-            full_name: p.profiles?.full_name || null,
-            avatar_url: p.profiles?.avatar_url || null,
-            rating: Number(p.rating || 0),
-            experience_years: Number(p.experience_years || 0),
-            hourly_rate: Number(p.hourly_rate || 0),
-            current_lat: lat,
-            current_lng: lng,
-            d_km: d,
-          };
-        });
-        // Sort by distance (nulls last)
-        mapped.sort((a, b) => (a.d_km ?? 999) - (b.d_km ?? 999));
-        setProviders(mapped);
+          let rows = data;
+          if (error) {
+            // Fallback: location_updated_at not yet migrated
+            const { data: fb } = await supabase
+              .from("providers")
+              .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, profiles(full_name, avatar_url)")
+              .eq("available", true)
+              .not("current_lat", "is", null)
+              .not("current_lng", "is", null)
+              .limit(15);
+            rows = fb;
+          }
+          if (cancelled) return;
+
+          const mapped: Provider[] = (rows ?? []).map((p: any) => {
+            const lat = p.current_lat; const lng = p.current_lng;
+            const d = me && lat && lng ? distanceKm({ lat: me.lat, lng: me.lng }, { lat, lng }) : null;
+            return {
+              id: p.id, full_name: p.profiles?.full_name || null, avatar_url: p.profiles?.avatar_url || null,
+              rating: Number(p.rating || 0), experience_years: Number(p.experience_years || 0), hourly_rate: Number(p.hourly_rate || 0),
+              current_lat: lat, current_lng: lng, d_km: d,
+              available: true, providerStatus: "available" as const,
+            };
+          });
+          mapped.sort((a, b) => (a.d_km ?? 999) - (b.d_km ?? 999));
+          setProviders(mapped);
+
+        } else {
+          // ── Scheduled: ALL registered providers + booking conflict detection ────
+          const { data } = await supabase
+            .from("providers")
+            .select("id, rating, experience_years, current_lat, current_lng, hourly_rate, available, service_radius_km, profiles(full_name, avatar_url)")
+            .limit(30);
+
+          if (cancelled) return;
+          const rows = data ?? [];
+
+          // Determine selected time slot for conflict detection
+          const slotDate = dates[booking.dateIndex] ?? dates[0];
+          const slotTime = TIMES[booking.timeIndex] ?? TIMES[1];
+          const slotStart = new Date(slotDate?.iso ?? new Date().toISOString());
+          slotStart.setHours(slotTime.h, 0, 0, 0);
+          const slotEnd = new Date(slotStart.getTime() + 2 * 60 * 60 * 1000);
+
+          // Check which providers have a conflicting booking in this time slot
+          const providerIds = rows.map((p: any) => p.id);
+          let bookedIds = new Set<string>();
+          if (providerIds.length > 0) {
+            const { data: conflicts } = await supabase
+              .from("bookings")
+              .select("provider_id")
+              .in("provider_id", providerIds)
+              .in("status", ["pending", "accepted", "on_the_way", "in_progress"])
+              .gte("scheduled_at", slotStart.toISOString())
+              .lt("scheduled_at", slotEnd.toISOString());
+            bookedIds = new Set((conflicts ?? []).map((b: any) => b.provider_id));
+          }
+          if (cancelled) return;
+
+          const statusOrder = { available: 0, offline: 1, booked: 2 };
+          const mapped: Provider[] = rows.map((p: any) => {
+            const lat = p.current_lat; const lng = p.current_lng;
+            const d = me && lat && lng ? distanceKm({ lat: me.lat, lng: me.lng }, { lat, lng }) : null;
+            const providerStatus: Provider["providerStatus"] =
+              bookedIds.has(p.id) ? "booked" : p.available ? "available" : "offline";
+            return {
+              id: p.id, full_name: p.profiles?.full_name || null, avatar_url: p.profiles?.avatar_url || null,
+              rating: Number(p.rating || 0), experience_years: Number(p.experience_years || 0), hourly_rate: Number(p.hourly_rate || 0),
+              current_lat: lat, current_lng: lng, d_km: d,
+              available: !!p.available, providerStatus,
+            };
+          });
+          // Sort: available → offline → booked at this time; then by distance
+          mapped.sort((a, b) => {
+            const diff = statusOrder[a.providerStatus] - statusOrder[b.providerStatus];
+            return diff !== 0 ? diff : (a.d_km ?? 999) - (b.d_km ?? 999);
+          });
+          setProviders(mapped);
+        }
       } catch (e) {
         console.log("[v0] booking providers load failed", (e as Error).message);
       } finally {
@@ -138,16 +183,17 @@ export default function BookingScreen() {
       }
     })();
     return () => { cancelled = true; };
-  }, [bookingType]);
+  }, [bookingType, booking.dateIndex, booking.timeIndex]);
 
   const selectedProvider = providers.find((p) => p.id === booking.cleanerId) ?? providers[0] ?? null;
   const selectedDate = dates[booking.dateIndex] ?? dates[0];
   const selectedTime = TIMES[booking.timeIndex] ?? TIMES[1];
 
-  // ── Booking gate: cannot proceed without a provider ──────────────────────
-  // Instant: needs a fresh provider (non-empty list after heartbeat filter)
-  // Scheduled: needs at least one available provider selected
-  const canConfirm = !loadingProvs && selectedProvider !== null;
+  // ── Booking gate: needs a provider selected; booked-at-this-time providers block confirmation ──
+  const canConfirm =
+    !loadingProvs &&
+    selectedProvider !== null &&
+    (bookingType === "instant" || selectedProvider.providerStatus !== "booked");
 
   // Pricing derived from selected service
   const totals = useMemo(() => {
@@ -350,21 +396,37 @@ export default function BookingScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
             {providers.map((p) => {
               const selected = booking.cleanerId === p.id;
-              const initials = (p.full_name || "؟").trim().split(" ").map((s) => s[0]).slice(0, 2).join("");
+              const isBooked = p.providerStatus === "booked";
+              const statusColor =
+                p.providerStatus === "available" ? "#16C47F"
+                : p.providerStatus === "offline"  ? "#9CA3AF"
+                : "#F59E0B";
+              const statusLabel =
+                p.providerStatus === "available" ? "متاح"
+                : p.providerStatus === "offline"  ? "مجدول"
+                : "محجوز";
               return (
                 <TouchableOpacity
                   key={p.id}
-                  activeOpacity={0.85}
-                  onPress={() => { tap(); booking.setCleanerId(p.id); }}
+                  activeOpacity={isBooked ? 1 : 0.85}
+                  onPress={() => { if (isBooked) return; tap(); booking.setCleanerId(p.id); }}
                   style={[
                     styles.cleanerCard,
                     {
                       backgroundColor: colors.card,
                       borderColor: selected ? colors.primary : "transparent",
                       borderWidth: selected ? 2 : 0,
+                      opacity: isBooked ? 0.55 : 1,
                     },
                   ]}
                 >
+                  {/* Availability badge (scheduled mode only) */}
+                  {bookingType === "scheduled" && (
+                    <View style={[styles.provBadge, { backgroundColor: statusColor + "22" }]}>
+                      <View style={[styles.provDot, { backgroundColor: statusColor }]} />
+                      <Text style={[styles.provBadgeT, { color: statusColor }]}>{statusLabel}</Text>
+                    </View>
+                  )}
                   {selected && (
                     <View style={[styles.cleanerCheck, { backgroundColor: colors.primary }]}>
                       <Feather name="check" size={12} color="#FFFFFF" />
@@ -468,7 +530,9 @@ export default function BookingScreen() {
           <View style={[styles.blockHint, { backgroundColor: colors.muted }]}>
             <Feather name="alert-circle" size={13} color={colors.mutedForeground} />
             <Text style={[styles.blockHintT, { color: colors.mutedForeground }]}>
-              {bookingType === "instant"
+              {selectedProvider?.providerStatus === "booked"
+                ? "هذا الفني محجوز في هذا الموعد — اختر فنياً آخر أو غيّر التوقيت"
+                : bookingType === "instant"
                 ? "لا يوجد فنيون متاحون الآن — جدِّل موعداً أو حاول لاحقاً"
                 : "يرجى اختيار فني لإتمام الحجز"}
             </Text>
@@ -617,6 +681,9 @@ const styles = StyleSheet.create({
   },
   cleanerAvatar: { width: 56, height: 56, borderRadius: 28, marginBottom: 8 },
   cleanerName: { fontFamily: "Tajawal_600SemiBold", fontSize: 12, marginBottom: 4, textAlign: "center" },
+  provBadge: { position: "absolute", top: 6, start: 6, flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 5, paddingVertical: 3, borderRadius: 100, zIndex: 3 },
+  provDot:   { width: 5, height: 5, borderRadius: 3 },
+  provBadgeT: { fontFamily: "Tajawal_700Bold", fontSize: 8 },
   ratingRow: { flexDirection: "row", alignItems: "center", gap: 2 },
   ratingText: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
   emptyProv: { marginHorizontal: 16, padding: 24, borderRadius: 18, alignItems: "center", marginBottom: 18, gap: 6 },

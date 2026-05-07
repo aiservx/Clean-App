@@ -280,17 +280,21 @@ export async function createNotification(
   // Also fire push notification so the user gets it on their device
   if (!skipPush) {
     const channelId =
-      type === "booking_created"                   ? "new_booking"
+      type === "booking_created"                       ? "new_booking"
       : type === "booking_accepted"
         || type === "booking_on_way"
         || type === "booking_started"
         || type === "booking_completed"
         || type === "booking_update"
-        || type === "booking_cancelled"             ? "booking_status"
+        || type === "booking_cancelled"               ? "booking_status"
       : type === "message" || type === "chat_message" ? "chat"
       : type === "payment" || type === "payment_received" ? "payment"
       : type === "review_received" || type === "review_request" ? "default"
-      : type === "offer"  || type === "promo"      ? "promotions"
+      : type === "refund_requested"
+        || type === "refund_approved"
+        || type === "refund_rejected"
+        || type === "refund_result"                   ? "payment"
+      : type === "offer"  || type === "promo"         ? "promotions"
       : "default";
     // Embed type in data so InAppBanner + deep-link handler can read it
     await sendPushNotification(userId, title, body, { ...(data ?? {}), type }, type, channelId);
@@ -359,9 +363,10 @@ export async function notifyAvailableProviders(
     }
 
     // Save in-app notification records for all providers (skip push — batch already handled it)
+    // isProvider: true ensures deep-link routes to provider dashboard, not user tracking
     Promise.all(
       providerIds.map((id: string) =>
-        createNotification(id, "booking_created", title, body, data ?? {}, true),
+        createNotification(id, "booking_created", title, body, { ...(data ?? {}), isProvider: true }, true),
       ),
     ).catch(() => {});
   } catch (e) {

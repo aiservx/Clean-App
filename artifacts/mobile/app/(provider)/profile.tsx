@@ -142,8 +142,9 @@ export default function ProviderProfile() {
         {/* Menu items */}
         <View style={styles.menu}>
           {[
-            { i: "edit-3",      l: "تعديل البروفايل المهني",   p: "/provider-edit",        c: "#16C47F", bg: "#D7F5E8" },
-            { i: "clock",       l: "مواعيد العمل",             p: "/provider-hours",       c: "#2F80ED", bg: "#DBEAFE" },
+            { i: "edit-3",      l: "تعديل البروفايل المهني",   p: "/provider-edit",          c: "#16C47F", bg: "#D7F5E8" },
+            { i: "crosshair",   l: "منطقة الخدمة ومواعيد العمل", p: "/provider-service-area", c: "#2F80ED", bg: "#DBEAFE" },
+            { i: "clock",       l: "مواعيد العمل",             p: "/provider-hours",         c: "#8B5CF6", bg: "#EDE9FE" },
             { i: "credit-card", l: "المحفظة والأرباح",         p: "/(provider)/wallet",    c: "#F59E0B", bg: "#FEF3C7" },
             { i: "list",        l: "كل طلباتي",                p: "/(provider)/bookings",  c: "#8B5CF6", bg: "#EDE9FE" },
             { i: "users",       l: "دعوة عمال آخرين",          p: "/provider-referrals",   c: "#EC4899", bg: "#FCE7F3" },

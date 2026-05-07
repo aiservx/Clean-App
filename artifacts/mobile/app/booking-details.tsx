@@ -1,12 +1,145 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import type { Session } from "@supabase/supabase-js";
 import { router, useLocalSearchParams } from "expo-router";
 
 import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { createNotification } from "@/lib/notifications";
+
+// ── Refund Section — full lifecycle: pending → accepted → rejected / approved ──
+type RefundStatus = "none" | "pending" | "approved" | "rejected";
+
+function RefundSection({
+  booking,
+  session,
+  colors,
+}: {
+  booking: { id: string; total: number; status: string; payment_method: string | null };
+  session: Session | null;
+  colors: ReturnType<typeof useColors>;
+}) {
+  const [refundStatus, setRefundStatus] = useState<RefundStatus>("none");
+  const [refundId, setRefundId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Load existing refund request if any
+  useEffect(() => {
+    if (!booking.id || !session?.user) return;
+    supabase
+      .from("refund_requests")
+      .select("id, status")
+      .eq("booking_id", booking.id)
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setRefundId(data.id);
+          setRefundStatus(data.status as RefundStatus);
+        }
+      });
+  }, [booking.id, session?.user?.id]);
+
+  // Already submitted — show status badge
+  if (refundStatus !== "none") {
+    const cfg = {
+      pending:  { bg: "#FEF3C7", border: "#F59E0B", text: "#92400E", label: "طلب الاسترداد قيد المراجعة", icon: "clock" },
+      approved: { bg: "#D1FAE5", border: "#10B981", text: "#065F46", label: "✅ تمت الموافقة على الاسترداد", icon: "check-circle" },
+      rejected: { bg: "#FEE2E2", border: "#EF4444", text: "#991B1B", label: "❌ رُفض طلب الاسترداد",       icon: "x-circle" },
+    }[refundStatus] ?? { bg: "#F1F5F9", border: "#94A3B8", text: "#475569", label: refundStatus, icon: "info" };
+    return (
+      <View style={[styles.refundBtn, { backgroundColor: cfg.bg, borderColor: cfg.border, borderWidth: 1 }]}>
+        <Feather name={cfg.icon as any} size={14} color={cfg.text} />
+        <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 12, color: cfg.text }}>{cfg.label}</Text>
+      </View>
+    );
+  }
+
+  const isCash = booking.payment_method === "cash";
+
+  const submit = async () => {
+    if (!session?.user) return;
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.from("refund_requests").insert({
+        booking_id: booking.id,
+        user_id: session.user.id,
+        amount: booking.total,
+        reason: isCash
+          ? "طلب استرداد — دفع نقدي (يراجع إدارياً)"
+          : "طلب استرداد من العميل",
+        status: "pending",
+      }).select("id").maybeSingle();
+      if (error) throw error;
+      if (data?.id) setRefundId(data.id);
+      setRefundStatus("pending");
+
+      // 1. Self-notification (confirmation to the user)
+      await createNotification(
+        session.user.id,
+        "refund_requested",
+        "🔄 طلب الاسترداد قيد المراجعة",
+        `طلبك باسترداد ${booking.total} ر.س تم استلامه وسيُراجَع خلال 3-5 أيام`,
+        { bookingId: booking.id },
+      );
+
+      // 2. Notify the provider (if booking has a provider)
+      const { data: bk } = await supabase
+        .from("bookings")
+        .select("provider_id")
+        .eq("id", booking.id)
+        .maybeSingle();
+      if (bk?.provider_id) {
+        createNotification(
+          bk.provider_id,
+          "refund_requested",
+          "🔄 طلب استرداد من عميل",
+          `أحد عملائك طلب استرداد ${booking.total} ر.س — سيتم المراجعة`,
+          { bookingId: booking.id, isProvider: true },
+        ).catch(() => {});
+      }
+
+      Alert.alert("✓ تم التقديم", "تم استلام طلب الاسترداد وسيتم مراجعته خلال 3-5 أيام عمل.");
+    } catch {
+      Alert.alert("خطأ", "فشل تقديم طلب الاسترداد، يرجى المحاولة مرة أخرى.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      style={[styles.refundBtn, { backgroundColor: "#FEF3C7", borderColor: "#F59E0B", borderWidth: 1 }]}
+      activeOpacity={0.85}
+      onPress={() => {
+        Alert.alert(
+          "طلب استرداد المبلغ",
+          isCash
+            ? `هل تريد تقديم طلب استرداد ${booking.total} ر.س؟\nملاحظة: طلبات الدفع النقدي تُراجع إدارياً.`
+            : `هل تريد استرداد ${booking.total} ر.س؟\nسيتم المراجعة خلال 3-5 أيام عمل.`,
+          [
+            { text: "إلغاء", style: "cancel" },
+            { text: "تقديم الطلب", onPress: submit },
+          ],
+        );
+      }}
+      disabled={submitting}
+    >
+      {submitting
+        ? <ActivityIndicator size="small" color="#B45309" />
+        : <>
+            <Feather name="rotate-ccw" size={14} color="#B45309" />
+            <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#92400E" }}>طلب استرداد المبلغ ({booking.total} ر.س)</Text>
+          </>
+      }
+    </TouchableOpacity>
+  );
+}
 
 type StatusLog = { id: string; status: string; note: string | null; created_at: string };
 type BookingDetail = {
@@ -203,42 +336,9 @@ export default function BookingDetails() {
           </View>
         </View>
 
-        {/* Refund request — only for completed non-cash bookings */}
-        {booking.status === "completed" && booking.payment_method !== "cash" && (
-          <TouchableOpacity
-            style={[styles.refundBtn, { backgroundColor: "#FEF3C7", borderColor: "#F59E0B", borderWidth: 1 }]}
-            activeOpacity={0.85}
-            onPress={() => {
-              Alert.alert(
-                "طلب استرداد المبلغ",
-                "هل تريد تقديم طلب استرداد قيمة هذا الطلب؟ سيتم مراجعته خلال 3-5 أيام عمل.",
-                [
-                  { text: "إلغاء", style: "cancel" },
-                  {
-                    text: "تقديم الطلب",
-                    onPress: async () => {
-                      try {
-                        const { error } = await supabase.from("refund_requests").insert({
-                          booking_id: booking.id,
-                          user_id: session?.user?.id,
-                          amount: booking.total,
-                          reason: "طلب استرداد من العميل",
-                          status: "pending",
-                        });
-                        if (error) throw error;
-                        Alert.alert("✓ تم التقديم", "تم استلام طلب الاسترداد وسيتم مراجعته خلال 3-5 أيام عمل.");
-                      } catch {
-                        Alert.alert("خطأ", "فشل تقديم طلب الاسترداد، يرجى المحاولة مرة أخرى.");
-                      }
-                    },
-                  },
-                ]
-              );
-            }}
-          >
-            <Feather name="rotate-ccw" size={14} color="#B45309" />
-            <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 12, color: "#92400E" }}>طلب استرداد المبلغ</Text>
-          </TouchableOpacity>
+        {/* Refund request — available at any stage except cancelled/rejected */}
+        {!["cancelled", "rejected"].includes(booking.status) && (
+          <RefundSection booking={booking} session={session} colors={colors} />
         )}
       </ScrollView>
 

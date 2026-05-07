@@ -305,16 +305,24 @@ router.post("/push", async (req: Request, res: Response) => {
         ? channelId
         : categoryIdentifier === "new_booking"
         ? "new_booking"
-        : categoryIdentifier === "booking_update"   ||
-          categoryIdentifier === "booking_accepted"  ||
-          categoryIdentifier === "booking_on_way"    ||
-          categoryIdentifier === "booking_started"   ||
-          categoryIdentifier === "booking_completed" ||
+        : categoryIdentifier === "booking_update"     ||
+          categoryIdentifier === "booking_accepted"    ||
+          categoryIdentifier === "booking_on_way"      ||
+          categoryIdentifier === "booking_started"     ||
+          categoryIdentifier === "booking_completed"   ||
           categoryIdentifier === "booking_cancelled"
         ? "booking_status"
-        : categoryIdentifier === "payment" || categoryIdentifier === "payment_received"
+        : categoryIdentifier === "payment"            ||
+          categoryIdentifier === "payment_received"   ||
+          categoryIdentifier === "refund_requested"   ||
+          categoryIdentifier === "refund_approved"    ||
+          categoryIdentifier === "refund_rejected"    ||
+          categoryIdentifier === "refund_result"      ||
+          categoryIdentifier === "withdrawal"         ||
+          categoryIdentifier === "withdrawal_approved"
         ? "payment"
-        : categoryIdentifier === "message" || categoryIdentifier === "chat_message"
+        : categoryIdentifier === "message"            ||
+          categoryIdentifier === "chat_message"
         ? "chat"
         : "default";
 
@@ -325,6 +333,15 @@ router.post("/push", async (req: Request, res: Response) => {
       : 86400;
 
     const msgData = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
+
+    // Map notification type → notification category for action buttons.
+    // Only new_booking and booking_update have registered categories with action buttons.
+    const resolvedCategoryId =
+      typeof categoryIdentifier === "string" && categoryIdentifier
+        ? (categoryIdentifier === "new_booking" || categoryIdentifier === "booking_update" || categoryIdentifier === "review_request"
+            ? categoryIdentifier
+            : undefined)
+        : undefined;
 
     const messages = tokens.map((token) => ({
       to: token,
@@ -338,9 +355,7 @@ router.post("/push", async (req: Request, res: Response) => {
       badge: 1,
       ttl,
       expiration: Math.floor(Date.now() / 1000) + ttl,
-      ...(typeof categoryIdentifier === "string" && categoryIdentifier
-        ? { categoryId: categoryIdentifier }
-        : {}),
+      ...(resolvedCategoryId ? { categoryId: resolvedCategoryId } : {}),
     }));
 
     const successCount = await sendToExpoWithRetry(messages, 3);
@@ -454,16 +469,24 @@ router.post("/push/batch", async (req: Request, res: Response) => {
         ? channelId
         : categoryIdentifier === "new_booking"
         ? "new_booking"
-        : categoryIdentifier === "booking_update"   ||
-          categoryIdentifier === "booking_accepted"  ||
-          categoryIdentifier === "booking_on_way"    ||
-          categoryIdentifier === "booking_started"   ||
-          categoryIdentifier === "booking_completed" ||
+        : categoryIdentifier === "booking_update"     ||
+          categoryIdentifier === "booking_accepted"    ||
+          categoryIdentifier === "booking_on_way"      ||
+          categoryIdentifier === "booking_started"     ||
+          categoryIdentifier === "booking_completed"   ||
           categoryIdentifier === "booking_cancelled"
         ? "booking_status"
-        : categoryIdentifier === "payment" || categoryIdentifier === "payment_received"
+        : categoryIdentifier === "payment"            ||
+          categoryIdentifier === "payment_received"   ||
+          categoryIdentifier === "refund_requested"   ||
+          categoryIdentifier === "refund_approved"    ||
+          categoryIdentifier === "refund_rejected"    ||
+          categoryIdentifier === "refund_result"      ||
+          categoryIdentifier === "withdrawal"         ||
+          categoryIdentifier === "withdrawal_approved"
         ? "payment"
-        : categoryIdentifier === "message" || categoryIdentifier === "chat_message"
+        : categoryIdentifier === "message"            ||
+          categoryIdentifier === "chat_message"
         ? "chat"
         : "default";
 
@@ -474,6 +497,13 @@ router.post("/push/batch", async (req: Request, res: Response) => {
       : 86400;
 
     const batchData = (typeof data === "object" && data !== null ? data : {}) as Record<string, unknown>;
+
+    const batchCategoryId =
+      typeof categoryIdentifier === "string" && categoryIdentifier
+        ? (categoryIdentifier === "new_booking" || categoryIdentifier === "booking_update" || categoryIdentifier === "review_request"
+            ? categoryIdentifier
+            : undefined)
+        : undefined;
 
     const messages = tokens.map((token) => ({
       to: token,
@@ -486,9 +516,7 @@ router.post("/push/batch", async (req: Request, res: Response) => {
       badge: 1,
       ttl: batchTtl,
       expiration: Math.floor(Date.now() / 1000) + batchTtl,
-      ...(typeof categoryIdentifier === "string" && categoryIdentifier
-        ? { categoryId: categoryIdentifier }
-        : {}),
+      ...(batchCategoryId ? { categoryId: batchCategoryId } : {}),
     }));
 
     const successCount = await sendToExpoWithRetry(messages, 3);
