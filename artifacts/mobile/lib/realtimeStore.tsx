@@ -443,6 +443,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Channel 6: admin dashboard + customers — new booking inserts
+      // Providers already receive new_booking from Channel 3; skip to avoid duplicate dispatches.
       const adminCh = supabase
         .channel(`store-admin-bookings`)
         .on(
@@ -452,7 +453,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             const bk = payload.new;
             if (!bk?.id) return;
             console.log(`[realtime] [store-admin-bookings] NEW booking id=${bk.id}`);
-            realtimeEvents.dispatch({ type: "new_booking", bookingId: bk.id });
+            if (!isProvider) {
+              realtimeEvents.dispatch({ type: "new_booking", bookingId: bk.id });
+            }
           },
         )
         .subscribe((s) => console.log(`[realtime] store-admin-bookings: ${s}`));

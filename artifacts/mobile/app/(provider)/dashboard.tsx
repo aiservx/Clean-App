@@ -59,6 +59,11 @@ export default function ProviderHome() {
   const onlineRef = useRef(false);
   useEffect(() => { onlineRef.current = online; }, [online]);
 
+  // Stable refs for values used inside Realtime callbacks — prevents channel
+  // teardown/rebuild every time myLoc updates (location heartbeat fires every 5s).
+  const myLocRef = useRef<ResolvedAddress | null>(null);
+  useEffect(() => { myLocRef.current = myLoc; }, [myLoc]);
+
   const loadAll = useCallback(async () => {
     if (!session?.user) {
       setLoading(false);
@@ -183,6 +188,12 @@ export default function ProviderHome() {
     } catch {}
   }, [session, myLoc]);
 
+  // Stable ref so the modal channel callback can call refreshOrders without
+  // being listed in the channel effect's dependency array (which would
+  // cause the channel to tear-down and re-subscribe on every render).
+  const refreshOrdersRef = useRef<() => Promise<void>>(async () => {});
+  useEffect(() => { refreshOrdersRef.current = refreshOrders; }, [refreshOrders]);
+
   // ── Live refresh via global event dispatcher ───────────────────────────
   useRealtimeEvents(
     (event) => {
@@ -217,7 +228,7 @@ export default function ProviderHome() {
             .maybeSingle();
           if (data) {
             const addr = (data as any).addresses;
-            const loc = myLoc ? { lat: myLoc.lat, lng: myLoc.lng } : null;
+            const loc = myLocRef.current ? { lat: myLocRef.current.lat, lng: myLocRef.current.lng } : null;
             const lat = addr?.lat ?? null;
             const lng = addr?.lng ?? null;
             const d = loc && lat && lng ? distanceKm(loc, { lat, lng }) : null;
@@ -240,11 +251,11 @@ export default function ProviderHome() {
             setNewOrderAlert(mapped);
           }
         } catch {}
-        refreshOrders();
+        refreshOrdersRef.current();
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [session, online, myLoc, refreshOrders]);
+  }, [session?.user?.id, online]);
 
   // Layer 1: AppState listener — marks provider offline after 2-minute grace period when backgrounded.
   // The grace period prevents accidental offline when briefly switching to notifications or other apps.

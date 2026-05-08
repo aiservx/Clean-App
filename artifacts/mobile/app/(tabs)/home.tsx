@@ -452,19 +452,17 @@ export default function HomeScreen() {
         onPress={() => providerScrollRef.current?.scrollTo({ y: 99999, animated: true })}
       />
 
-      {/* SCROLLABLE SHEET — spans the full screen so content can scroll up
-          into the map / greeting area. A transparent spacer at the top lets
-          the map show through and passes pointer events on web. */}
-      <ScrollView
-        ref={providerScrollRef}
-        style={{ flex: 1, marginTop: -28 }}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* SHEET — negative marginTop on ScrollView creates a 28px visual overlap
-            with the map bottom so the rounded-corner sheet peeks over the map edge */}
-        <View style={styles.sheet}>
+      {/* SHEET CONTAINER — fixed below the map so the map always stays visible.
+          Only the inner ScrollView content scrolls; the sheet itself never slides
+          up to cover the map. */}
+      <View style={{ flex: 1, marginTop: -28 }}>
+        <View style={[styles.sheet, { flex: 1 }]}>
           <View style={styles.sheetGrabber} />
+          <ScrollView
+            ref={providerScrollRef}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            showsVerticalScrollIndicator={false}
+          >
 
           {/* PROMO BANNERS — single image swapper, works on web + native */}
           <View style={{ marginHorizontal: 16, marginBottom: 18 }}>
@@ -654,8 +652,9 @@ export default function HomeScreen() {
               </View>
             </LinearGradient>
           </TouchableOpacity>
+          </ScrollView>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -755,7 +754,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingTop: 14,
-    minHeight: 600,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.06,

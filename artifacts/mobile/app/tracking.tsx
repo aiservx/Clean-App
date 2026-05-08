@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Platform, ActivityIndicator, Animated, Alert, Linking, I18nManager,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import AppMap from "@/components/AppMap";
 import { useColors } from "@/hooks/useColors";
 import { supabase } from "@/lib/supabase";
@@ -139,6 +139,7 @@ export default function TrackingScreen() {
   const [myLoc, setMyLoc] = useState<ResolvedAddress | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [focusCounter, setFocusCounter] = useState(0);
   const prevStatusRef = useRef<string | null>(null);
 
   // In-app status toast
@@ -228,7 +229,15 @@ export default function TrackingScreen() {
         setLoading(false);
       }
     })();
-  }, [session?.user?.id, bookingId, isProvider]);
+  }, [session?.user?.id, bookingId, isProvider, focusCounter]);
+
+  // Refresh booking data every time the screen comes into focus (e.g., returning from background or another screen).
+  // This ensures status is always up-to-date without relying solely on Realtime.
+  useFocusEffect(
+    useCallback(() => {
+      setFocusCounter((c) => c + 1);
+    }, []),
+  );
 
   useEffect(() => {
     if (!booking?.id) return;

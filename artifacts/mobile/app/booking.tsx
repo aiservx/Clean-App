@@ -75,7 +75,7 @@ export default function BookingScreen() {
   const service = booking.service ?? DEFAULT_SERVICE;
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loadingProvs, setLoadingProvs] = useState(true);
-  const [bookingType, setBookingType] = useState<"instant" | "scheduled">("scheduled");
+  const [bookingType, setBookingType] = useState<"instant" | "scheduled">("instant");
 
   // Load providers from DB — instant mode: fresh-heartbeat only; scheduled: ALL + conflict check
   useEffect(() => {
@@ -123,6 +123,10 @@ export default function BookingScreen() {
           });
           mapped.sort((a, b) => (a.d_km ?? 999) - (b.d_km ?? 999));
           setProviders(mapped);
+          // Auto-fallback: if no instant providers are online right now, switch to scheduled
+          if (mapped.length === 0 && !cancelled) {
+            setBookingType("scheduled");
+          }
 
         } else {
           // ── Scheduled: ALL registered providers + booking conflict detection ────

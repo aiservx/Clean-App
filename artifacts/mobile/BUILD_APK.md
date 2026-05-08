@@ -194,6 +194,31 @@ eas build --platform android --profile preview
 
 ## سجل البناءات
 
+### Build #14 — 7 إصلاحات شاملة + versionCode 17 (مايو 2026)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `b3fa29e7-e4ec-465b-8bd2-6563731979d9` |
+| Platform | Android / preview |
+| الحساب | aiservx1 |
+| EAS Project ID | `c1d243e2-193e-4a27-ad30-87468c74e92b` |
+| versionCode | **17** (رُفع من 16) |
+| API URL | `https://clean-app--hady201.replit.app` (ثابت ✅) |
+| Keystore | `Build Credentials txt_65s4Tz` (EAS managed ✅) |
+| صفحة البناء | https://expo.dev/accounts/aiservx1/projects/mobile/builds/b3fa29e7-e4ec-465b-8bd2-6563731979d9 |
+| الحالة | **🔄 جارٍ الآن** |
+
+#### الإصلاحات السبعة المضمّنة في هذا البناء:
+1. ✅ **إشعارات مكررة** — حذف `trg_auto_push` من Supabase (يدوي: `db/migration_service_city.sql`) + guard `if (!isProvider)` في Channel 6 بـ `realtimeStore.tsx`
+2. ✅ **مودال العد التنازلي للمزود** — إصلاح TypeScript في `dashboard.tsx` (نقل `refreshOrdersRef` بعد `refreshOrders`)
+3. ✅ **Bottom sheet يغطي الخريطة** — `home.tsx` الآن يستخدم `height: 300` ثابتة للخريطة + `flex: 1` للـ sheet
+4. ✅ **الحجز الفوري/المجدول** — `booking.tsx` يختار "فوري" إذا يوجد مزودون متاحون، وإلا "مجدول"
+5. ✅ **عمود service_city مفقود** — `db/migration_service_city.sql` جاهز للتطبيق اليدوي على Supabase
+6. ✅ **التطبيق يفتح دائماً على الإشعارات** — `_layout.tsx` يستخدم AsyncStorage لتجنب معالجة نفس الإشعار مرتين عند البدء البارد
+7. ✅ **مزامنة فورية شاملة** — `tracking.tsx` يستخدم `useFocusEffect + focusCounter`؛ `realtimeStore.tsx` يعيد الاتصال عند عودة التطبيق من الخلفية (`AppState`)
+
+---
+
 ### Build #13 — رفع versionCode إلى 16 + تنظيف التوكنات (مايو 2026)
 
 | الحقل | القيمة |

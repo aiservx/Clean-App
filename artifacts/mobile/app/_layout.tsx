@@ -154,14 +154,26 @@ function PushRegistrar() {
 
     // ── Cold-start: app was killed, user tapped a notification ────────────
     // Must be called once after the app launches to replay the missed tap.
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
+    // We track handled notification IDs in AsyncStorage so that cold-starting
+    // the app multiple times never re-navigates for the same old notification.
+    Notifications.getLastNotificationResponseAsync().then(async (response) => {
+      if (!response) return;
+      try {
+        const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+        const notifId = response.notification.request.identifier;
+        const key = `handled_notif_${notifId}`;
+        const alreadyHandled = await AsyncStorage.getItem(key);
+        if (alreadyHandled) {
+          console.log("[push] cold-start: already handled notif", notifId, "— skipping nav");
+          return;
+        }
+        await AsyncStorage.setItem(key, "1");
         console.log("[push] cold-start notification tap replayed:", response.notification.request.content.data);
         // Delay navigation so the root navigator AND session are ready.
         // 1500ms is the safe minimum — some mid-range Android devices need > 1s
         // for Expo Router to finish mounting the navigation tree.
         setTimeout(() => handleNotifResponse(response, sessionRef), 2000);
-      }
+      } catch {}
     }).catch(() => {});
 
     // ── Foreground + background tap listener ──────────────────────────────
