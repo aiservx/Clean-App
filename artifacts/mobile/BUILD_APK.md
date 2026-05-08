@@ -52,6 +52,60 @@
 
 ---
 
+## ⚠️ المشكلة الحرجة — سبب عدم وصول الإشعارات للأجهزة (مايو 2026)
+
+### التشخيص الكامل
+
+بعد تحليل معمّق لكامل منظومة الإشعارات، اتضح أن:
+
+| المكوّن | الحالة | التأثير |
+|---------|--------|---------|
+| API Server (`hady201.replit.app`) | ✅ يعمل ويرد على `/api/healthz` | لا مشكلة |
+| `EXPO_PUBLIC_API_URL` في eas.json | ✅ صحيح ويمكن الوصول إليه | لا مشكلة |
+| `google-services.json` | ✅ project_number حقيقي | لا مشكلة |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ مضبوط في Replit Secrets | لا مشكلة |
+| منطق الإرسال في `notifications.ts` | ✅ سليم | لا مشكلة |
+| **FCM v1 Service Account على Expo** | ❌ **لم يُرفع أبداً** | **السبب الجذري الوحيد** |
+
+### لماذا تتوقف الإشعارات؟
+
+```
+التطبيق → API Server → Expo Push API → [هنا تتوقف] → Firebase FCM → Android
+                                         ↑
+                     Expo يحتاج FCM v1 Service Account
+                     لكي يُكمل الإرسال عبر Firebase
+                     بدونه: يُرجع Expo "ok" لكن لا يُرسل شيئاً
+```
+
+عند إغلاق التطبيق، الإشعارات تسلك المسار: **Expo Push API → Firebase FCM → الجهاز**. منذ يونيو 2024، ألغت Google نظام FCM القديم. الآن يحتاج Expo لمفتاح `FCM v1 Service Account` المرفوع على `expo.dev` لإتمام هذا المسار.
+
+الإشعارات داخل التطبيق (عندما يكون مفتوحاً) تعمل عبر `addNotificationReceivedListener` مباشرةً بدون Firebase — لذلك InAppBanner يظهر أحياناً لكن شريط الحالة لا يُحدَّث.
+
+### الإصلاح — خطوة واحدة يدوية:
+
+**1. احصل على Firebase Service Account JSON:**
+- اذهب إلى: https://console.firebase.google.com/project/nazafa-46eb7/settings/serviceaccounts/adminsdk
+- اضغط **"Generate new private key"**
+- احفظ الملف JSON على جهازك
+
+**2. ارفعه على Expo Dashboard:**
+- اذهب إلى: https://expo.dev/accounts/aiservx1/projects/mobile/credentials
+- اختر **Android**
+- في قسم **"FCM V1 service account key"** اضغط **Upload**
+- ارفع ملف JSON الذي حملته في الخطوة السابقة
+- احفظ
+
+**3. أعد بناء الـ APK** (مرة أخيرة بعد رفع FCM v1):
+```bash
+cd artifacts/mobile
+EAS_NO_VCS=1 EXPO_TOKEN="ryF839B-JosOAMoO51biATLZrW7XZODwB1PsrES3" npx eas-cli build \
+  --platform android --profile preview --non-interactive --no-wait
+```
+
+> **ملاحظة:** Build #13 (الجاري الآن) يصلح مشكلة التوكنات القديمة لكن لن تصل الإشعارات بشريط الحالة حتى ترفع FCM v1. بعد الرفع، أعد البناء مرة واحدة إضافية.
+
+---
+
 ## المشاكل التي تم اكتشافها وإصلاحها (مايو 2026)
 
 ### 🐛 Bug #1 — projectId خاطئ في getExpoPushTokenAsync
@@ -140,6 +194,29 @@ eas build --platform android --profile preview
 
 ## سجل البناءات
 
+### Build #13 — رفع versionCode إلى 16 + تنظيف التوكنات (مايو 2026)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `0646e5c2-6a82-43b9-abc7-b569e7d2188c` |
+| Platform | Android / preview |
+| الحساب | aiservx1 |
+| EAS Project ID | `c1d243e2-193e-4a27-ad30-87468c74e92b` |
+| versionCode | **16** (رُفع من 15 لإجبار المستخدمين على إعادة التثبيت وتجديد التوكنات) |
+| API URL | `https://clean-app--hady201.replit.app` (ثابت ✅ لا يزال حياً) |
+| Keystore | `Build Credentials txt_65s4Tz` (EAS managed ✅) |
+| صفحة البناء | https://expo.dev/accounts/aiservx1/projects/mobile/builds/0646e5c2-6a82-43b9-abc7-b569e7d2188c |
+| الحالة | **🔄 جارٍ الآن** |
+
+#### الإصلاحات المضمّنة في هذا البناء:
+1. ✅ `app.config.ts` → `versionCode: 16` — تحديث إجباري يمسح التوكنات القديمة عند إعادة التثبيت
+2. ✅ جميع إصلاحات Build #12 محفوظة
+
+#### ما تبقى (خطوة يدوية — الأهم):
+- ⚠️ **FCM v1 Service Account JSON** — بدونه لن تصل الإشعارات في شريط الحالة. انظر القسم "المشكلة الحرجة" أدناه.
+
+---
+
 ### Build #12 — إصلاح الإشعارات الكامل ✅ (مايو 2026)
 
 | الحقل | القيمة |
@@ -151,14 +228,14 @@ eas build --platform android --profile preview
 | API URL | `https://clean-app--hady201.replit.app` (ثابت دائماً ✅) |
 | Keystore | `Build Credentials txt_65s4Tz` (EAS managed ✅) |
 | صفحة البناء | https://expo.dev/accounts/aiservx1/projects/mobile/builds/3313c84b-c96f-4f1a-be03-f9f9050d5f58 |
-| الحالة | **🔄 جارٍ الآن** |
+| الحالة | ✅ مكتمل |
 
 #### الإصلاحات المضمّنة في هذا البناء:
 1. ✅ `lib/notifications.ts` — projectId يُقرأ تلقائياً من Constants (لا hardcoding)
 2. ✅ `google-services.json` — الملف الحقيقي (project_number: `549775812329`)
 3. ✅ `eas.json` → `EXPO_PUBLIC_API_URL` — `https://clean-app--hady201.replit.app` (ثابت)
 4. ✅ `eas.json` → `credentialsSource: "remote"` — EAS يدير Keystore تلقائياً
-5. ⏳ FCM v1 Service Account JSON — ارفعه على expo.dev للإشعارات في الخلفية (انظر القسم أعلاه)
+5. ⏳ FCM v1 Service Account JSON — لم يُرفع بعد (السبب الجذري لعدم وصول الإشعارات)
 
 ---
 
