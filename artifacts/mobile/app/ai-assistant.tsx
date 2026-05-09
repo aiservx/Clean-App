@@ -32,7 +32,7 @@ type CardType =
   | "address_confirm" | "phone_confirm" | "quick_actions"
   | "tracking_card" | "invoice_card"
   | "coupon_card" | "support_contact" | "refund_status_card"
-  | "booking_type"
+  | "booking_type" | "date_time_picker"
   | null;
 
 type TrackingData = {
@@ -61,7 +61,32 @@ type ChatMessage = {
 };
 
 type Step = "welcome" | "services" | "service_selected" | "providers" | "provider_selected"
-  | "booking_type" | "scheduled_date" | "address" | "phone" | "invoice" | "confirmed" | "qa";
+  | "booking_type" | "date_time_picker" | "address" | "phone" | "invoice" | "confirmed" | "qa";
+
+// ── Date/Time helpers (same logic as booking.tsx) ──────────────────────────
+const AI_AR_DAYS   = ["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const AI_AR_MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+function buildAiDates() {
+  const out: { day: string; num: string; month: string; iso: string }[] = [];
+  const today = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today); d.setDate(today.getDate() + i);
+    out.push({
+      day:   i === 0 ? "اليوم" : i === 1 ? "غداً" : AI_AR_DAYS[d.getDay()],
+      num:   String(d.getDate()),
+      month: AI_AR_MONTHS[d.getMonth()],
+      iso:   d.toISOString(),
+    });
+  }
+  return out;
+}
+const AI_TIMES = [
+  { label: "صباحاً",  range: "08:00-10:00", h: 8  },
+  { label: "صباحاً",  range: "10:00-12:00", h: 10 },
+  { label: "ظهراً",   range: "12:00-14:00", h: 12 },
+  { label: "عصراً",   range: "16:00-18:00", h: 16 },
+  { label: "مساء",    range: "18:00-20:00", h: 18 },
+];
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -194,6 +219,9 @@ export default function AiAssistantScreen() {
   // ── Booking type (instant / scheduled)
   const [aiBookingType, setAiBookingType] = useState<"instant" | "scheduled">("instant");
   const [aiScheduledDate, setAiScheduledDate] = useState<string | null>(null);
+  const [aiDateIndex, setAiDateIndex]     = useState(0);
+  const [aiTimeIndex, setAiTimeIndex]     = useState(0);
+  const aiDates = useMemo(buildAiDates, []);
 
   // ── Load services + providers + address + booking flag ───────────────────
   useEffect(() => {
@@ -528,10 +556,25 @@ export default function AiAssistantScreen() {
       }, 200);
     } else {
       addUserMessage("موعد لاحق — مجدول");
-      setAiScheduledDate(null);
-      addBotMessage("اكتب التاريخ والوقت المطلوب، مثال:\nغداً الساعة 10 صباحاً\n2026-05-12 14:00");
-      setStep("scheduled_date");
+      setAiDateIndex(0);
+      setAiTimeIndex(0);
+      addBotMessage("اختر التاريخ والوقت المناسب:", "date_time_picker");
+      setStep("date_time_picker");
     }
+  };
+
+  const handleDateTimeConfirm = () => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
+    const dateObj = new Date(aiDates[aiDateIndex].iso);
+    dateObj.setHours(AI_TIMES[aiTimeIndex].h, 0, 0, 0);
+    setAiScheduledDate(dateObj.toISOString());
+    const label = `${aiDates[aiDateIndex].day} ${aiDates[aiDateIndex].num} ${aiDates[aiDateIndex].month} — ${AI_TIMES[aiTimeIndex].range}`;
+    addUserMessage(`📅 ${label}`);
+    setTimeout(() => {
+      const suggested = defaultAddress?.text || (currentAddress ? currentAddress.formatted : "");
+      if (suggested) { addBotMessage(`تم تحديد الموعد ✅\n\nهل العنوان التالي صحيح؟`, "address_confirm", { address: suggested }); setStep("address"); }
+      else { addBotMessage(`تم تحديد الموعد ✅\n\nأرسل عنوانك:`); setStep("address"); }
+    }, 200);
   };
 
   const askPhone = () => {
@@ -568,40 +611,9 @@ export default function AiAssistantScreen() {
     setVoiceLang(lang);
     try { Speech.stop(); } catch {}
     setInputText(""); addUserMessage(text);
-    if (step === "scheduled_date") {
-      // Parse user-supplied date/time text into an ISO string
-      let parsed: Date | null = null;
-      try {
-        // Try parsing ISO-ish format first (e.g. "2026-05-12 14:00")
-        const isoAttempt = new Date(text.replace(" ", "T"));
-        if (!isNaN(isoAttempt.getTime()) && isoAttempt > new Date()) {
-          parsed = isoAttempt;
-        }
-      } catch {}
-      if (!parsed) {
-        // Simple Arabic heuristics: غداً / بعد غد + hour
-        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(10, 0, 0, 0);
-        const dayAfter = new Date(); dayAfter.setDate(dayAfter.getDate() + 2); dayAfter.setHours(10, 0, 0, 0);
-        const hourMatch = text.match(/(\d{1,2})/);
-        const h = hourMatch ? parseInt(hourMatch[1], 10) : 10;
-        if (/غداً|غدا/.test(text)) { tomorrow.setHours(h < 6 ? h + 12 : h, 0, 0, 0); parsed = tomorrow; }
-        else if (/بعد غد/.test(text)) { dayAfter.setHours(h < 6 ? h + 12 : h, 0, 0, 0); parsed = dayAfter; }
-        else if (hourMatch) {
-          const d = new Date(); d.setHours(h < 6 ? h + 12 : h, 0, 0, 0);
-          if (d > new Date()) { parsed = d; } else { d.setDate(d.getDate() + 1); parsed = d; }
-        }
-      }
-      if (parsed) {
-        setAiScheduledDate(parsed.toISOString());
-        const fmt = parsed.toLocaleString("ar-SA", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-        setTimeout(() => {
-          const suggested = defaultAddress?.text || (currentAddress ? currentAddress.formatted : "");
-          if (suggested) { addBotMessage(`تم تحديد الموعد: ${fmt} 📅\n\nهل العنوان التالي صحيح؟`, "address_confirm", { address: suggested }); setStep("address"); }
-          else { addBotMessage(`تم تحديد الموعد: ${fmt} 📅\n\nأرسل عنوانك:`); setStep("address"); }
-        }, 200);
-      } else {
-        addBotMessage("لم أتمكن من فهم التاريخ. جرب مثل:\nغداً الساعة 10\n2026-05-12 14:00");
-      }
+    if (step === "date_time_picker") {
+      // User typed something while the date_time_picker card is shown — remind them to use the cards
+      addBotMessage("اضغط على التاريخ والوقت المناسبَين ثم اضغط «تأكيد الموعد» 📅");
       return;
     }
     if (step === "address") { setChosenAddress(text); askPhone(); return; }
@@ -654,7 +666,7 @@ export default function AiAssistantScreen() {
   };
 
   const handleNewBooking = () => {
-    msgId = 0; setMessages([]); setStep("welcome"); setSelectedService(null); setSelectedProvider(null); setChosenAddress(""); setChosenPhone(""); setAiBookingType("instant"); setAiScheduledDate(null);
+    msgId = 0; setMessages([]); setStep("welcome"); setSelectedService(null); setSelectedProvider(null); setChosenAddress(""); setChosenPhone(""); setAiBookingType("instant"); setAiScheduledDate(null); setAiDateIndex(0); setAiTimeIndex(0);
     addBotMessage("بدأنا حجزاً جديداً 🎯");
     setTimeout(() => { setMessages((p) => [...p, { id: nextId(), role: "bot", text: "اختار الخدمة", cardType: "services" }]); setStep("services"); }, 800);
   };

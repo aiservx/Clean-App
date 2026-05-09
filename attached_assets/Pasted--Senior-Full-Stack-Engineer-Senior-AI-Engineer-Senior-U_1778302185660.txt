@@ -1,0 +1,358 @@
+أنت الآن تعمل كـ:
+
+* Senior Full Stack Engineer
+* Senior AI Engineer
+* Senior UI/UX Architect
+* Senior Backend Systems Engineer
+* Senior Product Designer
+
+ومهمتك تنفيذ التعديلات التالية داخل مشروع **المساعد الذكي + نظام الحجوزات + لوحة العميل** بشكل احترافي جدًا وعلى مستوى production-ready.
+
+ممنوع:
+
+* الحلول المؤقتة
+* mock data
+* placeholders
+* واجهات شكلية غير مربوطة
+* أي كود وهمي
+* أي API غير مستخدم فعليًا
+* أي ترقيع سريع
+
+أريد تنفيذ حقيقي متكامل بعد فحص شامل للمشروع الحالي أولًا.
+
+---
+
+# المرحلة الأولى: فحص المشروع بالكامل
+
+قبل تعديل أي شيء قم بـ:
+
+1. فحص هيكل المشروع كاملًا
+
+2. تحديد:
+
+   * frontend architecture
+   * backend architecture
+   * database structure
+   * APIs
+   * chatbot architecture
+   * notification system
+   * booking flow
+   * invoice system
+   * ticket system
+   * refund system
+
+3. إنشاء ملف:
+
+```bash
+PROJECT_MEMORY.md
+```
+
+يحتوي على:
+
+* هيكل المشروع
+* أسماء الملفات المهمة
+* العلاقات بين الأنظمة
+* APIs
+* database schema
+* كل تعديل يتم لاحقًا
+
+هذا الملف يجب تحديثه بعد كل تعديل جديد حتى لا يتم استهلاك التوكنز مستقبلًا في إعادة فهم المشروع.
+
+---
+
+# المرحلة الثانية: تعديل بطاقة نجاح الحجز
+
+في شاشة نجاح الحجز الحالية يوجد:
+
+* زر حجز خدمة جديدة
+
+أريد إضافة زر جديد بجواره:
+
+### "تتبع الطلب"
+
+الشروط:
+
+* يكون أكبر حجمًا من زر "حجز خدمة جديدة"
+* أكثر بروزًا
+* primary CTA
+* تصميم حديث جدًا
+* animation hover
+* loading state
+* modern gradients
+* responsive
+
+مثال:
+
+```text
+[ تتبع الطلب ]   [ حجز خدمة جديدة ]
+```
+
+زر تتبع الطلب عند الضغط:
+
+ينقل المستخدم مباشرة إلى:
+
+* صفحة التتبع
+  أو
+* modal tracking
+  أو
+* chat tracking card
+
+حسب architecture الأفضل.
+
+---
+
+# المرحلة الثالثة: ربط المساعد الذكي فعليًا بقاعدة البيانات
+
+المساعد الذكي الحالي لا يجب أن يكون مجرد chatbot تقليدي.
+
+يجب ربطه فعليًا مع قاعدة البيانات بحيث يستطيع الوصول إلى:
+
+### بيانات الحجوزات:
+
+* رقم الطلب
+* حالة الطلب
+* الفني المسؤول
+* الوقت المتبقي
+* الموقع الحالي
+* ETA
+* الجدول الزمني الكامل
+
+---
+
+### بيانات الفواتير:
+
+* رقم الفاتورة
+* المبلغ
+* الضريبة
+* حالة الدفع
+* رابط الدفع
+* PDF invoice
+
+---
+
+### بيانات الشكاوى:
+
+* فتح تذكرة جديدة
+* متابعة التذكرة
+* حالة التذكرة
+* آخر رد
+
+---
+
+### بيانات الاسترداد:
+
+* طلب استرداد
+* حالة الاسترداد
+* تاريخ المعالجة
+* المبلغ
+
+---
+
+### العروض والخصومات:
+
+* عروض حصرية
+* كوبونات
+* خدمات مقترحة
+
+---
+
+# المرحلة الرابعة: ذكاء فهم نية العميل
+
+عند سؤال العميل مثل:
+
+* أين طلبي؟
+* أريد تتبع حجزي
+* ما حالة الفني؟
+* أريد فاتورتي
+* أين الاسترداد؟
+* افتح شكوى
+* عندكم عروض؟
+
+المساعد يجب أن:
+
+1. يفهم intent
+2. يجلب البيانات المناسبة
+3. يعرضها فورًا
+
+---
+
+# المرحلة الخامسة: تصميم الردود داخل الشات بشكل احترافي
+
+لا أريد ردود نصية تقليدية.
+
+---
+
+## تتبع الطلب
+
+اعرض:
+
+* progress timeline
+* live status
+* ETA
+* location
+* distance
+* technician card
+* map integration
+
+تصميم حديث جدًا.
+
+---
+
+## الفاتورة
+
+اعرض:
+
+* invoice card
+* breakdown
+* taxes
+* downloadable pdf
+
+---
+
+## الشكاوى
+
+اعرض:
+
+* support ticket UI
+* ticket timeline
+
+---
+
+## الاسترداد
+
+اعرض:
+
+* refund tracker UI
+
+---
+
+## العروض
+
+اعرض:
+
+* promotional cards
+* animated offers
+
+---
+
+# المرحلة السادسة: أنيميشن احترافي
+
+ابحث وطبق أفضل ممارسات:
+
+* Framer Motion
+* smooth transitions
+* micro interactions
+* modern SaaS UX patterns
+* AI product design patterns
+
+يجب أن يعكس:
+
+* قوة التطبيق
+* الذكاء الاصطناعي
+* premium feel
+
+---
+
+# المرحلة السابعة: Backend APIs المطلوبة
+
+إنشاء أو تحديث APIs حقيقية:
+
+```bash
+GET /bookings/:id
+GET /bookings/:id/tracking
+GET /invoices/:id
+GET /refunds/:id
+GET /offers
+GET /tickets/:id
+POST /tickets
+```
+
+وإذا APIs موجودة:
+
+قم بتحسينها فقط.
+
+---
+
+# المرحلة الثامنة: صلاحيات وأمان
+
+المساعد يجب أن يجلب فقط بيانات المستخدم الحالي.
+
+طبق:
+
+* authentication
+* authorization
+* session validation
+* role checks
+* data privacy
+
+---
+
+# المرحلة التاسعة: سجل كل شيء
+
+بعد كل تعديل:
+
+قم بتحديث:
+
+```bash
+PROJECT_MEMORY.md
+```
+
+بـ:
+
+* الملفات المعدلة
+* APIs الجديدة
+* schema updates
+* UI updates
+* المشاكل التي تم حلها
+
+---
+
+# المرحلة العاشرة: التنفيذ الفعلي
+
+ابدأ فورًا بالتنفيذ وليس الشرح.
+
+ترتيب التنفيذ:
+
+1. audit current system
+2. create memory file
+3. fix booking success card
+4. database integration
+5. AI intent actions
+6. rich UI responses
+7. animations
+8. testing
+9. production cleanup
+
+---
+
+# معايير الجودة
+
+لن أقبل:
+
+* fake integrations
+* dummy responses
+* unfinished flows
+* نصف تنفيذ
+* hardcoded data
+* superficial UI only
+
+أريد:
+
+production-grade implementation
+
+---
+
+# قبل إنهاء المهمة
+
+قدّم تقرير نهائي يحتوي:
+
+* الملفات المعدلة
+* APIs المضافة
+* المشاكل التي كانت موجودة
+* كيف تم حلها
+* ما الذي أصبح يعمل الآن بالكامل
+
+---
+
+نفذ كأنك CTO + Senior Engineer وليس junior developer.
+أي اختصار أو حلول تجميلية فقط = فشل كامل للمهمة.
