@@ -20,12 +20,14 @@ function StatusToast({
   const insets = useSafeAreaInsets();
   const slide = useRef(new Animated.Value(-120)).current;
   const STATUS_ICON_MAP: Record<string, string> = {
-    accepted: "check-circle-outline", on_the_way: "car", in_progress: "broom",
+    accepted: "check-circle-outline", on_the_way: "car", arrived: "map-marker-check",
+    started: "broom", in_progress: "broom",
     completed: "check-all", cancelled: "close-circle-outline", rejected: "alert-circle-outline",
   };
   const STATUS_AR_TOAST: Record<string, string> = {
     pending: "بانتظار التأكيد", accepted: "تم تأكيد طلبك ✓",
-    on_the_way: "المزود في الطريق إليك 🚗", in_progress: "جاري تنفيذ الخدمة 🔧",
+    on_the_way: "المزود في الطريق إليك 🚗", arrived: "الفني وصل للموقع 📍",
+    started: "بدأت الخدمة 🧹", in_progress: "جاري تنفيذ الخدمة 🔧",
     completed: "اكتملت الخدمة بنجاح ✨", cancelled: "تم إلغاء الطلب", rejected: "تم رفض الطلب",
   };
   useEffect(() => {
@@ -66,32 +68,38 @@ const STEPS = ["pending", "accepted", "on_the_way", "in_progress", "completed"] 
 type StatusKey = typeof STEPS[number] | "cancelled" | "rejected";
 
 const STATUS_AR: Record<string, string> = {
-  pending: "بانتظار التأكيد",
-  accepted: "تم التأكيد",
-  on_the_way: "في الطريق إليك",
+  pending:     "بانتظار التأكيد",
+  accepted:    "تم التأكيد",
+  on_the_way:  "في الطريق إليك",
+  arrived:     "وصل للموقع",
+  started:     "بدأ العمل",
   in_progress: "جاري التنفيذ",
-  completed: "مكتمل ✓",
-  cancelled: "ملغي",
-  rejected: "مرفوض",
+  completed:   "مكتمل ✓",
+  cancelled:   "ملغي",
+  rejected:    "مرفوض",
 };
 
 const STATUS_ICON: Record<string, string> = {
-  pending: "clock-outline",
-  accepted: "check-circle-outline",
-  on_the_way: "car",
+  pending:     "clock-outline",
+  accepted:    "check-circle-outline",
+  on_the_way:  "car",
+  arrived:     "map-marker-check",
+  started:     "broom",
   in_progress: "broom",
-  completed: "check-all",
-  cancelled: "close-circle-outline",
-  rejected: "alert-circle-outline",
+  completed:   "check-all",
+  cancelled:   "close-circle-outline",
+  rejected:    "alert-circle-outline",
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: "#F59E0B",
-  accepted: "#3B82F6",
-  on_the_way: "#8B5CF6",
+  pending:     "#F59E0B",
+  accepted:    "#3B82F6",
+  on_the_way:  "#8B5CF6",
+  arrived:     "#F59E0B",
+  started:     "#8B5CF6",
   in_progress: "#10B981",
-  completed: "#10B981",
-  cancelled: "#EF4444",
+  completed:   "#10B981",
+  cancelled:   "#EF4444",
   rejected: "#EF4444",
 };
 
@@ -165,7 +173,7 @@ export default function TrackingScreen() {
       q = q.eq("id", bookingId) as any;
     } else {
       // No specific booking → fetch the latest active one
-      q = q.in("status", ["pending", "accepted", "on_the_way", "in_progress"]).order("created_at", { ascending: false }) as any;
+      q = q.in("status", ["pending", "accepted", "on_the_way", "arrived", "started", "in_progress"]).order("created_at", { ascending: false }) as any;
     }
 
     if (isProvider) {
@@ -281,7 +289,7 @@ export default function TrackingScreen() {
 
   useEffect(() => {
     if (!isProvider || !booking || !session?.user) return;
-    if (!["accepted", "on_the_way", "in_progress"].includes(booking.status)) return;
+    if (!["accepted", "on_the_way", "arrived", "started", "in_progress"].includes(booking.status)) return;
     let cancelled = false;
     const uid = session.user.id;
     const tick = async () => {

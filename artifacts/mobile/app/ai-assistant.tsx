@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput,
   Animated, Platform, ActivityIndicator, Alert, Image, I18nManager, Linking, Keyboard,
@@ -842,9 +842,9 @@ export default function AiAssistantScreen() {
 
   const renderTrackingCard = (td: TrackingData) => {
     const statusColor = STATUS_COLOR[td.status] ?? "#94A3B8";
-    const STEPS = ["pending", "accepted", "on_the_way", "in_progress", "completed"];
-    const currentIdx = STEPS.indexOf(td.status);
-    const STEP_LABELS: Record<string, string> = { pending: "انتظار", accepted: "قبول", on_the_way: "في الطريق", in_progress: "تنفيذ" };
+    const STEPS = ["pending", "accepted", "on_the_way", "arrived", "started", "completed"];
+    const currentIdx = STEPS.indexOf(td.status === "in_progress" ? "started" : td.status);
+    const STEP_LABELS: Record<string, string> = { pending: "انتظار", accepted: "قبول", on_the_way: "الطريق", arrived: "وصل", started: "تنفيذ" };
     return (
       <View style={s.trackCard}>
         <LinearGradient colors={["#0F172A", "#1E293B"]} style={s.trackCardHeader}>
@@ -1208,20 +1208,86 @@ export default function AiAssistantScreen() {
                   {msg.cardType === "booking_type" && (
                     <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
                       <TouchableOpacity
-                        style={[s.confirmInlineBtn, { flex: 1, backgroundColor: "#7C3AED", paddingVertical: 12, borderRadius: 14, alignItems: "center", gap: 4 }]}
+                        style={{ flex: 1, backgroundColor: "#7C3AED", paddingVertical: 14, borderRadius: 16, alignItems: "center", gap: 6 }}
                         onPress={() => handleBookingTypeSelect("instant")}
                         activeOpacity={0.85}
                       >
-                        <MaterialCommunityIcons name="lightning-bolt" size={18} color="#FFF" />
-                        <Text style={[s.confirmInlineBtnT, { color: "#FFF" }]}>الآن (فوري)</Text>
+                        <MaterialCommunityIcons name="lightning-bolt" size={22} color="#FFF" />
+                        <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#FFF" }}>الآن (فوري)</Text>
+                        <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: "rgba(255,255,255,0.8)" }}>خلال دقائق</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={[s.confirmInlineBtn, { flex: 1, backgroundColor: "#F59E0B", paddingVertical: 12, borderRadius: 14, alignItems: "center", gap: 4 }]}
+                        style={{ flex: 1, backgroundColor: "#F59E0B", paddingVertical: 14, borderRadius: 16, alignItems: "center", gap: 6 }}
                         onPress={() => handleBookingTypeSelect("scheduled")}
                         activeOpacity={0.85}
                       >
-                        <MaterialCommunityIcons name="calendar-clock" size={18} color="#FFF" />
-                        <Text style={[s.confirmInlineBtnT, { color: "#FFF" }]}>موعد لاحق</Text>
+                        <MaterialCommunityIcons name="calendar-clock" size={22} color="#FFF" />
+                        <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#FFF" }}>موعد لاحق</Text>
+                        <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: "rgba(255,255,255,0.8)" }}>اختر وقتك</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  {msg.cardType === "date_time_picker" && (
+                    <View style={{ marginTop: 10, gap: 12 }}>
+                      {/* Date row */}
+                      <View>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                          <Feather name="calendar" size={14} color="#7C3AED" />
+                          <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.foreground }}>اختر التاريخ</Text>
+                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingEnd: 4 }}>
+                          {aiDates.map((date: { day: string; num: string; month: string; iso: string }, idx: number) => {
+                            const sel = aiDateIndex === idx;
+                            return (
+                              <TouchableOpacity
+                                key={idx}
+                                activeOpacity={0.85}
+                                onPress={() => { if (Platform.OS !== "web") Haptics.selectionAsync(); setAiDateIndex(idx); }}
+                                style={{ backgroundColor: sel ? "#7C3AED" : colors.card, borderColor: sel ? "#7C3AED" : colors.border, borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, alignItems: "center", minWidth: 68 }}
+                              >
+                                <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: sel ? "rgba(255,255,255,0.85)" : colors.mutedForeground }}>{date.day}</Text>
+                                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 20, color: sel ? "#FFF" : colors.foreground, lineHeight: 26 }}>{date.num}</Text>
+                                <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: sel ? "rgba(255,255,255,0.85)" : colors.mutedForeground }}>{date.month}</Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+                      </View>
+                      {/* Time row */}
+                      <View>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                          <Feather name="clock" size={14} color="#7C3AED" />
+                          <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.foreground }}>اختر الوقت</Text>
+                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingEnd: 4 }}>
+                          {AI_TIMES.map((time: { label: string; range: string; h: number }, idx: number) => {
+                            const sel = aiTimeIndex === idx;
+                            return (
+                              <TouchableOpacity
+                                key={idx}
+                                activeOpacity={0.85}
+                                onPress={() => { if (Platform.OS !== "web") Haptics.selectionAsync(); setAiTimeIndex(idx); }}
+                                style={{ backgroundColor: sel ? "#7C3AED" : colors.card, borderColor: sel ? "#7C3AED" : colors.border, borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 10, alignItems: "center" }}
+                              >
+                                <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 10, color: sel ? "rgba(255,255,255,0.85)" : colors.mutedForeground }}>{time.label}</Text>
+                                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: sel ? "#FFF" : colors.foreground, marginTop: 2 }}>{time.range}</Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+                      </View>
+                      {/* Confirm button */}
+                      <TouchableOpacity
+                        activeOpacity={0.88}
+                        onPress={handleDateTimeConfirm}
+                        style={{ borderRadius: 16, overflow: "hidden" }}
+                      >
+                        <LinearGradient colors={["#7C3AED", "#4F46E5"]} style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14 }}>
+                          <Feather name="check-circle" size={17} color="#FFF" />
+                          <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#FFF" }}>
+                            تأكيد الموعد — {aiDates[aiDateIndex]?.day} {AI_TIMES[aiTimeIndex]?.range}
+                          </Text>
+                        </LinearGradient>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -1283,7 +1349,7 @@ export default function AiAssistantScreen() {
                   style={[s.textInput, { color: colors.foreground }]}
                   value={inputText}
                   onChangeText={setInputText}
-                  placeholder={step === "address" ? "اكتب العنوان..." : step === "phone" ? "اكتب رقم الهاتف..." : step === "scheduled_date" ? "مثال: غداً الساعة 10 أو 2026-05-15 14:00" : "اكتب رسالتك أو اضغط المايك..."}
+                  placeholder={step === "address" ? "اكتب العنوان..." : step === "phone" ? "اكتب رقم الهاتف..." : step === "date_time_picker" ? "اختر من الكروت أعلاه ثم اضغط تأكيد..." : "اكتب رسالتك أو اضغط المايك..."}
                   placeholderTextColor={colors.mutedForeground ?? "#94A3B8"}
                   onSubmitEditing={handleSendText}
                   returnKeyType="send"

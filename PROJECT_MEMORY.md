@@ -120,7 +120,8 @@ A **production-grade Arabic RTL mobile cleaning-services marketplace** built for
 | `refund_requests` | Refund requests (booking_id, amount, reason, status) — see `db/migration_tickets_refunds.sql` |
 
 **Booking statuses (ordered):**
-`pending` → `accepted` → `on_the_way` → `in_progress` → `completed` | `cancelled`
+`pending` → `accepted` → `on_the_way` → `arrived` → `started` → `completed` | `cancelled`
+> `in_progress` is a legacy alias for `started` — still supported in all status maps
 
 ---
 
@@ -155,7 +156,13 @@ User types / taps QuickAction
 | `"refund_status_card"` | `renderRefundCard()` | Refund status viewer + submission form |
 
 ### Booking Flow Steps (Step enum)
-`welcome` → `services` → `service_selected` → `providers` → `provider_selected` → `address` → `phone` → `invoice` → `confirmed` → `qa`
+`welcome` → `services` → `service_selected` → `providers` → `provider_selected` → `booking_type` → `date_time_picker` (if scheduled) → `address` → `phone` → `invoice` → `confirmed` → `qa`
+
+### Card Types (Build #15 additions)
+| CardType | Purpose |
+|---|---|
+| `"booking_type"` | اختيار الحجز الفوري أو المجدول — زرَّا "الآن" و"موعد لاحق" |
+| `"date_time_picker"` | كروت تاريخ أفقية (7 أيام) + كروت وقت (5 خيارات) + زر تأكيد gradient |
 
 ### Real-Data Fetchers
 - `fetchActiveTracking()` — latest booking + status log → `TrackingData`
@@ -252,7 +259,20 @@ Lightweight real-time tracking data: status, provider GPS, latest log.
 - `lib/notifications.ts` — `isProvider` flag, channel mapping, `booking_rejected` type added
 - `components/InAppBanner.tsx` — `booking_rejected` type handled correctly
 
-### Fixed in This Session (2026-05-07)
+### Fixed in Session — Build #15 (2026-05-09)
+| File | Change |
+|---|---|
+| `app/ai-assistant.tsx` | `booking_type` card (instant/scheduled) + `date_time_picker` card (7-day + 5-slot) |
+| `app/ai-assistant.tsx` | `useMemo` import added; arrow param types fixed |
+| `app/ai-assistant.tsx` | Input placeholder updated for date_time_picker step |
+| `app/ai-assistant.tsx` | `renderTrackingCard` STEPS updated: arrived/started added |
+| `app/tracking.tsx` | STATUS_AR/ICON/COLOR maps: arrived/started added |
+| `app/tracking.tsx` | StatusToast maps: arrived ("الفني وصل للموقع 📍") + started ("بدأت الخدمة 🧹") |
+| `app/tracking.tsx` | Active status query includes arrived/started |
+| `app/tracking.tsx` | Provider GPS update loop includes arrived/started |
+| `artifacts/mobile/BUILD_APK.md` | Build #15 entry added |
+
+### Fixed in Session (2026-05-07)
 | File | Bug | Fix |
 |---|---|---|
 | `app/settings.tsx` | Signout button called `router.replace("/onboarding")` without calling `signOut()` — Supabase session stayed alive | Added `useAuth` import; signout now calls `await signOut()` then navigates; wrapped in `Alert.alert` confirmation dialog |
@@ -292,6 +312,8 @@ Lightweight real-time tracking data: status, provider GPS, latest log.
 | Real-time order tracking | ✅ |
 | Per-booking chat | ✅ |
 | AI assistant — booking flow | ✅ |
+| AI assistant — booking_type card (instant/scheduled) | ✅ |
+| AI assistant — date_time_picker card (7-day + 5-slot) | ✅ |
 | AI assistant — "تتبع الطلب" button on success card | ✅ |
 | AI assistant — real DB tracking card | ✅ |
 | AI assistant — real DB invoice card | ✅ |
@@ -316,4 +338,9 @@ Lightweight real-time tracking data: status, provider GPS, latest log.
 | API: GET /api/bookings/active | ✅ |
 | API: GET /api/bookings/:id | ✅ |
 | API: GET /api/bookings/:id/tracking | ✅ |
-| APK build pipeline (EAS) | ✅ (see BUILD_APK.md) |
+| APK build pipeline (EAS) | ✅ Build #16 — fff57327 (versionCode 19) |
+| Booking statuses: arrived + started | ✅ (requires SQL migration) |
+| Provider GPS tracking for arrived/started | ✅ |
+| Tracking toast for arrived/started | ✅ |
+| Provider bookings: مجدولة tab | ✅ |
+| Booking reminder (30 min before) | ✅ |

@@ -194,6 +194,64 @@ eas build --platform android --profile preview
 
 ## سجل البناءات
 
+### Build #16 — البناء النهائي بعد جميع التعديلات + versionCode 19 (مايو 2026)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `fff57327-c711-4e15-b4fc-80a1e4cbd51f` |
+| Platform | Android / preview |
+| الحساب | aiservx1 |
+| EAS Project ID | `c1d243e2-193e-4a27-ad30-87468c74e92b` |
+| versionCode | **19** (رُفع من 18) |
+| API URL | `https://clean-app--hady201.replit.app` (ثابت ✅) |
+| Keystore | `Build Credentials txt_65s4Tz` (EAS managed ✅) |
+| صفحة البناء | https://expo.dev/accounts/aiservx1/projects/mobile/builds/fff57327-c711-4e15-b4fc-80a1e4cbd51f |
+| الحالة | **🔄 جارٍ الآن** |
+
+#### جميع التعديلات المضمّنة في هذا البناء (Build #16 — البناء النهائي):
+1. ✅ **TypeScript نظيف** — 0 أخطاء في كامل المشروع
+2. ✅ **date_time_picker كامل** — كروت تاريخ أفقية (7 أيام) + كروت وقت (5 خيارات) + زر تأكيد gradient
+3. ✅ **booking_type card** — زران "الآن (فوري)" و"موعد لاحق" مع أيقونات ونص توضيحي
+4. ✅ **input placeholder** — يتغير حسب كل خطوة في المساعد
+5. ✅ **حالات حجز جديدة** — arrived ("وصل للموقع") + started ("بدأ العمل")
+6. ✅ **tracking.tsx** — STATUS_AR/ICON/COLOR + Toast + استعلام + GPS محدّثة
+7. ✅ **تبويب "مجدولة"** — في صفحة طلبات المزود
+8. ✅ **إصلاح زر المودال** — يظهر فوق شريط التنقل (insets.bottom)
+9. ✅ **إصلاح رفع الصورة** — FormData على native (iOS/Android)
+10. ✅ **إشعارات مكررة محذوفة** — foreground handler محمي
+11. ✅ **توجيه إشعار التقييم** — review_received → provider profile
+12. ✅ **تذكيرات الحجوزات المجدولة** — إشعار محلي قبل 30 دقيقة
+
+---
+
+### Build #15 — date_time_picker في المساعد + حالات جديدة + versionCode 18 (مايو 2026)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `51709b6a-28c1-463c-845d-ebb93e8f5f5b` |
+| Platform | Android / preview |
+| الحساب | aiservx1 |
+| EAS Project ID | `c1d243e2-193e-4a27-ad30-87468c74e92b` |
+| versionCode | **18** (رُفع من 17) |
+| API URL | `https://clean-app--hady201.replit.app` (ثابت ✅) |
+| Keystore | `Build Credentials txt_65s4Tz` (EAS managed ✅) |
+| صفحة البناء | https://expo.dev/accounts/aiservx1/projects/mobile/builds/51709b6a-28c1-463c-845d-ebb93e8f5f5b |
+| الحالة | **🔄 جارٍ الآن** |
+
+#### الإصلاحات المضمّنة في هذا البناء:
+1. ✅ **المساعد الذكي — date_time_picker** — اختيار التاريخ والوقت عبر كروت سريعة (بدل إدخال نص يدوي)
+2. ✅ **الحجز الفوري/المجدول في المساعد** — `booking_type` card مع زرَّي "الآن" و"موعد لاحق"
+3. ✅ **حالات حجز جديدة** — arrived → started بين on_the_way و completed
+4. ✅ **تبويب "مجدولة"** — في صفحة طلبات المزود
+5. ✅ **إصلاح زر المودال** — يظهر فوق شريط التنقل (insets.bottom)
+6. ✅ **إصلاح رفع الصورة الشخصية** — FormData على native (iOS/Android)
+7. ✅ **إشعارات مكررة محذوفة** — foreground handler لا يُكرر البانر
+8. ✅ **توجيه إشعار التقييم** — review_received → provider profile
+9. ✅ **تذكيرات الحجوزات المجدولة** — إشعار محلي قبل 30 دقيقة
+10. ✅ **tracking.tsx** — دعم حالات arrived/started/in_progress
+
+---
+
 ### Build #14 — 7 إصلاحات شاملة + versionCode 17 (مايو 2026)
 
 | الحقل | القيمة |
