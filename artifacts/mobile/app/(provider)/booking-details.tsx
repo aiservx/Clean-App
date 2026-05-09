@@ -14,35 +14,47 @@ import { distanceKm, getCurrentResolved, type ResolvedAddress } from "@/lib/loca
 import { createNotification } from "@/lib/notifications";
 
 const STATUS_FLOW: Record<string, { next: string; label: string; icon: string } | null> = {
-  pending: { next: "accepted", label: "قبول الطلب", icon: "check-circle" },
-  accepted: { next: "on_the_way", label: "بدء التوجه للموقع", icon: "navigation" },
-  on_the_way: { next: "in_progress", label: "بدء العمل", icon: "play-circle" },
-  in_progress: { next: "completed", label: "إنهاء الطلب", icon: "check-square" },
-  completed: null,
-  cancelled: null,
-  rejected: null,
+  pending:    { next: "accepted",   label: "قبول الطلب",            icon: "check-circle" },
+  accepted:   { next: "on_the_way", label: "بدء التوجه للموقع",     icon: "navigation" },
+  on_the_way: { next: "arrived",    label: "وصلت للموقع",           icon: "map-marker-check" },
+  arrived:    { next: "started",    label: "بدء العمل",             icon: "play-circle" },
+  started:    { next: "completed",  label: "إنهاء الطلب",           icon: "check-square" },
+  in_progress:{ next: "completed",  label: "إنهاء الطلب",           icon: "check-square" },
+  completed:  null,
+  cancelled:  null,
+  rejected:   null,
 };
 
 const STATUS_AR: Record<string, string> = {
-  pending: "بانتظار القبول",
-  accepted: "مقبول",
-  on_the_way: "في الطريق",
+  pending:     "بانتظار القبول",
+  accepted:    "مقبول",
+  on_the_way:  "في الطريق",
+  arrived:     "وصل للموقع",
+  started:     "بدأ العمل",
   in_progress: "جاري التنفيذ",
-  completed: "مكتمل",
-  cancelled: "ملغي",
-  rejected: "مرفوض",
+  completed:   "مكتمل",
+  cancelled:   "ملغي",
+  rejected:    "مرفوض",
 };
 
 const NOTIF_MESSAGES: Record<string, { title: string; body: string }> = {
-  accepted: { title: "✅ تم قبول طلبك!", body: "المزود تأكد على طلبك وسيتوجه إليك قريباً" },
-  on_the_way: { title: "🚗 المزود في الطريق إليك", body: "استعد! مزود الخدمة متجه نحوك الآن" },
-  in_progress: { title: "🧹 بدأت الخدمة", body: "مزود الخدمة وصل وبدأ العمل لديك" },
-  completed: { title: "✨ اكتملت الخدمة!", body: "تم إنجاز الخدمة بنجاح. نتمنى أن تكون راضياً!" },
-  cancelled: { title: "❌ تم إلغاء طلبك", body: "قام المزود بإلغاء هذا الطلب. يمكنك طلب مزود آخر" },
+  accepted:    { title: "✅ تم قبول طلبك!",           body: "المزود تأكد على طلبك وسيتوجه إليك قريباً" },
+  on_the_way:  { title: "🚗 المزود في الطريق إليك",  body: "استعد! مزود الخدمة متجه نحوك الآن" },
+  arrived:     { title: "📍 الفني وصل إلى موقعك!",  body: "مزود الخدمة وصل وسيبدأ العمل بعد قليل" },
+  started:     { title: "🧹 بدأت الخدمة",             body: "مزود الخدمة بدأ العمل لديك" },
+  in_progress: { title: "🧹 جاري تنفيذ الخدمة",      body: "مزود الخدمة يعمل لديك الآن" },
+  completed:   { title: "✨ اكتملت الخدمة!",          body: "تم إنجاز الخدمة بنجاح. نتمنى أن تكون راضياً!" },
+  cancelled:   { title: "❌ تم إلغاء طلبك",           body: "قام المزود بإلغاء هذا الطلب. يمكنك طلب مزود آخر" },
 };
 
 const STATUS_COLOR = (s: string, c: any) =>
-  s === "completed" ? c.success : s === "in_progress" ? "#8B5CF6" : s === "on_the_way" ? "#F59E0B" : s === "accepted" ? c.primary : s === "pending" ? "#2F80ED" : c.danger;
+  s === "completed"   ? c.success
+  : s === "started" || s === "in_progress" ? "#8B5CF6"
+  : s === "arrived"   ? "#F59E0B"
+  : s === "on_the_way"? "#F59E0B"
+  : s === "accepted"  ? c.primary
+  : s === "pending"   ? "#2F80ED"
+  : c.danger;
 
 export default function ProviderBookingDetails() {
   const insets = useSafeAreaInsets();
@@ -103,7 +115,7 @@ export default function ProviderBookingDetails() {
 
   useEffect(() => {
     if (!session?.user || !booking) return;
-    const activeStatuses = ["accepted", "on_the_way", "in_progress"];
+    const activeStatuses = ["accepted", "on_the_way", "arrived", "started", "in_progress"];
     if (!activeStatuses.includes(booking.status)) return;
     let cancelled = false;
     const uid = session.user.id;
@@ -144,11 +156,12 @@ export default function ProviderBookingDetails() {
 
     const notif = NOTIF_MESSAGES[flow.next];
     if (notif && booking.user_id) {
-      const notifType = flow.next === "accepted" ? "booking_accepted"
-        : flow.next === "on_the_way" ? "booking_on_way"
-        : flow.next === "in_progress" ? "booking_started"
-        : flow.next === "completed" ? "booking_completed"
-        : "booking_accepted";
+      const notifType = flow.next === "accepted"   ? "booking_accepted"
+        : flow.next === "on_the_way"               ? "booking_on_way"
+        : flow.next === "arrived"                  ? "booking_on_way"
+        : flow.next === "started" || flow.next === "in_progress" ? "booking_started"
+        : flow.next === "completed"                ? "booking_completed"
+        : "booking_update";
       await createNotification(booking.user_id, notifType, notif.title, notif.body, { bookingId: booking.id });
     }
 
@@ -266,7 +279,13 @@ export default function ProviderBookingDetails() {
         <LinearGradient colors={[stColor, stColor + "DD"]} style={styles.statusHero}>
           <View style={styles.statusHeroIcon}>
             <MaterialCommunityIcons
-              name={booking.status === "completed" ? "check-decagram" : booking.status === "in_progress" ? "broom" : booking.status === "on_the_way" ? "car" : "clipboard-list"}
+              name={
+                booking.status === "completed"   ? "check-decagram"
+                : booking.status === "started" || booking.status === "in_progress" ? "broom"
+                : booking.status === "arrived"   ? "map-marker-check"
+                : booking.status === "on_the_way"? "car"
+                : "clipboard-list"
+              }
               size={44}
               color="#FFF"
             />

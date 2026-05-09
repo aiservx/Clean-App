@@ -32,6 +32,7 @@ type CardType =
   | "address_confirm" | "phone_confirm" | "quick_actions"
   | "tracking_card" | "invoice_card"
   | "coupon_card" | "support_contact" | "refund_status_card"
+  | "booking_type"
   | null;
 
 type TrackingData = {
@@ -60,7 +61,7 @@ type ChatMessage = {
 };
 
 type Step = "welcome" | "services" | "service_selected" | "providers" | "provider_selected"
-  | "address" | "phone" | "invoice" | "confirmed" | "qa";
+  | "booking_type" | "scheduled_date" | "address" | "phone" | "invoice" | "confirmed" | "qa";
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
@@ -189,6 +190,10 @@ export default function AiAssistantScreen() {
   const [refundBooking, setRefundBooking] = useState<{id: string; total: number; serviceName: string} | null>(null);
   const [refundSubmitting, setRefundSubmitting] = useState(false);
   const [refundId, setRefundId] = useState<string | null>(null);
+
+  // ── Booking type (instant / scheduled)
+  const [aiBookingType, setAiBookingType] = useState<"instant" | "scheduled">("instant");
+  const [aiScheduledDate, setAiScheduledDate] = useState<string | null>(null);
 
   // ── Load services + providers + address + booking flag ───────────────────
   useEffect(() => {
@@ -505,10 +510,28 @@ export default function AiAssistantScreen() {
     addUserMessage(`اخترت ${prov.name}`);
     setSelectedProvider(prov);
     setTimeout(() => {
-      const suggested = defaultAddress?.text || (currentAddress ? currentAddress.formatted : "");
-      if (suggested) { addBotMessage(`${prov.name} خيار رائع! ⭐ ${prov.rating}\n\nهل العنوان التالي صحيح؟`, "address_confirm", { address: suggested }); setStep("address"); }
-      else { addBotMessage(`${prov.name} خيار رائع! ⭐ ${prov.rating}\n\nأرسل عنوانك:`); setStep("address"); }
+      addBotMessage(`${prov.name} خيار رائع! ⭐ ${prov.rating}\n\nكيف تريد الحجز؟`, "booking_type");
+      setStep("booking_type");
     }, 200);
+  };
+
+  const handleBookingTypeSelect = (type: "instant" | "scheduled") => {
+    if (Platform.OS !== "web") Haptics.selectionAsync();
+    setAiBookingType(type);
+    if (type === "instant") {
+      addUserMessage("الآن — حجز فوري");
+      setAiScheduledDate(new Date().toISOString());
+      setTimeout(() => {
+        const suggested = defaultAddress?.text || (currentAddress ? currentAddress.formatted : "");
+        if (suggested) { addBotMessage("حجز فوري ✅\n\nهل العنوان التالي صحيح؟", "address_confirm", { address: suggested }); setStep("address"); }
+        else { addBotMessage("حجز فوري ✅\n\nأرسل عنوانك:"); setStep("address"); }
+      }, 200);
+    } else {
+      addUserMessage("موعد لاحق — مجدول");
+      setAiScheduledDate(null);
+      addBotMessage("اكتب التاريخ والوقت المطلوب، مثال:\nغداً الساعة 10 صباحاً\n2026-05-12 14:00");
+      setStep("scheduled_date");
+    }
   };
 
   const askPhone = () => {
@@ -545,6 +568,42 @@ export default function AiAssistantScreen() {
     setVoiceLang(lang);
     try { Speech.stop(); } catch {}
     setInputText(""); addUserMessage(text);
+    if (step === "scheduled_date") {
+      // Parse user-supplied date/time text into an ISO string
+      let parsed: Date | null = null;
+      try {
+        // Try parsing ISO-ish format first (e.g. "2026-05-12 14:00")
+        const isoAttempt = new Date(text.replace(" ", "T"));
+        if (!isNaN(isoAttempt.getTime()) && isoAttempt > new Date()) {
+          parsed = isoAttempt;
+        }
+      } catch {}
+      if (!parsed) {
+        // Simple Arabic heuristics: غداً / بعد غد + hour
+        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(10, 0, 0, 0);
+        const dayAfter = new Date(); dayAfter.setDate(dayAfter.getDate() + 2); dayAfter.setHours(10, 0, 0, 0);
+        const hourMatch = text.match(/(\d{1,2})/);
+        const h = hourMatch ? parseInt(hourMatch[1], 10) : 10;
+        if (/غداً|غدا/.test(text)) { tomorrow.setHours(h < 6 ? h + 12 : h, 0, 0, 0); parsed = tomorrow; }
+        else if (/بعد غد/.test(text)) { dayAfter.setHours(h < 6 ? h + 12 : h, 0, 0, 0); parsed = dayAfter; }
+        else if (hourMatch) {
+          const d = new Date(); d.setHours(h < 6 ? h + 12 : h, 0, 0, 0);
+          if (d > new Date()) { parsed = d; } else { d.setDate(d.getDate() + 1); parsed = d; }
+        }
+      }
+      if (parsed) {
+        setAiScheduledDate(parsed.toISOString());
+        const fmt = parsed.toLocaleString("ar-SA", { weekday: "long", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+        setTimeout(() => {
+          const suggested = defaultAddress?.text || (currentAddress ? currentAddress.formatted : "");
+          if (suggested) { addBotMessage(`تم تحديد الموعد: ${fmt} 📅\n\nهل العنوان التالي صحيح؟`, "address_confirm", { address: suggested }); setStep("address"); }
+          else { addBotMessage(`تم تحديد الموعد: ${fmt} 📅\n\nأرسل عنوانك:`); setStep("address"); }
+        }, 200);
+      } else {
+        addBotMessage("لم أتمكن من فهم التاريخ. جرب مثل:\nغداً الساعة 10\n2026-05-12 14:00");
+      }
+      return;
+    }
     if (step === "address") { setChosenAddress(text); askPhone(); return; }
     if (step === "phone") { finalizeInvoice(chosenAddress || text, text); return; }
     // Intent detection
@@ -566,17 +625,23 @@ export default function AiAssistantScreen() {
   const handleConfirmBooking = async () => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     addUserMessage("تأكيد الحجز ✅"); setStep("confirmed");
+    const scheduledAt = aiScheduledDate ?? new Date().toISOString();
     let bookingId: string | null = null;
     try {
       if (session?.user && selectedService) {
         const { data, error } = await supabase.from("bookings").insert({
           user_id: session.user.id, service_id: selectedService.id, provider_id: selectedProvider?.id || null,
           total: selectedService.price + 10 + Math.round((selectedService.price + 10) * 0.15 * 100) / 100,
-          payment_method: "card", status: "pending", scheduled_at: new Date().toISOString(),
+          payment_method: "card", status: "pending", scheduled_at: scheduledAt,
           notes: `العنوان: ${chosenAddress} | الهاتف: ${chosenPhone}`,
         }).select("id").maybeSingle();
         if (error) console.log("[ai] booking insert err:", error.message);
         bookingId = data?.id || null;
+        // Schedule local reminder 30 min before if it's a future appointment
+        if (bookingId && aiBookingType === "scheduled") {
+          const { scheduleBookingReminder } = await import("@/lib/notifications");
+          await scheduleBookingReminder(scheduledAt, "⏰ تذكير بموعدك", `موعدك لـ "${selectedService.title}" خلال 30 دقيقة`, { bookingId });
+        }
       }
     } catch (e) { console.log("[ai] booking failed:", (e as Error).message); }
 
@@ -589,7 +654,7 @@ export default function AiAssistantScreen() {
   };
 
   const handleNewBooking = () => {
-    msgId = 0; setMessages([]); setStep("welcome"); setSelectedService(null); setSelectedProvider(null); setChosenAddress(""); setChosenPhone("");
+    msgId = 0; setMessages([]); setStep("welcome"); setSelectedService(null); setSelectedProvider(null); setChosenAddress(""); setChosenPhone(""); setAiBookingType("instant"); setAiScheduledDate(null);
     addBotMessage("بدأنا حجزاً جديداً 🎯");
     setTimeout(() => { setMessages((p) => [...p, { id: nextId(), role: "bot", text: "اختار الخدمة", cardType: "services" }]); setStep("services"); }, 800);
   };
@@ -1128,6 +1193,26 @@ export default function AiAssistantScreen() {
                   {msg.cardType === "coupon_card" && renderCouponCard()}
                   {msg.cardType === "support_contact" && renderSupportContact()}
                   {msg.cardType === "refund_status_card" && renderRefundStatusCard(msg.refundData)}
+                  {msg.cardType === "booking_type" && (
+                    <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                      <TouchableOpacity
+                        style={[s.confirmInlineBtn, { flex: 1, backgroundColor: "#7C3AED", paddingVertical: 12, borderRadius: 14, alignItems: "center", gap: 4 }]}
+                        onPress={() => handleBookingTypeSelect("instant")}
+                        activeOpacity={0.85}
+                      >
+                        <MaterialCommunityIcons name="lightning-bolt" size={18} color="#FFF" />
+                        <Text style={[s.confirmInlineBtnT, { color: "#FFF" }]}>الآن (فوري)</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[s.confirmInlineBtn, { flex: 1, backgroundColor: "#F59E0B", paddingVertical: 12, borderRadius: 14, alignItems: "center", gap: 4 }]}
+                        onPress={() => handleBookingTypeSelect("scheduled")}
+                        activeOpacity={0.85}
+                      >
+                        <MaterialCommunityIcons name="calendar-clock" size={18} color="#FFF" />
+                        <Text style={[s.confirmInlineBtnT, { color: "#FFF" }]}>موعد لاحق</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               </View>
             ))}
@@ -1186,7 +1271,7 @@ export default function AiAssistantScreen() {
                   style={[s.textInput, { color: colors.foreground }]}
                   value={inputText}
                   onChangeText={setInputText}
-                  placeholder={step === "address" ? "اكتب العنوان..." : step === "phone" ? "اكتب رقم الهاتف..." : "اكتب رسالتك أو اضغط المايك..."}
+                  placeholder={step === "address" ? "اكتب العنوان..." : step === "phone" ? "اكتب رقم الهاتف..." : step === "scheduled_date" ? "مثال: غداً الساعة 10 أو 2026-05-15 14:00" : "اكتب رسالتك أو اضغط المايك..."}
                   placeholderTextColor={colors.mutedForeground ?? "#94A3B8"}
                   onSubmitEditing={handleSendText}
                   returnKeyType="send"

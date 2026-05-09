@@ -481,7 +481,7 @@ export default function ProviderHome() {
       {/* ── New booking in-app alert modal ─────────────────────────────────── */}
       <Modal visible={!!newOrderAlert} animationType="slide" transparent statusBarTranslucent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom + 16, 36) }]}>
             {/* Bell icon */}
             <View style={[styles.modalBellWrap, { backgroundColor: colors.primaryLight }]}>
               <MaterialCommunityIcons name="bell-ring" size={32} color={colors.primary} />
@@ -685,8 +685,8 @@ export default function ProviderHome() {
         ) : (
           <View style={{ paddingHorizontal: 16, gap: 10 }}>
             {orders.map((o) => {
-              const statusLabels: Record<string, string> = { pending: "بانتظار القبول", accepted: "تم القبول", on_the_way: "في الطريق", in_progress: "جاري التنفيذ" };
-              const statusColors: Record<string, string> = { pending: colors.warning, accepted: colors.primary, on_the_way: "#2F80ED", in_progress: "#8B5CF6" };
+              const statusLabels: Record<string, string> = { pending: "بانتظار القبول", accepted: "تم القبول", on_the_way: "في الطريق", arrived: "وصل للموقع", started: "بدأ العمل", in_progress: "جاري التنفيذ" };
+              const statusColors: Record<string, string> = { pending: colors.warning, accepted: colors.primary, on_the_way: "#2F80ED", arrived: "#F59E0B", started: "#8B5CF6", in_progress: "#8B5CF6" };
               const isPending = o.status === "pending";
               return (
               <TouchableOpacity
@@ -805,7 +805,7 @@ const styles = StyleSheet.create({
   acceptT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 11 },
   rejectBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100, borderWidth: 1 },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },
-  modalCard: { borderTopStartRadius: 28, borderTopEndRadius: 28, padding: 24, alignItems: "center", gap: 14, paddingBottom: 36 },
+  modalCard: { borderTopStartRadius: 28, borderTopEndRadius: 28, padding: 24, alignItems: "center", gap: 14 },
   modalBellWrap: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 4 },
   modalTitle: { fontFamily: "Tajawal_700Bold", fontSize: 20, textAlign: "center" },
   modalInfoBox: { width: "100%", padding: 14, borderRadius: 14, gap: 10 },

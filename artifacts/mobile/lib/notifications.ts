@@ -6,13 +6,17 @@ import { supabase } from "./supabase";
 
 const PUSH_API_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
-// ── Foreground handler: always show alert + sound + badge ──────────────────
+// ── Foreground handler: suppress OS banner (InAppBanner handles it) ────────
+// shouldShowAlert/shouldShowBanner = false so the OS does NOT show its own
+// system banner while the app is in the foreground — InAppBanner shows a
+// custom slide-in card instead.  Background/killed-state push notifications
+// are always shown by the OS regardless of this handler.
 if (Platform.OS !== "web") {
   try {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldShowBanner: true,
+        shouldShowAlert: false,
+        shouldShowBanner: false,
         shouldShowList: true,
         shouldPlaySound: true,
         shouldSetBadge: true,
@@ -386,4 +390,37 @@ export async function syncBadge(count: number) {
   try {
     await Notifications.setBadgeCountAsync(count);
   } catch {}
+}
+
+// ── Schedule a local reminder before a booking ────────────────────────────
+// Schedules a device-local notification X minutes before scheduled_at.
+// Call this when a scheduled (non-instant) booking is confirmed.
+// Safe to call for instant bookings — if triggerDate is in the past, no-op.
+export async function scheduleBookingReminder(
+  scheduledAt: string,
+  title: string,
+  body: string,
+  data?: Record<string, any>,
+  minutesBefore = 30,
+): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    const triggerDate = new Date(new Date(scheduledAt).getTime() - minutesBefore * 60 * 1000);
+    if (triggerDate <= new Date()) return;
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        data: { ...(data ?? {}), type: "booking_update" },
+        sound: "default",
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: triggerDate,
+      } as any,
+    });
+    console.log(`[notifications] reminder scheduled for ${triggerDate.toISOString()}`);
+  } catch (e) {
+    console.log("[notifications] scheduleBookingReminder failed:", (e as Error).message);
+  }
 }

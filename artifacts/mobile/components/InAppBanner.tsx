@@ -76,10 +76,13 @@ export function navigateForType(type: string, data: Record<string, any>) {
         if (bookingId) router.push({ pathname: "/tracking", params: { id: bookingId } } as any);
         else router.push("/(tabs)/bookings" as any);
       }
-    } else if (type === "review_request" || type === "review_received") {
-      // review_request → client rates; review_received → provider sees rating screen
+    } else if (type === "review_request") {
+      // Customer got asked to rate — go to rating screen
       if (bookingId) router.push({ pathname: "/rating", params: { bookingId } } as any);
-      else router.push("/(provider)/profile" as any);
+      else router.push("/(tabs)/bookings" as any);
+    } else if (type === "review_received") {
+      // Provider received a review — go to their profile to see it
+      router.push("/(provider)/profile" as any);
     } else if (type === "refund_requested" || type === "refund_approved" || type === "refund_rejected" || type === "refund_result") {
       // Refund notifications → user bookings tab to see refund status
       if (bookingId) router.push({ pathname: "/tracking", params: { id: bookingId } } as any);

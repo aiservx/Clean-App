@@ -16,18 +16,32 @@ type Service = { id: string; title_ar: string; category_id: string };
 
 async function uploadToStorage(uid: string, prefix: string, uri: string): Promise<string | null> {
   try {
-    const ext = uri.split(".").pop()?.split("?")[0] || "jpg";
+    const ext = (uri.split(".").pop()?.split("?")[0] || "jpg").toLowerCase();
+    const mimeType = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : `image/${ext}`;
     const fileName = `${prefix}/${uid}-${Date.now()}.${ext}`;
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    const { error } = await supabase.storage.from("avatars").upload(fileName, blob, {
-      upsert: true,
-      contentType: `image/${ext}`,
-    });
-    if (error) return null;
+    let uploadErr: any = null;
+    if (Platform.OS !== "web") {
+      const fd = new FormData();
+      fd.append("file", { uri, type: mimeType, name: `upload.${ext}` } as any);
+      const { error } = await supabase.storage.from("avatars").upload(fileName, fd as any, {
+        upsert: true,
+        contentType: mimeType,
+      });
+      uploadErr = error;
+    } else {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const { error } = await supabase.storage.from("avatars").upload(fileName, blob, {
+        upsert: true,
+        contentType: mimeType,
+      });
+      uploadErr = error;
+    }
+    if (uploadErr) { console.warn("[provider-edit] upload:", uploadErr.message); return null; }
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(fileName);
-    return publicUrl;
-  } catch {
+    return publicUrl + `?t=${Date.now()}`;
+  } catch (e) {
+    console.warn("[provider-edit] uploadToStorage exception:", (e as Error).message);
     return null;
   }
 }

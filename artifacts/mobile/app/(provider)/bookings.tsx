@@ -15,15 +15,18 @@ import { useRealtimeEvents } from "@/lib/realtimeStore";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const TABS = [
-  { key: "new",    label: "جديدة",    statuses: ["pending"],                          icon: "bell-ring",          color: "#2F80ED" },
-  { key: "active", label: "نشطة",     statuses: ["accepted", "on_the_way", "in_progress"], icon: "progress-clock", color: "#7C3AED" },
-  { key: "done",   label: "مكتملة",   statuses: ["completed"],                         icon: "check-circle",       color: "#16C47F" },
+  { key: "new",       label: "جديدة",     statuses: ["pending"],                                          icon: "bell-ring",        color: "#2F80ED" },
+  { key: "scheduled", label: "مجدولة",    statuses: [] as string[],                                       icon: "calendar-clock",   color: "#F59E0B" },
+  { key: "active",    label: "نشطة",      statuses: ["accepted", "on_the_way", "arrived", "started", "in_progress"], icon: "progress-clock", color: "#7C3AED" },
+  { key: "done",      label: "مكتملة",    statuses: ["completed"],                                        icon: "check-circle",     color: "#16C47F" },
 ];
 
 const STATUS_COLOR: Record<string, string> = {
   pending:     "#2F80ED",
   accepted:    "#7C3AED",
   on_the_way:  "#F59E0B",
+  arrived:     "#F59E0B",
+  started:     "#8B5CF6",
   in_progress: "#8B5CF6",
   completed:   "#16C47F",
   cancelled:   "#EF4444",
@@ -34,6 +37,8 @@ const STATUS_AR: Record<string, string> = {
   pending:     "جديدة",
   accepted:    "مقبولة",
   on_the_way:  "في الطريق",
+  arrived:     "وصل للموقع",
+  started:     "بدأ العمل",
   in_progress: "جاري التنفيذ",
   completed:   "مكتملة",
   cancelled:   "ملغاة",
@@ -92,11 +97,33 @@ export default function ProviderBookings() {
 
   const filtered = useMemo(() => {
     const t = TABS[tab];
+    if (t.key === "scheduled") {
+      const now = new Date().toISOString();
+      return rows.filter(
+        (r) =>
+          ["pending", "accepted"].includes(r.status) &&
+          r.scheduled_at != null &&
+          r.scheduled_at > now,
+      );
+    }
     return rows.filter((r) => t.statuses.includes(r.status));
   }, [rows, tab]);
 
   // Counts per tab for badges
-  const counts = useMemo(() => TABS.map((t) => rows.filter((r) => t.statuses.includes(r.status)).length), [rows]);
+  const counts = useMemo(() => {
+    const now = new Date().toISOString();
+    return TABS.map((t) => {
+      if (t.key === "scheduled") {
+        return rows.filter(
+          (r) =>
+            ["pending", "accepted"].includes(r.status) &&
+            r.scheduled_at != null &&
+            r.scheduled_at > now,
+        ).length;
+      }
+      return rows.filter((r) => t.statuses.includes(r.status)).length;
+    });
+  }, [rows]);
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
