@@ -70,7 +70,7 @@ router.get("/bookings/active", async (req: Request, res: Response) => {
       `provider:profiles!bookings_provider_id_fkey(id,full_name,avatar_url),` +
       `provider_location:providers!bookings_provider_id_fkey(current_lat,current_lng,rating)` +
       `&user_id=eq.${encodeURIComponent(callerId)}` +
-      `&status=neq.cancelled` +
+      `&status=not.in.(cancelled,rejected)` +
       `&order=created_at.desc` +
       `&limit=1`,
     );

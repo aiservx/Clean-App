@@ -58,7 +58,7 @@ Key commands:
   - Dedicated Bookings page: `artifacts/admin/src/pages/Bookings.tsx`
 - **API Server**: `artifacts/api-server/`
   - Push notification endpoint: `api-server/src/routes/push.ts`
-- **Database Schema**: `db/schema.sql` (also `artifacts/mobile/db/migration_v2.sql`, `db/migration_messages.sql` for manual runs)
+- **Database Schema**: `artifacts/mobile/db/schema.sql` (canonical). Migrations (run in order): `migration_v2.sql` → `db/migration_service_area.sql` → `db/migration_tickets_refunds.sql` → **`db/migration_status_v3.sql`**
 - **Colors**: `constants/colors.ts`
 - **Service Icons**: `lib/serviceIcons.ts`
 - **FCM Configuration**: `google-services.json` (in `artifacts/mobile/`)
@@ -93,7 +93,11 @@ Key commands:
 ## Gotchas
 
 - **APK Build API URL**: `EXPO_PUBLIC_API_URL` is baked into the APK at build time. Always set it to the **deployed** API server URL, never a development URL.
-- **Manual DB Migrations**: Some schema changes (`migration_v2.sql`, `migration_messages.sql`, `trg_booking_status_notify` trigger) require manual execution in the Supabase SQL editor.
+- **Manual DB Migrations**: تنفّذ بالترتيب في Supabase SQL editor:
+  1. `artifacts/mobile/db/migration_v2.sql` — providers: services/areas columns
+  2. `db/migration_service_area.sql` — providers: radius/hours; bookings: deadline
+  3. `db/migration_tickets_refunds.sql` — support_tickets + refund_requests
+  4. **`db/migration_status_v3.sql`** ← الأحدث — arrived/started في booking_status_t، booking_status_log→text، triggers، indexes
 - **Supabase RLS**: Push notifications are routed through the API server to bypass RLS on `push_tokens`. Direct calls from the admin dashboard to `exp.host` previously failed due to RLS.
 - **Free-tier limitations**: Replit free tier blocks third-party connectors; the app relies only on Supabase and Expo OTA. APK builds occur on Expo's EAS cloud.
 

@@ -91,12 +91,26 @@ const AI_TIMES = [
 // ── Constants ─────────────────────────────────────────────────────────────
 
 const STATUS_AR: Record<string, string> = {
-  pending: "قيد الانتظار", accepted: "مقبول", on_the_way: "في الطريق",
-  in_progress: "جاري التنفيذ", completed: "مكتمل", cancelled: "ملغي",
+  pending:     "قيد الانتظار",
+  accepted:    "مقبول",
+  on_the_way:  "في الطريق",
+  arrived:     "وصل للموقع",
+  started:     "بدأ العمل",
+  in_progress: "جاري التنفيذ",
+  completed:   "مكتمل",
+  cancelled:   "ملغي",
+  rejected:    "مرفوض",
 };
 const STATUS_COLOR: Record<string, string> = {
-  pending: "#F59E0B", accepted: "#3B82F6", on_the_way: "#8B5CF6",
-  in_progress: "#2F80ED", completed: "#16C47F", cancelled: "#EF4444",
+  pending:     "#F59E0B",
+  accepted:    "#3B82F6",
+  on_the_way:  "#8B5CF6",
+  arrived:     "#F59E0B",
+  started:     "#8B5CF6",
+  in_progress: "#2F80ED",
+  completed:   "#16C47F",
+  cancelled:   "#EF4444",
+  rejected:    "#EF4444",
 };
 const PAYMENT_AR: Record<string, string> = {
   card: "بطاقة ائتمانية", mada: "مدى", apple: "Apple Pay",

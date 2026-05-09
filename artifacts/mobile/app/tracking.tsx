@@ -64,8 +64,8 @@ const toastStyles = StyleSheet.create({
   body: { fontFamily: "Tajawal_700Bold", fontSize: 13, marginTop: 2 },
 });
 
-const STEPS = ["pending", "accepted", "on_the_way", "in_progress", "completed"] as const;
-type StatusKey = typeof STEPS[number] | "cancelled" | "rejected";
+const STEPS = ["pending", "accepted", "on_the_way", "arrived", "started", "completed"] as const;
+type StatusKey = typeof STEPS[number] | "cancelled" | "rejected" | "in_progress";
 
 const STATUS_AR: Record<string, string> = {
   pending:     "بانتظار التأكيد",
@@ -448,13 +448,17 @@ export default function TrackingScreen() {
     );
   }
 
-  const status = (booking.status ?? "pending") as StatusKey;
-  const statusColor = STATUS_COLOR[status] ?? colors.primary;
+  const rawStatus = booking.status ?? "pending";
+  // in_progress is a legacy alias — map to started for STEPS index
+  const normalizedStatus = rawStatus === "in_progress" ? "started" : rawStatus;
+  const status = normalizedStatus as StatusKey;
+  const statusColor = STATUS_COLOR[status] ?? STATUS_COLOR[rawStatus] ?? colors.primary;
   const isTerminal = status === "completed" || status === "cancelled" || status === "rejected";
   const isPending = status === "pending";
   const stepIndex = STEPS.indexOf(status as any);
   const otherParty = isProvider ? booking.client : booking.provider;
-  const otherInitials = (otherParty?.full_name || "؟").trim().split(" ").map((s: string) => s[0]).slice(0, 2).join("");
+  const otherInitials = (otherParty?.full_name || "؟").trim().split(" ").map((s: string) => s[0] ?? "").slice(0, 2).join("");
+  const displayStatus = STATUS_AR[status] ?? STATUS_AR[rawStatus] ?? rawStatus;
 
   // mapMarkers and polyline are computed above via useMemo (animated provider + static dest)
 
@@ -482,7 +486,7 @@ export default function TrackingScreen() {
           <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>{STATUS_AR[status]}</Text>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>{displayStatus}</Text>
           <Text style={[styles.headerSubtitle, { color: colors.mutedForeground }]}>
             {isPending && !isProvider
               ? "جاري البحث عن مزود قريب…"
@@ -528,7 +532,7 @@ export default function TrackingScreen() {
           <View style={[styles.etaHalf, { backgroundColor: statusColor + "20" }]}>
             <MaterialCommunityIcons name={(STATUS_ICON[status] || "circle-outline") as any} size={18} color={statusColor} />
             <Text style={[styles.etaSmall, { color: statusColor }]}>الحالة</Text>
-            <Text style={[styles.etaStatus, { color: statusColor }]} numberOfLines={2}>{STATUS_AR[status]}</Text>
+            <Text style={[styles.etaStatus, { color: statusColor }]} numberOfLines={2}>{displayStatus}</Text>
           </View>
         </View>
 
@@ -586,7 +590,7 @@ export default function TrackingScreen() {
             <Text style={[styles.timelineTitle, { color: colors.foreground, marginBottom: 0 }]}>المخطط الزمني</Text>
             {isTerminal && (
               <View style={[styles.termBadge, { backgroundColor: (statusColor + "20") }]}>
-                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 10, color: statusColor }}>{STATUS_AR[status]}</Text>
+                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 10, color: statusColor }}>{displayStatus}</Text>
               </View>
             )}
           </View>
