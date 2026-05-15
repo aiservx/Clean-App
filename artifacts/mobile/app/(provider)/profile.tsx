@@ -78,7 +78,7 @@ export default function ProviderProfile() {
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 130 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
           <TouchableOpacity onPress={() => router.push("/settings")} style={[styles.iconBtn, { backgroundColor: colors.card }]}>

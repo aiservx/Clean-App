@@ -31,7 +31,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: "com.aiservx.nazafa",
-      versionCode: 19,
+      versionCode: 21,
       googleServicesFile: "./google-services.json",
       adaptiveIcon: {
         foregroundImage: "./assets/images/icon-light.png",
@@ -53,9 +53,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       url: "https://u.expo.dev/c1d243e2-193e-4a27-ad30-87468c74e92b",
       fallbackToCacheTimeout: 0,
       checkAutomatically: "ON_LOAD",
-      requestHeaders: {
-        "expo-channel-name": "preview",
-      },
+      // Channel is set at build-time by EAS (eas.json → channel field).
+      // Do NOT hardcode "preview" here — that would push preview OTA updates
+      // to production users. The channel is injected via EXPO_CHANNEL env var
+      // during the EAS build so each profile tracks its own channel correctly.
+      ...(process.env.EXPO_CHANNEL
+        ? { requestHeaders: { "expo-channel-name": process.env.EXPO_CHANNEL } }
+        : {}),
     },
     runtimeVersion: {
       policy: "appVersion",

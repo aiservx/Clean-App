@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   RefreshControl, ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -71,6 +72,7 @@ function targetForNotif(n: Notif): { pathname: string; params?: any } | null {
 }
 
 export default function NotificationsScreen() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { session } = useAuth();
   const [filterMode, setFilterMode] = useState<"all" | "unread">("all");
@@ -146,7 +148,7 @@ export default function NotificationsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 16, gap: 10 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24, paddingHorizontal: 16, gap: 10 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >

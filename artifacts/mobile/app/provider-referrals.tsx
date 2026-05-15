@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Share, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -7,6 +8,7 @@ import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
 
 export default function ProviderReferrals() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const code = "PRO-AHMED";
 
@@ -18,7 +20,7 @@ export default function ProviderReferrals() {
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="دعوة عمال" subtitle="اربح 100 ر.س لكل عامل ينضم" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={["#16C47F", "#0EA968"]} style={styles.hero}>
           <MaterialCommunityIcons name="account-multiple-plus" size={56} color="#FFF" />
           <Text style={styles.heroT}>ادع عاملاً واربح 100 ر.س</Text>

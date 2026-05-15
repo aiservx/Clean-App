@@ -1,5 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { logger } from "../lib/logger";
+import { registerLimiter } from "../lib/rateLimiter";
 
 const router: IRouter = Router();
 
@@ -26,7 +27,7 @@ function usernameToEmail(username: string): string {
 
 // POST /api/auth/register
 // Creates user via Admin API (bypasses broken trigger) and inserts profile manually
-router.post("/auth/register", async (req: Request, res: Response) => {
+router.post("/auth/register", registerLimiter, async (req: Request, res: Response) => {
   const { username, password, full_name, phone, role, gender } = req.body as {
     username?: string;
     password?: string;
@@ -46,7 +47,8 @@ router.post("/auth/register", async (req: Request, res: Response) => {
   }
 
   const email = usernameToEmail(username);
-  const safeRole = ["user", "provider", "admin"].includes(role ?? "") ? role : "user";
+  // "admin" is never allowed via self-registration — only "user" or "provider"
+  const safeRole = ["user", "provider"].includes(role ?? "") ? role : "user";
 
   try {
     // Create user via Supabase Admin API — bypasses the trigger failure issue

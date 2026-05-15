@@ -147,7 +147,7 @@ export default function ProviderChat() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingBottom: 130, paddingHorizontal: 16, paddingTop: 8, flexGrow: rooms.length === 0 ? 1 : undefined }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 80, paddingHorizontal: 16, paddingTop: 8, flexGrow: rooms.length === 0 ? 1 : undefined }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         >

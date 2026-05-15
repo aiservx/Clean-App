@@ -194,6 +194,29 @@ eas build --platform android --profile preview
 
 ## سجل البناءات
 
+### Build #17 — إصلاح تكرار الإشعارات (InAppBanner) + التوثيق الكامل + versionCode 20 (مايو 2026)
+
+| الحقل | القيمة |
+|-------|--------|
+| Build ID | `03a39342-ff22-4e9a-ab56-fde5dc3c71ae` |
+| Platform | Android / preview |
+| الحساب | aiservx1 |
+| EAS Project ID | `c1d243e2-193e-4a27-ad30-87468c74e92b` |
+| versionCode | **20** (رُفع من 19) |
+| API URL | `https://clean-app--hady201.replit.app` (ثابت ✅) |
+| Keystore | `Build Credentials txt_65s4Tz` (EAS managed ✅) |
+| صفحة البناء | https://expo.dev/accounts/aiservx1/projects/mobile/builds/03a39342-ff22-4e9a-ab56-fde5dc3c71ae |
+| الحالة | **🔄 جارٍ الآن** |
+
+#### الإصلاحات والإضافات المضمّنة في هذا البناء:
+1. ✅ **إصلاح جذري لتكرار الإشعارات** — `InAppBanner` لا يستمع لـ `addNotificationReceivedListener` بعد الآن، بل لـ `useRealtimeEvents("notification_received")` المحمي بـ DB row dedup — إشعار واحد بالضبط لكل حدث
+2. ✅ **توسيع حمولة notification_received** — يحمل الآن `title + body + data` من `payload.new` مباشرةً
+3. ✅ **ملف دليل التطبيق** — `docs/APP_GUIDE.md` شامل للمستخدمين والمطورين
+4. ✅ **ملف Google Play Store** — `docs/STORE_LISTING.md` جاهز للنشر (وصف + keywords + تصنيف + screenshots spec)
+5. ✅ جميع إصلاحات Build #16 محفوظة
+
+---
+
 ### Build #16 — البناء النهائي بعد جميع التعديلات + versionCode 19 (مايو 2026)
 
 | الحقل | القيمة |
@@ -360,6 +383,15 @@ eas build --platform android --profile preview
 | `chat` | رسائل المحادثة | HIGH | رسائل الشات |
 | `default` | الإشعارات العامة | HIGH | عام |
 | `promotions` | العروض | LOW | عروض وتخفيضات |
+
+---
+
+## سجل البناء
+
+| رقم البناء | versionCode | التاريخ | الإصلاحات الرئيسية |
+|------------|-------------|---------|-------------------|
+| Build #17 | 20 | 2026-05-15 | إصلاح الإشعارات المكررة — InAppBanner يستخدم realtimeEvents |
+| **Build #18** | **21** | **2026-05-15** | **إصلاح ثغرة admin role في التسجيل** · shared supabase lib · rate limiting (5/min register, 60/min push) · إزالة hardcoded OTA channel · إزالة debug logs الكاشفة لبيانات المستخدمين |
 
 ---
 

@@ -63,6 +63,9 @@ Key commands:
 - **Service Icons**: `lib/serviceIcons.ts`
 - **FCM Configuration**: `google-services.json` (in `artifacts/mobile/`)
 - **APK Build Instructions**: `artifacts/mobile/BUILD_APK.md`
+- **App Guide**: `docs/APP_GUIDE.md`
+- **Google Play Store Listing**: `docs/STORE_LISTING.md`
+- **Privacy Policy**: `docs/PRIVACY_POLICY.md`
 
 ## Architecture decisions
 
@@ -72,6 +75,7 @@ Key commands:
 - **Realtime for Core Features**: Supabase Realtime is extensively used for bookings, provider location tracking, and notifications to provide a live, responsive user experience without manual refreshes.
 - **Dynamic Profile Creation**: `lib/auth.tsx` automatically creates a profile row from `user_metadata` on login/signup, preventing deadlocks if a profile is missing.
 - **Robust Error Handling for UI Assets**: `lib/serviceImages.ts` provides static fallback image URLs for service categories, ensuring the UI is never empty even if Supabase is unreachable.
+- **Exactly-Once In-App Banners**: `InAppBanner` subscribes to `realtimeEvents("notification_received")` from `realtimeStore` (fired once per DB row INSERT) instead of `Notifications.addNotificationReceivedListener` — eliminates duplicate banners from multiple FCM deliveries or concurrent DB triggers.
 
 ## Product
 

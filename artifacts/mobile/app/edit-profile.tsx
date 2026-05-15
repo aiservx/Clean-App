@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Platform, Alert, ActivityIndicator, I18nManager } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -10,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 export default function EditProfile() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { profile, session, refreshProfile } = useAuth();
   const [name, setName] = useState(profile?.full_name || "");
@@ -129,7 +131,7 @@ export default function EditProfile() {
         ))}
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity style={[styles.btn, { backgroundColor: colors.primary }]} onPress={save} disabled={saving}>
           {saving ? (
             <ActivityIndicator color="#FFF" />

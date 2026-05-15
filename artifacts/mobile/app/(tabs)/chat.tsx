@@ -181,7 +181,7 @@ export default function ChatInboxScreen() {
 
   return (
     <View style={[s.container, { backgroundColor: colors.background }]}>
-      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 10 }]}>
         {/* Bell on start edge (right in RTL) */}
         <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/notifications")}>
           <Feather name="bell" size={20} color={colors.foreground} />
@@ -195,7 +195,7 @@ export default function ChatInboxScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 16 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 80, paddingHorizontal: 16 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >

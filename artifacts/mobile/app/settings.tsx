@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, Pressable , I18nManager, Alert} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -10,6 +11,7 @@ import { useI18n, Lang } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 
 export default function Settings() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { t, lang, setLang } = useI18n();
   const { mode, setMode } = useTheme();
@@ -75,7 +77,7 @@ export default function Settings() {
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title={t("settings_title")} subtitle={t("settings_sub2")} />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
         <Section title={t("account")}>
           <Item icon="user" label={t("edit_profile")} onPress={() => router.push("/edit-profile")} />
           <Item icon="lock" label={t("change_password")} onPress={() => {}} iconBg={colors.accentLight} iconColor={colors.accent} />

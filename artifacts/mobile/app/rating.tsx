@@ -169,7 +169,7 @@ export default function RatingScreen() {
           <View style={s.hIcon} />
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 160 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
           <LinearGradient colors={["#EDE9FE", "#F0F4FF"]} style={s.profileCard}>
             <Image
               source={providerAvatar ? { uri: providerAvatar } : require("@/assets/images/default-avatar.png")}

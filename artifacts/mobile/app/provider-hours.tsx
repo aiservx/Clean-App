@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -17,6 +18,7 @@ const DAYS = [
 ];
 
 export default function ProviderHours() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const [schedule, setSchedule] = useState<Record<string, { active: boolean; from: string; to: string }>>({
     sun: { active: true, from: "08:00", to: "20:00" },
@@ -81,7 +83,7 @@ export default function ProviderHours() {
         </View>
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity style={[styles.saveBtn, { backgroundColor: colors.primary }]} onPress={() => router.back()}>
           <Text style={styles.saveT}>حفظ المواعيد</Text>
         </TouchableOpacity>

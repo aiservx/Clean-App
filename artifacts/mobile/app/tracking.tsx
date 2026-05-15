@@ -507,7 +507,7 @@ export default function TrackingScreen() {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
         {isPending && !isProvider && (
           <View style={[styles.pendingBanner, { backgroundColor: "#FFF8E7", borderColor: "#F59E0B" }]}>
             <ActivityIndicator color="#F59E0B" size="small" />

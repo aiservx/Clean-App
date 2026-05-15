@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, I18nManager } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,13 +24,14 @@ const CONTACT = [
 ];
 
 export default function Help() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="المساعدة والدعم" subtitle="نحن هنا لمساعدتك" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
 
         {/* AI Assistant Card */}
         <TouchableOpacity activeOpacity={0.92} onPress={() => router.push("/(tabs)/chat")} style={{ marginBottom: 18 }}>

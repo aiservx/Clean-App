@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Clipboard from "expo-clipboard";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,6 +16,7 @@ const FRIENDS = [
 ];
 
 export default function Referrals() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const code = "AHMED2025";
   const [copied, setCopied] = useState(false);
@@ -27,7 +29,7 @@ export default function Referrals() {
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="دعوة الأصدقاء" subtitle={`اكسب ${REFERRAL_PROGRAM.rewardPerFriend} ر.س لكل صديق`} />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
         {/* Banner hero */}
         <View style={styles.hero}>
           <Image source={require("@/assets/images/invite_friends_banner.png")} style={styles.heroImg} resizeMode="cover" />
@@ -117,7 +119,7 @@ export default function Referrals() {
         </View>
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity style={[styles.shareBtn, { backgroundColor: "#F59E0B" }]} onPress={onShare}>
           <Feather name="share-2" size={18} color="#FFF" />
           <Text style={styles.shareT}>شارك الكود الآن</Text>

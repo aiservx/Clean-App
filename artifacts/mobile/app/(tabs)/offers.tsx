@@ -135,7 +135,7 @@ export default function OffersScreen() {
       }}
     >
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()}>
           <Feather name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={22} color={colors.foreground} />
         </TouchableOpacity>
@@ -143,7 +143,7 @@ export default function OffersScreen() {
         <View style={{ width: 44 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 130 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}>
 
         {/* ── HERO SLIDER ─────────────────────────────────────────────── */}
         {IMG_W > 0 && (

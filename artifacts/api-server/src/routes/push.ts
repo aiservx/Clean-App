@@ -1,62 +1,13 @@
 import { Router } from "express";
 import type { IRouter, Request, Response } from "express";
 import { logger } from "../lib/logger";
+import { verifyJwt, isAdminUser, SUPABASE_URL, SUPABASE_SERVICE_KEY } from "../lib/supabase";
+import { pushLimiter } from "../lib/rateLimiter";
 
 const router: IRouter = Router();
 
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ?? "https://mffdpjwtwseftaqrslgx.supabase.co";
-const SUPABASE_ANON_KEY =
-  process.env.SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-
 if (!SUPABASE_SERVICE_KEY) {
   logger.warn("SUPABASE_SERVICE_ROLE_KEY is not set — push notifications will fail. Set it in environment secrets.");
-}
-
-// ── Verify Supabase JWT and return caller's user ID ───────────────────────
-
-async function verifyJwt(authHeader: string | undefined): Promise<string | null> {
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  const token = authHeader.slice(7);
-  try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) return null;
-    const json: unknown = await res.json();
-    if (typeof json === "object" && json !== null && "id" in json) {
-      const id = (json as Record<string, unknown>).id;
-      return typeof id === "string" ? id : null;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-// ── Check if caller has admin role ────────────────────────────────────────
-
-async function callerIsAdmin(callerId: string): Promise<boolean> {
-  if (!SUPABASE_SERVICE_KEY) return false;
-  const url = `${SUPABASE_URL}/rest/v1/profiles?select=role&id=eq.${encodeURIComponent(callerId)}&limit=1`;
-  try {
-    const res = await fetch(url, {
-      headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-        Accept: "application/json",
-      },
-    });
-    if (!res.ok) return false;
-    const rows: unknown = await res.json();
-    return Array.isArray(rows) && rows.length > 0 && (rows[0] as Record<string, unknown>).role === "admin";
-  } catch {
-    return false;
-  }
 }
 
 // ── Authorization: caller must share a booking with target, be admin, or be
@@ -71,7 +22,7 @@ async function callerMayNotify(
   if (callerId === targetUserId) return true;
   if (!SUPABASE_SERVICE_KEY) return false;
 
-  if (await callerIsAdmin(callerId)) return true;
+  if (await isAdminUser(callerId)) return true;
 
   // For new_booking notifications the caller must prove ownership of a real
   // pending booking.  bookingId is required; we verify user_id === callerId
@@ -268,7 +219,7 @@ async function sendToExpoWithRetry(messages: ExpoMessage[], maxAttempts: number)
 // Requires: Authorization: Bearer <supabase-access-token>
 // Caller must share a booking with the target userId.
 
-router.post("/push", async (req: Request, res: Response) => {
+router.post("/push", pushLimiter, async (req: Request, res: Response) => {
   const callerId = await verifyJwt(req.headers.authorization);
   if (!callerId) {
     res.status(401).json({ error: "unauthorized" });
@@ -379,7 +330,7 @@ router.post("/push", async (req: Request, res: Response) => {
 // Send push notifications to multiple users in a single request.
 // Body: { userIds: string[], title, body, data?, categoryIdentifier?, channelId?, bookingId? }
 
-router.post("/push/batch", async (req: Request, res: Response) => {
+router.post("/push/batch", pushLimiter, async (req: Request, res: Response) => {
   const callerId = await verifyJwt(req.headers.authorization);
   if (!callerId) {
     res.status(401).json({ error: "unauthorized" });
@@ -433,7 +384,7 @@ router.post("/push/batch", async (req: Request, res: Response) => {
       return;
     }
   } else {
-    const isAdmin = await callerIsAdmin(callerId);
+    const isAdmin = await isAdminUser(callerId);
     if (!isAdmin) {
       res.status(403).json({ error: "forbidden — batch requires admin or new_booking proof" });
       return;

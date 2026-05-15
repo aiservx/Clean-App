@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -13,13 +14,14 @@ const FAVS = [
 ];
 
 export default function FavoritesScreen() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const [favs, setFavs] = useState(FAVS);
 
   return (
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="المفضلة" subtitle="العمال المفضلين لديك" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 12 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24, gap: 12 }} showsVerticalScrollIndicator={false}>
         {favs.map((f) => (
           <View key={f.id} style={[styles.card, { backgroundColor: colors.card }]}>
             <Image source={f.img} style={{ width: 56, height: 56, borderRadius: 28 }} />

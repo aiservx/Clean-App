@@ -60,7 +60,7 @@ export default function Dashboard() {
           .eq("available", true)
           .then(({ count }) => setLiveCount(count ?? 0));
       })
-      .subscribe((s) => console.log("[admin-dashboard] realtime:", s));
+      .subscribe(() => {});
 
     return () => { supabase.removeChannel(ch); };
   }, [loadAll]);

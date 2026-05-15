@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -24,6 +25,7 @@ const fmt = (d: Date) =>
   d.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
 
 export default function Statement() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { session } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
@@ -80,7 +82,7 @@ export default function Statement() {
     <View style={[styles.c, { backgroundColor: colors.background }]}>
       <ScreenHeader title="كشف حساب" subtitle="جميع الإيرادات والمسحوبات" />
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >

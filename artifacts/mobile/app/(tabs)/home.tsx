@@ -460,7 +460,7 @@ export default function HomeScreen() {
           <View style={styles.sheetGrabber} />
           <ScrollView
             ref={providerScrollRef}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
             showsVerticalScrollIndicator={false}
           >
 

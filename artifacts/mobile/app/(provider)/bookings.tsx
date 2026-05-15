@@ -183,7 +183,7 @@ export default function ProviderBookings() {
 
       {/* ── List ──────────────────────────────────────────────────────── */}
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 130, paddingHorizontal: 16, paddingTop: 8, gap: 12 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 80, paddingHorizontal: 16, paddingTop: 8, gap: 12 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0D9488" />}
       >

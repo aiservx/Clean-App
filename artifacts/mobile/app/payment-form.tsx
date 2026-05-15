@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -7,6 +8,7 @@ import ScreenHeader from "@/components/ScreenHeader";
 import { useColors } from "@/hooks/useColors";
 
 export default function PaymentForm() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const [num, setNum] = useState("");
   const [name, setName] = useState("");
@@ -87,7 +89,7 @@ export default function PaymentForm() {
         </TouchableOpacity>
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity style={[styles.saveBtn, { backgroundColor: colors.primary }]} onPress={() => router.back()}>
           <Feather name="lock" size={14} color="#FFF" />
           <Text style={styles.saveT}>حفظ بأمان</Text>

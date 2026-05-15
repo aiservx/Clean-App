@@ -201,7 +201,6 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     });
     channelsRef.current = [];
     setChannelCount(0);
-    console.log("[realtime] ✓ all channels removed");
   }, []);
 
   const registerChannel = useCallback((ch: ReturnType<typeof supabase.channel>) => {
@@ -231,10 +230,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       if (!error && data) {
         const mapped = data.map(mapBooking);
         setBookings(mapped);
-        console.log(`[realtime] bookings: ${mapped.length} loaded`);
       }
     } catch (e) {
-      console.log("[realtime] loadBookings error:", (e as Error).message);
+      if (__DEV__) console.warn("[realtime] loadBookings:", (e as Error).message);
     } finally {
       if (gen === bookingGenRef.current.current()) setBookingsLoading(false);
     }
@@ -256,10 +254,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         setNotifs(data as NotifRow[]);
         const unread = (data as NotifRow[]).filter((n) => !n.read).length;
         realtimeEvents.dispatch({ type: "badge_updated", unreadCount: unread });
-        console.log(`[realtime] notifs: ${data.length} loaded, ${unread} unread`);
       }
     } catch (e) {
-      console.log("[realtime] loadNotifs error:", (e as Error).message);
+      if (__DEV__) console.warn("[realtime] loadNotifs:", (e as Error).message);
     } finally {
       if (gen === notifGenRef.current.current()) setNotifsLoading(false);
     }
@@ -317,8 +314,6 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           { event: "*", schema: "public", table: "bookings", filter: `user_id=eq.${userId}` },
           async (payload: any) => {
             const updated = payload.new;
-            console.log(`[realtime] [store-bookings] ${payload.eventType} id=${updated?.id} status=${updated?.status}`);
-
             if (!updated?.id) {
               await loadBookings(userId);
               return;
@@ -355,7 +350,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             });
           },
         )
-        .subscribe((s) => console.log(`[realtime] store-bookings-${userId}: ${s}`));
+        .subscribe(() => {});
       registerChannel(bkCh);
 
       // Channel 2: customer notifications
@@ -365,7 +360,6 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           "postgres_changes",
           { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
           (payload: any) => {
-            console.log(`[realtime] [store-notifs] ${payload.eventType} id=${payload.new?.id}`);
             loadNotifs(userId);
             if (payload.eventType === "INSERT" && payload.new?.id) {
               realtimeEvents.dispatch({
@@ -379,7 +373,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             }
           },
         )
-        .subscribe((s) => console.log(`[realtime] store-notifs-${userId}: ${s}`));
+        .subscribe(() => {});
       registerChannel(notifCh);
 
       // Channel 3: provider — new pending orders (all INSERT, no filter — provider_id is null on insert)
@@ -392,11 +386,10 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             (payload: any) => {
               const bk = payload.new;
               if (!bk?.id) return;
-              console.log(`[realtime] [store-provider-new] NEW booking id=${bk.id}`);
               realtimeEvents.dispatch({ type: "new_booking", bookingId: bk.id });
             },
           )
-          .subscribe((s) => console.log(`[realtime] store-provider-new: ${s}`));
+          .subscribe(() => {});
         registerChannel(provNewCh);
 
         // Channel 4: provider — their accepted/in-progress bookings (filter by provider_id)
@@ -413,7 +406,6 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             (payload: any) => {
               const bk = payload.new;
               if (!bk?.id) return;
-              console.log(`[realtime] [store-provider-accepted] UPDATE id=${bk.id} status=${bk.status}`);
               realtimeEvents.dispatch({
                 type: "provider_booking_changed",
                 bookingId: bk.id,
@@ -427,7 +419,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
               });
             },
           )
-          .subscribe((s) => console.log(`[realtime] store-provider-accepted-${userId}: ${s}`));
+          .subscribe(() => {});
         registerChannel(provAcceptedCh);
 
         // Channel 5: provider location updates (for customers tracking this provider)
@@ -448,7 +440,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
               });
             },
           )
-          .subscribe((s) => console.log(`[realtime] store-provider-locations: ${s}`));
+          .subscribe(() => {});
         registerChannel(provLocCh);
       }
 
@@ -462,13 +454,12 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           (payload: any) => {
             const bk = payload.new;
             if (!bk?.id) return;
-            console.log(`[realtime] [store-admin-bookings] NEW booking id=${bk.id}`);
             if (!isProvider) {
               realtimeEvents.dispatch({ type: "new_booking", bookingId: bk.id });
             }
           },
         )
-        .subscribe((s) => console.log(`[realtime] store-admin-bookings: ${s}`));
+        .subscribe(() => {});
       registerChannel(adminCh);
     },
     [removeAllChannels, registerChannel, loadBookings, loadNotifs, maybeFireRating, isProvider],
@@ -497,7 +488,6 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleAppState = (nextState: AppStateStatus) => {
       if (nextState === "active" && uid) {
-        console.log("[realtime] app became active — reconnecting channels");
         subscribe(uid);
         if (isCustomer) loadBookings(uid);
         loadNotifs(uid);

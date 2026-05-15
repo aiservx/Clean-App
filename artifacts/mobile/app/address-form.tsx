@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -12,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 
 export default function AddressForm() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { t } = useI18n();
   const { session } = useAuth();
@@ -165,7 +167,7 @@ export default function AddressForm() {
         </TouchableOpacity>
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity style={[styles.saveBtn, { backgroundColor: colors.primary }]} onPress={onSave} disabled={saving}>
           {saving ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveT}>{t("save_address")}</Text>}
         </TouchableOpacity>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image , I18nManager} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -21,6 +22,7 @@ const PROVIDERS = [
 ];
 
 export default function SearchScreen() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const [q, setQ] = useState("");
 
@@ -44,7 +46,7 @@ export default function SearchScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24, paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
         <Text style={[styles.label, { color: colors.foreground }]}>عمليات البحث الأخيرة</Text>
         <View style={styles.tags}>
           {RECENT.map((t) => (

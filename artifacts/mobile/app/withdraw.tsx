@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -19,6 +20,7 @@ const METHODS = [
 const QUICK = [100, 250, 500, 1000];
 
 export default function Withdraw() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { session } = useAuth();
   const [amount, setAmount] = useState("");
@@ -171,7 +173,7 @@ export default function Withdraw() {
         </View>
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity style={[styles.btn, { backgroundColor: busy ? colors.muted : colors.primary }]} onPress={submit} disabled={busy}>
           <Feather name="arrow-up" size={16} color="#FFF" />
           <Text style={styles.btnT}>{busy ? "جاري الإرسال..." : "تأكيد طلب السحب"}</Text>

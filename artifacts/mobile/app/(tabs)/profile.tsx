@@ -61,7 +61,7 @@ export default function ProfileScreen() {
   return (
     <View style={[s.root, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 8 }]}>
+      <View style={[s.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={[s.hIcon, { backgroundColor: colors.card }]} onPress={() => router.push("/settings")}>
           <Feather name="settings" size={20} color={colors.foreground} />
         </TouchableOpacity>
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
         {/* Profile Info */}
         <View style={s.profileRow}>
           <View style={s.profileInfo}>

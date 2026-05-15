@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 
 import ScreenHeader from "@/components/ScreenHeader";
@@ -44,6 +45,7 @@ function relativeTime(iso: string): string {
 }
 
 export default function ProviderNotifications() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { session } = useAuth();
   const [filter, setFilter] = useState<"all" | "unread">("all");
@@ -118,7 +120,7 @@ export default function ProviderNotifications() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 10, flexGrow: list.length === 0 ? 1 : undefined }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 24, gap: 10, flexGrow: list.length === 0 ? 1 : undefined }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         >

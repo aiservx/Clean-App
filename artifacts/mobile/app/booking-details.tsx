@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import type { Session } from "@supabase/supabase-js";
 import { router, useLocalSearchParams } from "expo-router";
@@ -175,6 +176,7 @@ const fmtDate = (iso: string | null) => {
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
 
 export default function BookingDetails() {
+  const insets = useSafeAreaInsets();
   const colors = useColors();
   const { session } = useAuth();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -342,7 +344,7 @@ export default function BookingDetails() {
         )}
       </ScrollView>
 
-      <View style={[styles.bottom, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottom, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
         {isCancellable && (
           <TouchableOpacity style={styles.cancelBtn} onPress={cancelBooking}>
             <Text style={[styles.cancelT, { color: "#EF4444" }]}>إلغاء الطلب</Text>
