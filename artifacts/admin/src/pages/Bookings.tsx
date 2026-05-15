@@ -6,13 +6,15 @@ import { supabase } from "@/lib/supabase";
 const API_BASE = import.meta.env.VITE_API_URL ||
   `https://${window.location.hostname.replace(/^\d+-/, "8080-")}`;
 
-const STATUS_FLOW = ["pending", "accepted", "on_the_way", "in_progress", "completed"] as const;
+const STATUS_FLOW = ["pending", "accepted", "on_the_way", "arrived", "started", "in_progress", "completed"] as const;
 type BookingStatus = typeof STATUS_FLOW[number] | "cancelled" | "rejected";
 
 const ALL_STATUSES: { value: BookingStatus; label: string }[] = [
   { value: "pending",     label: "⏳ قيد الانتظار" },
   { value: "accepted",    label: "✅ مقبول" },
   { value: "on_the_way",  label: "🚗 في الطريق" },
+  { value: "arrived",     label: "📍 وصل للموقع" },
+  { value: "started",     label: "🧹 بدأ العمل" },
   { value: "in_progress", label: "🔧 جاري التنفيذ" },
   { value: "completed",   label: "🏆 مكتمل" },
   { value: "cancelled",   label: "❌ ملغي" },
@@ -20,18 +22,39 @@ const ALL_STATUSES: { value: BookingStatus; label: string }[] = [
 ];
 
 const STATUS_AR: Record<string, string> = {
-  pending: "قيد الانتظار", accepted: "تأكيد الطلب", on_the_way: "المزود في الطريق",
-  in_progress: "بدء تنفيذ الخدمة", completed: "اكتملت الخدمة", cancelled: "إلغاء الطلب", rejected: "رفض الطلب",
+  pending:     "قيد الانتظار",
+  accepted:    "تأكيد الطلب",
+  on_the_way:  "المزود في الطريق",
+  arrived:     "وصل للموقع",
+  started:     "بدأ العمل",
+  in_progress: "بدء تنفيذ الخدمة",
+  completed:   "اكتملت الخدمة",
+  cancelled:   "إلغاء الطلب",
+  rejected:    "رفض الطلب",
 };
 
 const FLOW_AR: Record<string, string> = {
-  pending: "تم استلام الطلب", accepted: "تأكيد المزود", on_the_way: "المزود في الطريق إليك",
-  in_progress: "بدء تنفيذ الخدمة", completed: "إنجاز الخدمة ✨", cancelled: "تم إلغاء الطلب", rejected: "تم رفض الطلب",
+  pending:     "تم استلام الطلب",
+  accepted:    "تأكيد المزود",
+  on_the_way:  "المزود في الطريق إليك",
+  arrived:     "المزود وصل للموقع",
+  started:     "بدأ العمل",
+  in_progress: "بدء تنفيذ الخدمة",
+  completed:   "إنجاز الخدمة ✨",
+  cancelled:   "تم إلغاء الطلب",
+  rejected:    "تم رفض الطلب",
 };
 
 const FLOW_DOTS: Record<string, string> = {
-  pending: "#F59E0B", accepted: "#3B82F6", on_the_way: "#8B5CF6",
-  in_progress: "#2F80ED", completed: "#16C47F", cancelled: "#EF4444", rejected: "#EF4444",
+  pending:     "#F59E0B",
+  accepted:    "#3B82F6",
+  on_the_way:  "#8B5CF6",
+  arrived:     "#F59E0B",
+  started:     "#8B5CF6",
+  in_progress: "#2F80ED",
+  completed:   "#16C47F",
+  cancelled:   "#EF4444",
+  rejected:    "#EF4444",
 };
 
 type Booking = {

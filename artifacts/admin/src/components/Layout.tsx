@@ -25,13 +25,15 @@ const NAV: { path: string; label: string; icon: string }[] = [
 
 // ── Status chip — unified with mobile STATUS_COLOR ─────────────────────────
 const STATUS_AR: Record<string, string> = {
-  pending: "قيد الانتظار",
-  accepted: "مقبول",
-  on_the_way: "في الطريق",
+  pending:     "قيد الانتظار",
+  accepted:    "مقبول",
+  on_the_way:  "في الطريق",
+  arrived:     "وصل للموقع",
+  started:     "بدأ العمل",
   in_progress: "جاري التنفيذ",
-  completed: "مكتمل",
-  cancelled: "ملغي",
-  rejected: "مرفوض",
+  completed:   "مكتمل",
+  cancelled:   "ملغي",
+  rejected:    "مرفوض",
 };
 
 export function StatusChip({ status }: { status: string }) {
