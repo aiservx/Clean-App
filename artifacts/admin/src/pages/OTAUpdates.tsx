@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, PageHeader } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
-const PROJECT_ID = "dd03c810-2182-47e7-9a0a-823fdcc351b8";
-const ACCOUNT = "clean-beaton";
+const PROJECT_ID = "c1d243e2-193e-4a27-ad30-87468c74e92b";
+const ACCOUNT = "aiservx1";
 const PROJECT_SLUG = "mobile";
 
 type OTAConfig = {

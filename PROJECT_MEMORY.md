@@ -1,346 +1,344 @@
-# PROJECT_MEMORY.md
-# نظافة — Cleaning Services App
+# PROJECT_MEMORY — نظافة (Nazafa) Cleaning Marketplace
 
-> Last updated: 2026-05-07
-
----
-
-## 1. What This App Is
-
-A **production-grade Arabic RTL mobile cleaning-services marketplace** built for the Saudi market.
-
-- **Users** browse services, chat with an AI assistant, book cleaners, track orders in real-time, and chat with providers.
-- **Providers** manage bookings, track earnings, and handle withdrawal requests.
-- **Admins** manage everything via a React/Vite dashboard.
+> **للعوامل المستقبلية:** هذا الملف هو المرجع الكامل. اقرأه أولاً قبل أي تعديل.
+> آخر تحديث: 2026-05
 
 ---
 
-## 2. Monorepo Structure
+## 1. نظرة عامة
 
-```
-/
-├── artifacts/
-│   ├── mobile/          # Expo SDK 54 React Native app  (port 18115)
-│   ├── admin/           # React + Vite admin dashboard  (port 23744)
-│   ├── api-server/      # Fastify/Express API server    (port 8080)
-│   └── mockup-sandbox/  # Vite component preview server
-├── db/
-│   ├── schema.sql            # Canonical DB schema
-│   └── migration_messages.sql
-├── scripts/
-│   └── start-all.sh
-└── PROJECT_MEMORY.md
-```
+**نظافة** — سوق خدمات تنظيف منازل للسوق السعودي. منصة ثنائية الأطراف (عملاء ↔ مزودو خدمة) مع لوحة إدارة.  
+**لغة الواجهة:** عربي RTL أساسي + دعم إنجليزي جزئي.
+
+### الأجزاء الثلاثة:
+| الجزء | المسار | المنفذ | الوصول |
+|-------|--------|--------|--------|
+| موبايل (Expo) | `artifacts/mobile/` | 18115 | dev + APK |
+| لوحة الإدارة (React/Vite) | `artifacts/admin/` | **5000** (webview) | `/` → VITE_BASE_URL=/admin/ |
+| API Server (Express) | `artifacts/api-server/` | 8080 | `/api/` |
+
+**تشغيل الكل:** `bash scripts/start-all.sh`
 
 ---
 
-## 3. Tech Stack
+## 2. بيانات الاعتماد — Supabase (المشروع الجديد)
 
-| Layer | Tech |
-|---|---|
-| Mobile | Expo SDK 54, React Native, Expo Router |
-| Admin | React 18, Vite, Tailwind CSS |
-| API | Express (Node 24), TypeScript |
-| Database | Supabase (PostgreSQL + RLS + Realtime) |
-| Auth | Supabase Auth (username→SHA-256→email hashing) |
-| Fonts | Tajawal (400/500/600/700) |
-| Maps | react-native-maps (native), OpenStreetMap (web) |
-| Icons | @expo/vector-icons (Feather + MaterialCommunityIcons) |
-| Notifications | Expo Push + FCM v1 via api-server |
-| Package Mgr | pnpm workspaces |
+| المتغير | القيمة |
+|---------|--------|
+| Project ID | `vbcblxhwnlzbreznfyau` |
+| URL | `https://vbcblxhwnlzbreznfyau.supabase.co` |
+| ANON KEY (JWT) | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiY2JseGh3bmx6YnJlem5meWF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NDU1MTQsImV4cCI6MjA5NDQyMTUxNH0.ie1PHeQajLzAE-zPFFF8eggO7GgOdBadTaGdTAAHcaY` |
+| SERVICE ROLE KEY | ← **Replit Secrets** — `SUPABASE_SERVICE_ROLE_KEY` ⚠️ مطلوب للإشعارات |
 
----
+> المشروع القديم `mffdpjwtwseftaqrslgx` — **لا تستخدمه أبداً**. جميع الملفات حُدِّثت للمشروع الجديد.
 
-## 4. Key Files — Mobile App (`artifacts/mobile/`)
-
-| File | Role |
-|---|---|
-| `app/_layout.tsx` | Root layout — RTL enforcement, font loading, auth gate |
-| `app/index.tsx` | Root redirect → onboarding or tabs |
-| `app/(tabs)/home.tsx` | Home screen: map (absolute) + scroll-over content |
-| `app/(tabs)/bookings.tsx` | User booking list with real-time status |
-| `app/(tabs)/offers.tsx` | Promotions & offers |
-| `app/(tabs)/profile.tsx` | User profile settings |
-| `app/(provider)/` | Provider-facing screens |
-| `app/ai-assistant.tsx` | **AI chat** — booking flow, intent detection, rich cards |
-| `app/tracking.tsx` | Live order tracking screen |
-| `app/booking-details.tsx` | Booking detail / status timeline |
-| `app/chat.tsx` | Per-booking real-time chat with provider |
-| `app/payment.tsx` | Payment method selection |
-| `lib/auth.tsx` | Supabase auth context + auto profile creation |
-| `lib/supabase.ts` | Supabase client |
-| `lib/theme.tsx` | Light/dark/system theme |
-| `lib/i18n.tsx` | Arabic/English i18n |
-| `lib/location.ts` | GPS + reverse geocoding |
-| `lib/serviceImages.ts` | Fallback service image URLs |
-| `lib/serviceIcons.ts` | Service → icon/color mapping |
-| `lib/promotions.ts` | Seasonal promo data + KB entries |
-| `lib/notifications.ts` | Push notification helpers |
-| `lib/realtimeStore.ts` | Supabase Realtime bookings hook |
-| `lib/chatBadge.ts` | Unread chat badge state |
-| `constants/colors.ts` | Design token colors |
-| `components/AppMap.tsx` | Platform-split map (web: OSM, native: react-native-maps) |
-| `components/FloatingTabBar.tsx` | Custom floating bottom tab bar |
-| `components/GuestEmpty.tsx` | Guest placeholder for auth-gated screens |
+### Replit Secrets المضبوطة:
+- `EXPO_TOKEN` ✅ — `_b9Mbt2aSKcLloFX8yneFQvA-j-BxURvcnu9INx6`
+- `EXPO_PUBLIC_SUPABASE_URL` ✅ — `https://vbcblxhwnlzbreznfyau.supabase.co`
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` ✅
+- `SUPABASE_URL` ✅
+- `SUPABASE_ANON_KEY` ✅
+- `SUPABASE_SERVICE_ROLE_KEY` ⚠️ **مطلوب — أضفه من Supabase Dashboard**
+- `EXPO_PUBLIC_API_URL` ⚠️ **يُضبط بعد نشر API Server** (يُخبز في APK)
 
 ---
 
-## 5. Key Files — API Server (`artifacts/api-server/src/`)
+## 3. EAS / Expo Build
 
-| File | Role |
-|---|---|
-| `routes/index.ts` | Mounts all routers |
-| `routes/health.ts` | `GET /api/health` |
-| `routes/auth.ts` | `POST /api/auth/register` |
-| `routes/push.ts` | `POST /api/push`, `POST /api/push/batch` |
-| `routes/bookings.ts` | `GET /api/bookings/active`, `GET /api/bookings/:id`, `GET /api/bookings/:id/tracking` |
-| `routes/tickets.ts` | `POST /api/tickets`, `GET /api/tickets/:id`, `GET /api/tickets/history`, `PATCH /api/tickets/:id` |
-| `routes/refunds.ts` | `POST /api/refunds/request`, `GET /api/refunds/:id`, `GET /api/refunds/history`, `PATCH /api/refunds/:id` |
-| `lib/logger.ts` | Pino logger |
-| `lib/providerSweep.ts` | Provider availability sweep |
+| الحقل | القيمة |
+|-------|--------|
+| EAS Account | `aiservx1` |
+| EAS Project ID | `c1d243e2-193e-4a27-ad30-87468c74e92b` |
+| Package Android | `com.aiservx.nazafa` |
+| Bundle iOS | `com.aiservx.nazafa` |
+| versionCode الحالي | **21** (رفعه قبل كل build جديد) |
+| Keystore | EAS managed: `Build Credentials txt_65s4Tz` |
 
----
-
-## 6. Database Schema (Key Tables)
-
-| Table | Purpose |
-|---|---|
-| `profiles` | All users — role: `user` / `provider` / `admin` |
-| `providers` | Provider extras: rating, location, available, hourly_rate |
-| `services` | Service catalog |
-| `bookings` | Core bookings — user_id, provider_id, service_id, status, total |
-| `booking_status_log` | Append-only status history per booking |
-| `addresses` | Saved user addresses |
-| `messages` | Per-booking chat messages |
-| `notifications` | In-app notification feed |
-| `push_tokens` | Expo push tokens per user |
-| `wallet_transactions` | Earnings / withdrawals |
-| `withdrawal_requests` | Provider withdrawal requests |
-| `support_tickets` | User support tickets (category, description, status) — see `db/migration_tickets_refunds.sql` |
-| `refund_requests` | Refund requests (booking_id, amount, reason, status) — see `db/migration_tickets_refunds.sql` |
-
-**Booking statuses (ordered):**
-`pending` → `accepted` → `on_the_way` → `arrived` → `started` → `completed` | `cancelled`
-> `in_progress` is a legacy alias for `started` — still supported in all status maps
-
----
-
-## 7. AI Assistant — Architecture (`app/ai-assistant.tsx`)
-
-The AI assistant is a **rule-based KB + real DB hybrid** — no external LLM.
-
-### Message Flow
-```
-User types / taps QuickAction
-  → Intent detection (tracking / invoice / booking flow / KB fallback)
-  → If tracking intent: fetchActiveTracking() → TrackingData → renderTrackingCard()
-  → If invoice intent: fetchLatestInvoice() → InvoiceData → renderInvoiceDetail()
-  → If booking keyword: answerFromKb() → text reply
-  → else: generic fallback
+### أمر البناء (preview APK):
+```bash
+cd artifacts/mobile
+EAS_NO_VCS=1 EXPO_TOKEN="$EXPO_TOKEN" npx eas-cli build \
+  --platform android --profile preview --non-interactive --no-wait
 ```
 
-### Card Types (CardType union)
-| CardType | Rendered By | Purpose |
-|---|---|---|
-| `"quick_actions"` | `<QuickActions />` | Initial action chips |
-| `"services"` | `renderServiceGrid()` | Service picker grid |
-| `"providers"` | `renderProviderCards()` | Horizontal provider cards |
-| `"address_confirm"` | `renderConfirmCard()` | Address Y/N confirmation |
-| `"phone_confirm"` | `renderConfirmCard()` | Phone Y/N confirmation |
-| `"invoice"` | `renderInvoice()` | Pre-booking invoice preview |
-| `"confirmation"` | `renderConfirmation()` | Booking success card with **"تتبع الطلب"** button |
-| `"tracking_card"` | `renderTrackingCard()` | **Live tracking card** (real DB) |
-| `"invoice_card"` | `renderInvoiceDetail()` | **Existing booking invoice** (real DB) |
-| `"coupon_card"` | `renderCouponCard()` | Seasonal promo cards with copy-to-clipboard |
-| `"support_contact"` | `renderSupportContact()` | Contact channels + inline ticket form |
-| `"refund_status_card"` | `renderRefundCard()` | Refund status viewer + submission form |
+### قبل أي build:
+1. `app.config.ts` → رفع `versionCode`
+2. `eas.json` → تحديث `EXPO_PUBLIC_SUPABASE_URL/KEY` (✅ محدَّث للمشروع الجديد)
+3. `eas.json` → تحديث `EXPO_PUBLIC_API_URL` لعنوان API Server المنشور
 
-### Booking Flow Steps (Step enum)
-`welcome` → `services` → `service_selected` → `providers` → `provider_selected` → `booking_type` → `date_time_picker` (if scheduled) → `address` → `phone` → `invoice` → `confirmed` → `qa`
-
-### Card Types (Build #15 additions)
-| CardType | Purpose |
-|---|---|
-| `"booking_type"` | اختيار الحجز الفوري أو المجدول — زرَّا "الآن" و"موعد لاحق" |
-| `"date_time_picker"` | كروت تاريخ أفقية (7 أيام) + كروت وقت (5 خيارات) + زر تأكيد gradient |
-
-### Real-Data Fetchers
-- `fetchActiveTracking()` — latest booking + status log → `TrackingData`
-- `fetchLatestInvoice()` — latest booking invoice breakdown → `InvoiceData`
-- `fetchRefundStatus()` — latest refund request → `RefundStatusData`
-- `pushTrackingCard()` — shows typing indicator, fetches, appends card
-- `pushInvoiceCard()` — shows typing indicator, fetches, appends card
-- `pushCouponCard()` — shows `SEASONAL_PROMOS` as tappable coupon cards
-- `pushSupportContact()` — shows support contact channels + ticket form
-- `pushRefundCard()` — shows refund status or submission form
-
-### Voice / TTS System
-- **STT**: Web `SpeechRecognition` API (`startVoiceWeb` / `stopVoiceWeb`). On native, shows keyboard mic instruction.
-- **TTS**: `expo-speech` — `speakResponse(text, lang)` — speaks bot responses ≤ 250 chars (no card type). Rate 0.82 (ar-SA), 0.9 (en-US). Toggle button in header (volume-high / volume-off icon). Uses `ttsEnabledRef` to avoid stale closure in `addBotMessage` useCallback.
-- **Language auto-detection**: `detectLanguage(text)` tests `/[\u0600-\u06FF]/` → `"ar-SA"` else `"en-US"`. Set on every user send + STT transcript.
-- **Wave animation**: 5 `Animated.Value` bars (`waveAnims` ref) with `Animated.loop` + staggered timing (200–420ms). Shown in place of input bar when `voiceListening === true`. Red stop button + "جاري الاستماع..." label.
-- **Speech stops** on: back navigation, new user send, TTS toggle off, mic stop.
-
-### RTL Header Fix
-- `headerInfo: { alignItems: "flex-start" }` — In RTL, `flex-start` = physical RIGHT. Previously `"flex-end"` caused name/status to appear on the wrong (left) side. Fixed.
-- Back button now uses `s.headerBackBtn` pill style with frosted glass background.
+### متابعة البنيات:
+https://expo.dev/accounts/aiservx1/projects/mobile/builds
 
 ---
 
-## 8. Push Notifications
+## 4. قاعدة البيانات (Supabase PostgreSQL)
 
-- All push calls go through `POST /api/push` (not direct from mobile)
-- API server uses `SUPABASE_SERVICE_ROLE_KEY` to bypass RLS on `push_tokens`
-- Auth: JWT verified → ownership check → Expo Push API with retry
-- Channels: `new_booking` (30 min TTL), `booking_status`, `payment`, `chat`, `default`
-- Batch: `POST /api/push/batch` — admin only (or new_booking proof)
+### الجداول الأساسية:
+| الجدول | الأعمدة المهمة |
+|--------|---------------|
+| `profiles` | `id, role(user/provider/admin), full_name, phone, email, avatar_url, gender` |
+| `providers` | `id→profiles, bio, status(pending/approved/suspended), available, rating, hourly_rate, experience_years, current_lat/lng, service_radius_km, working_hours` |
+| `service_categories` | `id, title_ar, icon, color, active` |
+| `services` | `id, category_id, title_ar, base_price, duration_min, active` |
+| `bookings` | `id, user_id, provider_id, service_id, address_id, status, total, scheduled_at, notes, payment_method, deadline` |
+| `booking_status_log` | `id, booking_id, status, note, created_at` |
+| `addresses` | `id, user_id, label, street, district, city, lat, lng, is_default` |
+| `notifications` | `id, user_id, title, body, type, data(json), read` |
+| `push_tokens` | `id, user_id, token, platform` |
+| `chat_rooms` | `id, booking_id` |
+| `messages` | `id, room_id, sender_id, content, created_at` |
+| `payouts` | `id, provider_id, amount, status(pending/paid/failed), iban, method` |
+| `withdrawal_requests` | `id, provider_id, amount, status, iban` |
+| `refund_requests` | `id, booking_id, user_id, amount, reason, status(pending/approved/rejected)` |
+| `support_tickets` | `id, user_id, subject, body, priority, status(open/in_progress/closed)` |
+| `reviews` | `id, booking_id, user_id, provider_id, rating, comment` |
+| `offers` | `id, title, discount_pct, code, active, expires_at` |
+| `app_settings` | `key, value(json), updated_at` — مفاتيح: commission, app_branding, policies, home_builder, ota_config |
 
----
-
-## 9. Environment Variables
-
-| Variable | Used By | Notes |
-|---|---|---|
-| `EXPO_PUBLIC_SUPABASE_URL` | Mobile | Public — baked into bundle |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Mobile | Public — baked into bundle |
-| `SUPABASE_URL` | API server | Server-side |
-| `SUPABASE_ANON_KEY` | API server | Server-side |
-| `SUPABASE_SERVICE_ROLE_KEY` | API server | **Secret** — Replit Secrets only |
-| `EXPO_PUBLIC_API_URL` | Mobile (APK) | Must be deployed URL for APK builds |
-
----
-
-## 10. Booking API Routes (api-server)
-
-### `GET /api/bookings/active`
-Returns most recent non-cancelled booking for authenticated user with status log and provider location.
-
-**Auth:** `Authorization: Bearer <supabase-jwt>`
-**Response:** `{ booking: BookingWithLog | null }`
-
-### `GET /api/bookings/:id`
-Returns full booking details. Caller must be user, provider, or admin.
-
-**Response:** `{ booking: { ...fields, status_log, invoice: { basePrice, fee, vat, total } } }`
-
-### `GET /api/bookings/:id/tracking`
-Lightweight real-time tracking data: status, provider GPS, latest log.
-
-**Response:** `{ bookingId, status, scheduledAt, providerName, providerLat, providerLng, providerRating, latestLog }`
+### Migrations (بالترتيب):
+```
+1. artifacts/mobile/db/schema.sql         — الجداول الرئيسية
+2. artifacts/mobile/db/migration_v2.sql   — providers: services/areas columns
+3. db/migration_service_area.sql          — radius/hours, booking deadline
+4. db/migration_tickets_refunds.sql       — support_tickets + refund_requests
+5. db/migration_status_v3.sql             — arrived/started statuses + triggers + indexes
+```
 
 ---
 
-## 11. Admin Dashboard (`artifacts/admin/`)
+## 5. دورة حياة الحجز (Status Flow)
 
-- React + Vite + Tailwind
-- Pages: Dashboard, Bookings, Providers, Services, Customers, Withdrawals, Refunds, Notifications
-- `Bookings.tsx` — live booking table with status updates + push notifications
-- Connects to Supabase directly (anon key) + API server for push
+```
+pending → accepted → on_the_way → arrived → started → completed
+                                                     ↘ cancelled / rejected
+```
 
----
+| Status | عربي | اللون |
+|--------|------|-------|
+| `pending` | قيد الانتظار | #F59E0B |
+| `accepted` | مقبول | #3B82F6 |
+| `on_the_way` | في الطريق | #8B5CF6 |
+| `arrived` | وصل للموقع | #F59E0B |
+| `started` | بدأ العمل | #8B5CF6 |
+| `in_progress` | جاري التنفيذ (legacy) | #2F80ED |
+| `completed` | مكتمل | #16C47F |
+| `cancelled` | ملغي | #EF4444 |
+| `rejected` | مرفوض | #EF4444 |
 
-## 12. RTL Design Rules
-
-- Global RTL: `I18nManager.forceRTL(true)` in `app/_layout.tsx`
-- All row directions use `I18nManager.isRTL` for `flexDirection`
-- Back chevron: `chevron-right` when RTL, `chevron-left` when LTR
-- Language switching triggers full app reload
-
----
-
-## 13. Bug Fixes Log (2026-05-07 — Full Audit)
-
-### Previously Fixed (earlier sessions)
-- `AppMap.native.tsx` — props mismatch corrected
-- `admin/Refunds.tsx` — wallet deduction on refund approval now inserts payouts row correctly
-- `edit-profile.tsx` — city field wired to form state
-- `provider/profile.tsx` — `lastToggleRef` guard prevents availability toggle race condition
-- `provider-service-area.tsx` — city + district fields linked
-- `lib/notifications.ts` — `isProvider` flag, channel mapping, `booking_rejected` type added
-- `components/InAppBanner.tsx` — `booking_rejected` type handled correctly
-
-### Fixed in Session — Build #15 (2026-05-09)
-| File | Change |
-|---|---|
-| `app/ai-assistant.tsx` | `booking_type` card (instant/scheduled) + `date_time_picker` card (7-day + 5-slot) |
-| `app/ai-assistant.tsx` | `useMemo` import added; arrow param types fixed |
-| `app/ai-assistant.tsx` | Input placeholder updated for date_time_picker step |
-| `app/ai-assistant.tsx` | `renderTrackingCard` STEPS updated: arrived/started added |
-| `app/tracking.tsx` | STATUS_AR/ICON/COLOR maps: arrived/started added |
-| `app/tracking.tsx` | StatusToast maps: arrived ("الفني وصل للموقع 📍") + started ("بدأت الخدمة 🧹") |
-| `app/tracking.tsx` | Active status query includes arrived/started |
-| `app/tracking.tsx` | Provider GPS update loop includes arrived/started |
-| `artifacts/mobile/BUILD_APK.md` | Build #15 entry added |
-
-### Fixed in Session (2026-05-07)
-| File | Bug | Fix |
-|---|---|---|
-| `app/settings.tsx` | Signout button called `router.replace("/onboarding")` without calling `signOut()` — Supabase session stayed alive | Added `useAuth` import; signout now calls `await signOut()` then navigates; wrapped in `Alert.alert` confirmation dialog |
-| `app/notifications.tsx` `notifMeta()` | Missing cases for `booking_rejected`, `withdrawal`, `withdrawal_approved` — fell through to generic `bell` icon | Added cases: `booking_rejected` → `x-circle` red, `withdrawal` → `dollar-sign` green, `withdrawal_approved` → `credit-card` green |
-| `app/notifications.tsx` `targetForNotif()` | `booking_rejected` was not listed → routing fell through to tracking screen instead of bookings list | Added `booking_rejected` to the `completed/cancelled` → `/(tabs)/bookings` branch |
-| `app/referrals.tsx` | Copy button had no `onPress` — tapping it did nothing; `expo-clipboard` not imported | Added `Clipboard.setStringAsync(code)` + 2-second visual feedback (checkmark + green tint); installed `expo-clipboard` package |
-| `app/booking-details.tsx` | VAT breakdown used `tax = total × 0.15` (wrong) — over-stated tax, under-stated base | Fixed to `base = total / 1.15`, `tax = total − base` (mathematically correct reverse-VAT) |
-| `app/(tabs)/bookings.tsx` | `cancelled` filter (`r.status === "cancelled"`) excluded `rejected` bookings — they appeared in no tab except "الكل", invisible to users | Fixed: filter now includes `r.status === "cancelled" \|\| r.status === "rejected"` |
-| `app/(tabs)/bookings.tsx` | `STATUS_AR` map missing `rejected` key — rejected bookings showed blank status label in the list | Added `rejected: "مرفوض"` to `STATUS_AR` |
-| `app/(tabs)/bookings.tsx` | `STATUS_COLOR` map missing `rejected` key — rejected bookings showed no status badge colour | Added `rejected: "#EF4444"` to `STATUS_COLOR` |
-| `app/rating.tsx` | `submitBtn` and `doneBtn` styles had hardcoded `backgroundColor: "#3B82F6"` — ignored theme/dark-mode `colors.primary` | Applied `{ backgroundColor: colors.primary }` as inline style override on all three `TouchableOpacity` instances |
+> `in_progress` موجود كـ fallback من الإصدارات القديمة. الـ flow الجديد: arrived → started.
 
 ---
 
-## 14. Development Gotchas
+## 6. تطبيق الموبايل (`artifacts/mobile/`)
 
-- **APK builds**: `EXPO_PUBLIC_API_URL` baked at build time — always set to deployed URL
-- **DB migrations**: `db/migration_v2.sql`, `db/migration_messages.sql`, and `trg_booking_status_notify` trigger must be run manually in Supabase SQL editor
-- **RLS**: Push tokens are behind RLS — always send push via API server, never from admin directly
-- **Auth username flow**: `POST /api/auth/register` hashes username → fake email for Supabase Auth
-- **Map**: Web preview uses OpenStreetMap iframe; native uses `react-native-maps` — split via `.native.tsx`
-- **`booking_status_log` table**: Must exist for tracking card to show history. If empty, tracking card still renders with current status only.
-- **`support_tickets` + `refund_requests` tables**: Must be created by running `db/migration_tickets_refunds.sql` manually in Supabase SQL editor before ticket/refund features work.
-- **expo-speech on web**: `Speech.speak()` is skipped on web (poor Arabic support). TTS only fires on native (iOS/Android). Always guarded with `Platform.OS !== "web"` check.
-- **Bookings header**: Now uses `LinearGradient` with stats row (total/active/completed counts). `activeCount` and `completedCount` computed via `useMemo`.
-- **Chat header RTL**: `bell` icon is first child in `rowDir` row → appears on physical RIGHT in RTL (start edge). Spacer is last child → physical LEFT.
+### هيكل التنقل (Expo Router):
+```
+app/
+├── index.tsx              ← Root: تحقق session→role→onboarded
+├── _layout.tsx            ← Root layout: fonts, RTL, push, auth, realtime
+├── onboarding.tsx         ← 3 slides
+├── login.tsx / signup.tsx ← مصادقة (username→email hash)
+│
+├── (tabs)/                ← Customer navigation
+│   ├── home.tsx           ← خريطة + 18 فئة + banners + NearbyProviderToast
+│   ├── bookings.tsx       ← حجوزات العميل (all/active/completed/cancelled)
+│   ├── offers.tsx         ← عروض + coupons + banners
+│   ├── chat.tsx           ← قائمة محادثات + AI entry
+│   └── profile.tsx        ← بيانات المستخدم + إعدادات
+│
+├── (provider)/            ← Provider navigation
+│   ├── dashboard.tsx      ← إحصائيات + خريطة + countdown modal
+│   ├── bookings.tsx       ← جديدة/مجدولة/نشطة/مكتملة
+│   ├── booking-details.tsx← تفاصيل + تغيير الحالة + خريطة
+│   ├── wallet.tsx         ← رصيد + معاملات + سحب
+│   ├── chat.tsx           ← محادثات المزود
+│   └── profile.tsx        ← بيانات + toggle الإتاحة
+│
+├── ai-assistant.tsx       ← المساعد الذكي (rule-based + Supabase)
+├── booking.tsx            ← استمارة حجز 4 خطوات
+├── booking-details.tsx    ← تفاصيل الحجز للعميل + استرداد
+├── tracking.tsx           ← تتبع مباشر: خريطة + status log
+├── chat-detail.tsx        ← محادثة فردية (Realtime)
+├── rating.tsx             ← تقييم بعد الإنجاز
+└── ...                    ← شاشات أخرى (payment, search, provider/[id], ...)
+```
+
+### المكتبات (`lib/`):
+| الملف | الغرض |
+|-------|-------|
+| `supabase.ts` | Supabase client (AsyncStorage session) — **المشروع الجديد ✅** |
+| `auth.tsx` | AuthProvider: session, profile, signIn/signUp/signOut |
+| `username.ts` | usernameToEmail() — username→email@users.nazafa.app hash |
+| `theme.tsx` | ThemeProvider + useColors() |
+| `i18n.tsx` | I18nProvider: AR/EN + t() |
+| `notifications.ts` | registerForPush, sendPushNotification, createNotification |
+| `realtimeStore.tsx` | RealtimeProvider: useRealtimeBookings, useRealtimeEvents |
+| `location.ts` | getCurrentResolved(), distanceKm(), reverse geocoding |
+| `chatBadge.tsx` | unread messages badge |
+| `notifBadge.tsx` | unread notifications badge |
+| `useOTAUpdate.ts` | فحص وتطبيق تحديثات OTA |
+| `promotions.ts` | SEASONAL_PROMOS, GRID_PROMO_ROWS |
+| `serviceIcons.ts` | iconForService(), colorForService(), imageForService() |
+
+### المكوّنات (`components/`):
+- `AppMap.tsx` / `AppMap.native.tsx` — OSM (web) / Google Maps (native)
+- `FloatingTabBar.tsx` — شريط تنقل عائم + badges
+- `InAppBanner.tsx` — بانر إشعار WhatsApp-style (يعتمد على realtimeEvents، لا على NotificationReceived)
+- `RatingBottomSheet.tsx` — نافذة تقييم تلقائية بعد الإنجاز
+- `NearbyProviderToast.tsx` — إشعار منبثق للمزودين القريبين
+- `GuestEmpty.tsx` / `ErrorBoundary.tsx` / `ScreenHeader.tsx`
 
 ---
 
-## 14. Feature Completion Status
+## 7. لوحة الإدارة (`artifacts/admin/`)
 
-| Feature | Status |
-|---|---|
-| Onboarding + Auth | ✅ |
-| Home screen (map + services) | ✅ |
-| Service booking flow (full) | ✅ |
-| Real-time order tracking | ✅ |
-| Per-booking chat | ✅ |
-| AI assistant — booking flow | ✅ |
-| AI assistant — booking_type card (instant/scheduled) | ✅ |
-| AI assistant — date_time_picker card (7-day + 5-slot) | ✅ |
-| AI assistant — "تتبع الطلب" button on success card | ✅ |
-| AI assistant — real DB tracking card | ✅ |
-| AI assistant — real DB invoice card | ✅ |
-| AI assistant — intent detection (track/invoice) | ✅ |
-| AI assistant — coupon cards (SEASONAL_PROMOS) | ✅ |
-| AI assistant — support contact + inline ticket form | ✅ |
-| AI assistant — refund status viewer + submission | ✅ |
-| AI assistant — TTS via expo-speech (ar-SA / en-US) | ✅ |
-| AI assistant — voice wave animation (5-bar scaleY) | ✅ |
-| AI assistant — language auto-detection (Arabic/English) | ✅ |
-| AI assistant — RTL header fix (flex-start, TTS toggle, online dot) | ✅ |
-| Bookings — gradient header with stats row | ✅ |
-| Chat inbox — RTL bell icon fix | ✅ |
-| Support tickets API (POST/GET/PATCH) | ✅ |
-| Refunds API (POST/GET/PATCH) | ✅ |
-| DB: support_tickets + refund_requests schema | ✅ (manual migration required) |
-| Push notifications (full system) | ✅ |
-| Provider dashboard | ✅ |
-| Admin dashboard | ✅ |
-| Offers / promotions | ✅ |
-| Wallet / withdrawals (provider) | ✅ |
-| API: GET /api/bookings/active | ✅ |
-| API: GET /api/bookings/:id | ✅ |
-| API: GET /api/bookings/:id/tracking | ✅ |
-| APK build pipeline (EAS) | ✅ Build #16 — fff57327 (versionCode 19) |
-| Booking statuses: arrived + started | ✅ (requires SQL migration) |
-| Provider GPS tracking for arrived/started | ✅ |
-| Tracking toast for arrived/started | ✅ |
-| Provider bookings: مجدولة tab | ✅ |
-| Booking reminder (30 min before) | ✅ |
+### الصفحات:
+| الصفحة | المسار |
+|--------|--------|
+| Dashboard | `/` — إحصائيات real-time |
+| Bookings | `/bookings` — كل الحجوزات + تغيير الحالة + إشعار |
+| Providers | `/providers` — CRUD + موافقة/إيقاف |
+| Customers | `/customers` — CRUD |
+| Services | `/services` — CRUD |
+| Categories | `/categories` — CRUD |
+| Withdrawals | `/withdrawals` — الموافقة على سحب + إشعار |
+| Refunds | `/refunds` — طلبات الاسترداد |
+| Offers | `/offers` — CRUD عروض |
+| Notifications | `/notifications` — إشعار جماعي (all/users/providers) |
+| Support | `/support` — تذاكر دعم |
+| Commission | `/commission` — نسبة العمولة (app_settings) |
+| Branding | `/branding` — هوية بصرية (app_settings) |
+| Policies | `/policies` — سياسات (app_settings) |
+| HomeBuilder | `/home-builder` — بناء الصفحة الرئيسية |
+| OTA Updates | `/ota-updates` — التحكم بتحديثات OTA |
+| Settings | `/settings` — إعدادات عامة |
+
+### تفاصيل تقنية:
+- **Router:** Wouter بـ `base="/admin/"`
+- **Auth:** `profile.role === "admin"` فقط (email + password مباشرة — لا username hash)
+- **Supabase:** `src/lib/supabase.ts` — `VITE_SUPABASE_URL` أو fallback مضمّن (✅ محدَّث)
+- **CRUDPage:** مكوّن عام في `src/components/CRUDPage.tsx`
+- **API_BASE:** `VITE_API_URL || https://${hostname.replace(/^\d+-/, "8080-")}`
+
+---
+
+## 8. API Server (`artifacts/api-server/`)
+
+### المسارات:
+| المسار | الوظيفة |
+|--------|---------|
+| `GET /api/healthz` | فحص الصحة |
+| `POST /api/auth/register` | تسجيل (rate: 5/min) |
+| `GET /api/bookings/active` | حجوزات العميل النشطة |
+| `GET /api/bookings/:id` | تفاصيل حجز |
+| `GET /api/bookings/:id/tracking` | بيانات تتبع + log |
+| `POST /api/push` | push لمستخدم (rate: 60/min) |
+| `POST /api/push/batch` | push جماعي |
+| `POST /api/tickets` | تذكرة دعم |
+| `POST /api/refunds` | طلب استرداد |
+
+### المكتبات الداخلية:
+- `lib/supabase.ts` — **✅ محدَّث للمشروع الجديد** — verifyJwt(), sbFetch(), isAdminUser()
+- `lib/rateLimiter.ts` — حد 5 طلبات/دقيقة (register)، 60/دقيقة (push)
+- `lib/providerSweep.ts` — يُعطّل المزودين غير النشطين
+
+---
+
+## 9. منظومة الإشعارات
+
+```
+[مستخدم] → sendPushNotification() → POST /api/push (SUPABASE_SERVICE_ROLE_KEY)
+         → Expo Push API → FCM v1 → جهاز Android
+```
+
+| المكوّن | الحالة |
+|---------|--------|
+| SUPABASE_SERVICE_ROLE_KEY | ⚠️ غير مضبوط في Replit Secrets |
+| EXPO_TOKEN | ✅ |
+| google-services.json | ✅ حقيقي (project: nazafa-46eb7, number: 549775812329) |
+| FCM v1 Service Account على Expo | ⚠️ يدوي — غير مرفوع بعد |
+| Expo projectId | ✅ يُقرأ من Constants.expoConfig |
+
+### ⚠️ لإصلاح إشعارات شريط الحالة (مرة واحدة):
+1. https://console.firebase.google.com/project/nazafa-46eb7/settings/serviceaccounts → "Generate new private key"
+2. https://expo.dev/accounts/aiservx1/projects/mobile/credentials → Android → FCM V1 → Upload JSON
+3. أعد بناء الـ APK
+
+### قنوات Android:
+| Channel ID | الأهمية |
+|-----------|---------|
+| `new_booking` | MAX — طلبات جديدة للمزود |
+| `booking_status` | HIGH — تحديثات الطلب للعميل |
+| `chat` | HIGH — رسائل المحادثة |
+| `promotions` | LOW — عروض |
+
+---
+
+## 10. نقاط مهمة للمطورين
+
+### Username→Email:
+```
+username "ahmed123" → ahmed123@users.nazafa.app (hash)
+```
+كل مصادقة المستخدمين تمر عبر `lib/username.ts → usernameToEmail()`. **لا تستخدم Supabase Email Auth مباشرة**.
+
+### RTL:
+- `I18nManager.forceRTL(true)` في `app/_layout.tsx`
+- استخدم `marginStart/End` بدل `Left/Right`
+- Web: `document.documentElement.dir = "rtl"`
+
+### نسبة العمولة:
+المزود يحصل على **85%** من قيمة الحجز (`wallet.tsx:59`). العمولة: 15% افتراضي.
+
+### EXPO_PUBLIC_API_URL:
+يُخبز في الـ APK وقت البناء. بعد أي Deploy جديد لـ API Server:
+1. حدّث `eas.json` → `EXPO_PUBLIC_API_URL`
+2. أعد بناء الـ APK
+
+### OTA Updates:
+- الصفحة في admin تستخدم project ID قديم `dd03c810`. الصحيح: `c1d243e2-193e-4a27-ad30-87468c74e92b`
+- Channel المضبوط في `eas.json` يُحدد من يتلقى التحديث (preview/production)
+
+---
+
+## 11. الثيم والألوان
+
+```js
+primary:     "#16C47F"  // أخضر
+secondary:   "#7C3AED"  // بنفسجي
+danger:      "#EF4444"
+warning:     "#F59E0B"
+background:  "#F8FAFC" (light) | "#0F172A" (dark)
+card:        "#FFFFFF"  (light) | "#1E293B" (dark)
+```
+
+---
+
+## 12. المشاكل المعروفة
+
+| المشكلة | الأولوية | الحل |
+|---------|---------|------|
+| `SUPABASE_SERVICE_ROLE_KEY` غير مضبوط | 🔴 عالية | أضفه لـ Replit Secrets من Supabase Dashboard |
+| FCM v1 Service Account غير مرفوع | 🔴 عالية | خطوة يدوية على expo.dev (انظر §9) |
+| `EXPO_PUBLIC_API_URL` في `eas.json` = عنوان قديم | 🟡 متوسطة | حدِّثه بعد كل Deploy جديد |
+| OTAUpdates.tsx: PROJECT_ID/ACCOUNT قديمان | 🟡 متوسطة | الصفحة تعمل لكن OTA push لن يُرسل للمشروع الصحيح |
+
+---
+
+## 13. مسرد سريع — الملفات الأهم
+
+| الملف | الغرض |
+|-------|-------|
+| `scripts/start-all.sh` | يشغّل الثلاثة |
+| `artifacts/mobile/lib/auth.tsx` | كل منطق المصادقة |
+| `artifacts/mobile/lib/notifications.ts` | كل منطق الإشعارات |
+| `artifacts/mobile/lib/realtimeStore.tsx` | اشتراكات Supabase Realtime |
+| `artifacts/mobile/app/ai-assistant.tsx` | المساعد الذكي (1585 سطر) |
+| `artifacts/mobile/app/booking.tsx` | تدفق الحجز (765 سطر) |
+| `artifacts/admin/src/components/CRUDPage.tsx` | مكوّن CRUD العام |
+| `artifacts/api-server/src/lib/supabase.ts` | Supabase helpers + JWT verify |
+| `artifacts/mobile/BUILD_APK.md` | دليل APK شامل |
+| `artifacts/mobile/eas.json` | إعدادات EAS build |
+| `artifacts/mobile/app.config.ts` | إعدادات Expo |
+| `db/migration_status_v3.sql` | آخر migration (arrived/started) |
+| `PROJECT_MEMORY.md` | **هذا الملف — المرجع الكامل** |
