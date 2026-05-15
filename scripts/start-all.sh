@@ -3,7 +3,7 @@
 set -u
 
 # Kill stale processes on our ports (best-effort)
-for port in 8080 18115 23744; do
+for port in 5000 8080 18115; do
   fuser -k "$port/tcp" 2>/dev/null || true
 done
 sleep 1
@@ -15,8 +15,8 @@ echo "[start-all] Starting API server on port 8080..."
 PORT=8080 pnpm --filter @workspace/api-server run dev &
 API_PID=$!
 
-echo "[start-all] Starting Admin dashboard on port 23744..."
-PORT=23744 BASE_PATH=/admin/ pnpm --filter @workspace/admin run dev &
+echo "[start-all] Starting Admin dashboard on port 5000..."
+PORT=5000 BASE_PATH=/admin/ pnpm --filter @workspace/admin run dev &
 ADMIN_PID=$!
 
 echo "[start-all] Starting Mobile app (Expo) on port 18115..."

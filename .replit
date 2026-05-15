@@ -18,11 +18,12 @@ name = "Start application"
 author = "agent"
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "echo '[start-all] Per-artifact workflows manage api/admin/expo. This is a no-op orchestrator.' && sleep infinity"
+args = "bash scripts/start-all.sh"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "artifacts/mockup-sandbox: Component Preview Server"
@@ -45,64 +46,6 @@ PORT = "8081"
 BASE_PATH = "/__mockup"
 
 [[workflows.workflow]]
-name = "artifacts/mobile: expo"
-author = "agent"
-mode = "sequential"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-artifactId = "artifacts/mobile"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/mobile run dev"
-cwd = "./artifacts/mobile"
-waitForPort = 18115
-router = "expo-domain"
-
-[workflows.workflow.tasks.env]
-PORT = "18115"
-BASE_PATH = "/"
-
-[[workflows.workflow]]
-name = "artifacts/admin: web"
-author = "agent"
-mode = "sequential"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-artifactId = "artifacts/admin"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/admin run dev"
-cwd = "./artifacts/admin"
-waitForPort = 23744
-router = "path"
-
-[workflows.workflow.tasks.env]
-PORT = "23744"
-BASE_PATH = "/admin/"
-
-[[workflows.workflow]]
-name = "artifacts/api-server: API Server"
-author = "agent"
-mode = "sequential"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-artifactId = "3B4_FFSkEVBkAeYMFRJ2e"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/api-server run dev"
-cwd = "./artifacts/api-server"
-waitForPort = 8080
-
-[workflows.workflow.tasks.env]
-PORT = "8080"
-
-[[workflows.workflow]]
 name = "Project"
 mode = "parallel"
 author = "agent"
@@ -118,6 +61,10 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
 
 [[ports]]
 localPort = 8080
@@ -155,6 +102,8 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi
 EXPO_TOKEN = "3kvfw9SUHuxgwO7b-DNxNIEYOkMjV-9iaY813dF6"
 SUPABASE_URL = "https://mffdpjwtwseftaqrslgx.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8"
+PORT = "5000"
+NODE_ENV = "development"
 
 [nix]
 channel = "stable-25_05"
