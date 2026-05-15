@@ -65,7 +65,14 @@ export type RatingTrigger = {
 export type RealtimeEvent =
   | { type: "booking_status_changed"; bookingId: string; oldStatus: string; newStatus: string }
   | { type: "new_booking"; bookingId: string }
-  | { type: "notification_received"; notifId: string; notifType: string | null }
+  | {
+      type: "notification_received";
+      notifId: string;
+      notifType: string | null;
+      title: string;
+      body: string | null;
+      data: any;
+    }
   | { type: "provider_order_updated"; bookingId: string; status: string }
   | { type: "provider_booking_changed"; bookingId: string; status: string }
   | { type: "provider_location_updated"; providerId: string; lat: number; lng: number }
@@ -365,6 +372,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
                 type: "notification_received",
                 notifId: payload.new.id,
                 notifType: payload.new.type ?? null,
+                title: payload.new.title ?? "إشعار جديد",
+                body: payload.new.body ?? null,
+                data: payload.new.data ?? {},
               });
             }
           },

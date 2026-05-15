@@ -1,22 +1,22 @@
 /**
  * InAppBanner — WhatsApp-style in-app notification banner.
  *
- * Shown automatically when a push notification arrives while the app is
- * in the FOREGROUND (the OS banner is suppressed on some iOS versions in
- * foreground). Slides in from the top, auto-dismisses after 4.5 s, and
- * taps navigate to the correct screen via deep-link logic.
+ * Listens to the realtimeStore `notification_received` event (fired once per
+ * DB row insert) instead of the push notification listener to guarantee
+ * exactly-once display — no duplicates from multiple FCM deliveries or
+ * concurrent DB triggers.
  *
- * Usage: mount <InAppBanner /> once inside the provider tree in _layout.tsx.
+ * Usage: mount <InAppBanner /> once inside RealtimeProvider in _layout.tsx.
  */
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   Animated, Platform, Pressable, StyleSheet, Text, View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
+import { useRealtimeEvents } from "@/lib/realtimeStore";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 
@@ -141,22 +141,22 @@ export default function InAppBanner() {
     [slideY, dismiss],
   );
 
-  useEffect(() => {
-    if (Platform.OS === "web") return;
-    const sub = Notifications.addNotificationReceivedListener((notif) => {
-      const content = notif.request.content;
-      const data    = (content.data as Record<string, any>) ?? {};
-      const type    = (data.type as string) || "";
+  // Listen to the realtimeStore event — fired exactly once per DB notification
+  // row insert, so banners never duplicate regardless of how many FCM tokens
+  // exist or how many DB triggers fire.
+  useRealtimeEvents(
+    (event) => {
+      if (event.type !== "notification_received") return;
       show({
-        id:    notif.request.identifier,
-        title: content.title ?? "إشعار جديد",
-        body:  content.body  ?? "",
-        type,
-        data,
+        id:    event.notifId,
+        title: event.title,
+        body:  event.body ?? "",
+        type:  event.notifType ?? "",
+        data:  event.data ?? {},
       });
-    });
-    return () => sub.remove();
-  }, [show]);
+    },
+    [show],
+  );
 
   if (!banner || Platform.OS === "web") return null;
 
