@@ -813,6 +813,16 @@ export default function BookingScreen() {
 const rowDir = I18nManager.isRTL ? ("row" as const) : ("row-reverse" as const);
 const colAlign = I18nManager.isRTL ? ("flex-start" as const) : ("flex-end" as const);
 
+const notesStyles = StyleSheet.create({
+  container: { borderRadius: 16, padding: 16, marginBottom: 14 },
+  header: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 15, flex: 1 },
+  badge: { backgroundColor: "#DCFCE7", borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2 },
+  badgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#16A34A" },
+  input: { fontFamily: "Tajawal_400Regular", fontSize: 14, textAlignVertical: "top", minHeight: 80 },
+  counter: { fontFamily: "Tajawal_400Regular", fontSize: 11, textAlign: "right", marginTop: 4 },
+});
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {

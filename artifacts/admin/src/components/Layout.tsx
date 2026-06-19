@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { LiveTicker } from "./LiveTicker";
 
 const NAV: { path: string; label: string; icon: string; section?: string }[] = [
   { path: "/", label: "الرئيسية", icon: "📊", section: "عام" },
@@ -10,6 +11,7 @@ const NAV: { path: string; label: string; icon: string; section?: string }[] = [
   { path: "/dynamic-pricing", label: "التسعير الديناميكي", icon: "⚡", section: "عام" },
   { path: "/live-map", label: "خريطة المزودين", icon: "🗺️", section: "عام" },
   { path: "/geo-heatmap", label: "الخريطة الحرارية", icon: "🌍", section: "عام" },
+  { path: "/cohorts", label: "الاستبقاء والشرائح", icon: "🔁", section: "عام" },
   { path: "/services", label: "الخدمات", icon: "🧹", section: "الكتالوج" },
   { path: "/categories", label: "التصنيفات", icon: "🗂️", section: "الكتالوج" },
   { path: "/providers", label: "مقدمو الخدمة", icon: "👷", section: "المستخدمون" },
@@ -164,7 +166,10 @@ export function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* ── Main content ── */}
-      <main className="flex-1 overflow-y-auto scroll-thin">{children}</main>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <LiveTicker />
+        <div className="flex-1 overflow-y-auto scroll-thin">{children}</div>
+      </main>
     </div>
   );
 }

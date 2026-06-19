@@ -198,6 +198,69 @@ function HourlyChart({ data }: { data: { hour: string; count: number }[] }) {
   );
 }
 
+// ── Supply-Demand Gap Widget ──────────────────────────────────────────────────
+function SupplyDemandGap({ hourlyData, activeProviders }: { hourlyData: any[]; activeProviders: number }) {
+  const capacityPerProvider = 2; // avg bookings a provider can handle per hour
+  const gapData = hourlyData.map((h: any) => {
+    const demand = h.count ?? 0;
+    const supply = Math.round(activeProviders * capacityPerProvider * 0.6);
+    const gap = Math.max(0, demand - supply);
+    return { hour: h.hour, demand, supply, gap };
+  });
+  const peakHours = gapData.filter((d) => d.gap > 0);
+  const maxGap = Math.max(...gapData.map((d) => d.gap), 1);
+
+  return (
+    <div className="mb-4 bg-white rounded-2xl border shadow-sm overflow-hidden" dir="rtl">
+      <div className="px-6 pt-5 pb-3 flex items-center justify-between" style={{ borderBottom: "1px solid #F1F5F9" }}>
+        <div>
+          <h3 className="font-bold text-gray-900" style={{ fontFamily: "Tajawal, sans-serif" }}>⚡ فجوة العرض والطلب</h3>
+          <p className="text-xs text-gray-500 mt-0.5">الطلبات مقابل طاقة المزودين لكل ساعة</p>
+        </div>
+        {peakHours.length > 0 && (
+          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: "#FEE2E2", color: "#DC2626", fontFamily: "Tajawal, sans-serif" }}>
+            ⚠️ {peakHours.length} ساعة نقص
+          </span>
+        )}
+      </div>
+      <div className="p-6">
+        {/* Gap bars */}
+        <div className="flex gap-1 items-end h-32 mb-2">
+          {gapData.map((d) => {
+            const demandH = hourlyData.length ? Math.max(4, (d.demand / Math.max(...hourlyData.map((h: any) => h.count ?? 0), 1)) * 100) : 4;
+            const supplyH = Math.min(demandH, (d.supply / Math.max(...gapData.map((g) => Math.max(g.demand, g.supply)), 1)) * 100);
+            const isGap = d.gap > 0;
+            return (
+              <div key={d.hour} className="flex-1 flex flex-col items-center gap-0.5" title={`${d.hour}:00 — طلب: ${d.demand} | طاقة: ${d.supply}`}>
+                <div className="w-full rounded-t-sm transition-all" style={{
+                  height: `${demandH}%`,
+                  background: isGap ? "linear-gradient(180deg, #EF4444, #FCA5A5)" : "linear-gradient(180deg, #16C47F, #86EFAC)",
+                  minHeight: 3,
+                }} />
+                <span style={{ fontSize: 8, color: "#94A3B8", fontFamily: "Tajawal, sans-serif" }}>{d.hour}</span>
+              </div>
+            );
+          })}
+        </div>
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-1">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm" style={{ background: "#16C47F" }} />
+            <span style={{ fontSize: 11, color: "#64748B", fontFamily: "Tajawal, sans-serif" }}>طلب مغطى</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm" style={{ background: "#EF4444" }} />
+            <span style={{ fontSize: 11, color: "#64748B", fontFamily: "Tajawal, sans-serif" }}>نقص مزودين</span>
+          </div>
+          <div className="mr-auto text-xs text-gray-500">
+            {peakHours.length === 0 ? "✅ الطاقة تغطي الطلب حالياً" : `أضف مزودين في: ${peakHours.slice(0, 3).map((h) => `${h.hour}:00`).join("، ")}`}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Provider Leaderboard ─────────────────────────────────────────────────────
 function ProviderLeaderboard({ data }: { data: any[] }) {
   const medals = ["🥇", "🥈", "🥉"];
@@ -460,6 +523,9 @@ export default function Analytics() {
             <TopServicesChart data={topServices} />
             <HourlyChart data={hourlyData} />
           </div>
+
+          {/* ── Supply-Demand Gap Widget ── */}
+          <SupplyDemandGap hourlyData={hourlyData} activeProviders={kpis.activeProviders ?? 0} />
 
           {/* ── Provider Leaderboard ── */}
           <ProviderLeaderboard data={providers} />

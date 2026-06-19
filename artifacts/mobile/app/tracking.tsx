@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Platform, ActivityIndicator, Animated, Alert, Linking, I18nManager, Vibration,
+  Platform, ActivityIndicator, Animated, Alert, Linking, I18nManager, Vibration, Share,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -394,6 +394,23 @@ export default function TrackingScreen() {
     } as any);
   };
 
+  const shareStatus = async () => {
+    if (!booking) return;
+    const STATUS_AR: Record<string, string> = {
+      pending: "قيد الانتظار", accepted: "مؤكد ✓", on_the_way: "في الطريق 🚗",
+      arrived: "وصل للموقع 📍", started: "بدأت الخدمة 🧹", in_progress: "جاري التنفيذ 🔧",
+      completed: "اكتملت ✨", cancelled: "ملغي",
+    };
+    const providerName = booking.provider?.full_name || "مزود نظافة";
+    const statusText = STATUS_AR[booking.status] || booking.status;
+    const serviceTitle = booking.service_title || "خدمة تنظيف";
+    const etaText = eta && booking.status === "on_the_way" ? `\n⏱ الوصول خلال ~${eta} دقيقة` : "";
+    const message = `🧹 تحديث من تطبيق نظافة\n\nالخدمة: ${serviceTitle}\nالمزود: ${providerName}\nالحالة: ${statusText}${etaText}\n\n📲 تابع الخدمة عبر تطبيق نظافة`;
+    try {
+      await Share.share({ message, title: "متابعة خدمة نظافة" });
+    } catch {}
+  };
+
   if (!session) {
     return <GuestEmpty title="تتبع الطلب" subtitle="سجّل دخولك لمتابعة طلبك المباشر" icon="map-marker-path" />;
   }
@@ -569,6 +586,14 @@ export default function TrackingScreen() {
           <TouchableOpacity style={[styles.iconCircle, { backgroundColor: colors.primaryLight, marginStart: 8 }]} onPress={openChat}>
             <Feather name="message-circle" size={18} color={colors.primary} />
           </TouchableOpacity>
+          {!isProvider && !isTerminal && (
+            <TouchableOpacity
+              style={[styles.iconCircle, { backgroundColor: "#F1F5F9", marginStart: 8 }]}
+              onPress={shareStatus}
+            >
+              <Feather name="share-2" size={18} color="#64748B" />
+            </TouchableOpacity>
+          )}
           <View style={{ flex: 1, marginHorizontal: 12 }}>
             <Text style={[styles.pName, { color: colors.foreground }]}>
               {otherParty?.full_name || (isProvider ? "العميل" : isPending ? "جاري البحث عن مزود…" : "مزود الخدمة")}
