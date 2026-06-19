@@ -1,30 +1,35 @@
 ---
-name: Nazafa analytics, dispatch & Phase 2 features
-description: All new features added across Phase 1 and Phase 2 sessions
+name: Nazafa Phase 1+2 features
+description: What has been built in Phase 1 and Phase 2 of the Nazafa cleaning app, and what is planned next.
 ---
 
-## Phase 1 Features
-- Analytics page (recharts) — /analytics
-- Auto-dispatch API — /api/dispatch/suggest + /api/dispatch/auto-assign
-- Analytics API — /api/analytics/*
-- Enhanced Dashboard with sparklines + mini revenue chart
+## Phase 1 (Complete)
+- Monorepo (pnpm workspaces): mobile (Expo/port 18115), admin (Vite/port 5000), api-server (Express/port 8080)
+- RTL Arabic Expo app with Tajawal fonts
+- Booking Wizard (4 steps), Real-time tracking, Chat, AI Assistant
+- Admin Dashboard (15+ pages), Push Notifications (FCM), Provider Dashboard + Wallet
+- Offers/Coupons, Referrals (UI), Themes (light/dark/system)
+- Analytics page (recharts), Auto-dispatch API, Dynamic Pricing grid (Admin)
 
-## Phase 2 Features (current session)
+## Phase 2 (Implemented June 2026)
+- **ActiveBookingCard** (`components/ActiveBookingCard.tsx`): Uber-style live booking card on home screen, animated pulse, realtime subscription, auto-hides when no active booking
+- **ProviderBadges** (`components/ProviderBadge.tsx`): Dynamic badges (متميز ⭐/الأكثر طلباً 🏆/خبير 👑/جديد 🌱) based on rating/bookings/experience
+- **PlatformStatsStrip** (`components/PlatformStatsStrip.tsx`): Social proof bar on home — today's bookings, active providers, avg rating, all from live DB
+- **Auto Rating Prompt** (bookings.tsx): Realtime subscription → when booking status becomes "completed", auto-navigates to /rating after 1.5s delay
+- **Smart Re-book** (bookings.tsx): reorder(item) now shows provider name in confirm dialog and passes service_id + provider_id to booking flow
+- **DEVELOPMENT_PLAN.md**: Comprehensive 5-phase roadmap at project root
 
-### Admin Dashboard New Pages
-- **DynamicPricing.tsx** (`/dynamic-pricing`) — 24h × 7d interactive pricing grid, multiplier presets, peak preset auto-fill, save to `app_settings` table
-- **API** `pricing.ts` — GET /api/pricing/config + GET /api/pricing/multiplier (reads current hour's multiplier)
+## Phase 3 (Planned — next week)
+- Provider Earnings Charts (recharts)
+- Loyalty Points System
+- Surge Pricing UI
+- Booking Timeline improvements
+- Scheduled Reminders (cron via API server)
 
-### Admin Dashboard Rewrites
-- **Notifications.tsx** — completely rewritten: 8 quick templates, phone preview, send history tab, target selector buttons, char counter
-- **Providers.tsx** — completely rewritten: rich card grid (avatar, stars, stats bar, location badge, batch select), approve/suspend with push notification, batch actions, pending approval alert banner
-- **Bookings.tsx** — enhanced: 🤖 auto-dispatch button on pending bookings (calls /api/dispatch/suggest, shows modal with provider details), CSV export (UTF-8 BOM for Arabic), date range filter
+## Phase 4 (Planned — next month)
+- Before/After Photo Upload
+- Corporate Accounts B2B
+- Subscription Plans (نظافة Gold)
 
-### Navigation
-- **Layout.tsx sidebar** — grouped nav with section headers (عام / الكتالوج / المستخدمون / العمليات / التسويق / الدعم / الإعدادات)
-- Added Dynamic Pricing (⚡) to nav under "عام" section
-
-## Architecture Notes
-- DynamicPricing saves to `app_settings` table keyed `dynamic_pricing` — mobile app can read `/api/pricing/multiplier` at booking time to show adjusted price
-- Auto-dispatch modal shows top-1 provider from scoring algo (proximity 40% + rating 30% + acceptance 20% + load 10%)
-- CSV export uses UTF-8 BOM prefix (\uFEFF) for proper Arabic display in Excel
+**Why:** Tracking feature progression and avoiding re-implementing already-built features.
+**How to apply:** Check this file before starting new features to avoid duplicate work.

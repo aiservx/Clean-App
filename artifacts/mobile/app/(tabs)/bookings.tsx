@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
   RefreshControl, Image, Alert, I18nManager,
@@ -83,11 +83,43 @@ export default function BookingsScreen() {
   const activeCount    = useMemo(() => bookings.filter(b => ["pending","accepted","on_the_way","in_progress"].includes(b.status)).length, [bookings]);
   const completedCount = useMemo(() => bookings.filter(b => b.status === "completed").length, [bookings]);
 
-  const reorder = (serviceTitle: string) => {
-    Alert.alert("إعادة الطلب", `هل تريد إعادة طلب "${serviceTitle}"؟`, [
-      { text: "إلغاء", style: "cancel" },
-      { text: "نعم", onPress: () => router.push("/services") },
-    ]);
+  // Auto-prompt rating when booking completes via realtime
+  useEffect(() => {
+    if (!session?.user) return;
+    const ratedIds = new Set<string>();
+    const ch = supabase
+      .channel("bookings-completed-rating")
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "bookings",
+        filter: `user_id=eq.${session.user.id}`,
+      }, (payload: any) => {
+        const b = payload.new;
+        if (b.status === "completed" && !ratedIds.has(b.id)) {
+          ratedIds.add(b.id);
+          setTimeout(() => {
+            router.push({ pathname: "/rating", params: { bookingId: b.id } } as any);
+          }, 1500);
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [session?.user?.id]);
+
+  const reorder = (item: any) => {
+    Alert.alert(
+      "إعادة الطلب",
+      `هل تريد إعادة طلب "${item.service_title}"${item.provider_name ? ` مع ${item.provider_name}` : ""}؟`,
+      [
+        { text: "إلغاء", style: "cancel" },
+        {
+          text: "نعم، احجز الآن",
+          onPress: () => router.push({
+            pathname: "/services",
+            params: { rebook_service: item.service_id, rebook_provider: item.provider_id },
+          } as any),
+        },
+      ]
+    );
   };
 
   const cancelBooking = (item: any) => {
@@ -324,7 +356,7 @@ export default function BookingsScreen() {
                     ) : (
                       <TouchableOpacity
                         style={[styles.reorderBtn, { backgroundColor: colors.primaryLight }]}
-                        onPress={() => reorder(item.service_title)}
+                        onPress={() => reorder(item)}
                       >
                         <Text style={[styles.reorderBtnText, { color: colors.primary }]}>إعادة طلب</Text>
                       </TouchableOpacity>

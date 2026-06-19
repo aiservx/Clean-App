@@ -10,6 +10,8 @@ const BlurView = Platform.OS === "android"
   : ExpoBlurView;
 import { router } from "expo-router";
 import AppMap from "@/components/AppMap";
+import ActiveBookingCard from "@/components/ActiveBookingCard";
+import PlatformStatsStrip from "@/components/PlatformStatsStrip";
 import NearbyProviderToast, { type ToastProvider } from "@/components/NearbyProviderToast";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
@@ -114,6 +116,7 @@ export default function HomeScreen() {
   const [nearbyToast, setNearbyToast] = useState<ToastProvider | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [bannerIdx, setBannerIdx] = useState(0);
+  const [activeBooking, setActiveBooking] = useState<any>(null);
   const knownNearbyIds = useRef<Set<string>>(new Set());
   const hasInitialLoad = useRef(false);
   const providerScrollRef = useRef<any>(null);
@@ -195,6 +198,49 @@ export default function HomeScreen() {
     const id = setInterval(loadProviders, 5_000);
     return () => clearInterval(id);
   }, []);
+
+  // Active booking — load + subscribe for live Uber-style card
+  useEffect(() => {
+    if (!session?.user) { setActiveBooking(null); return; }
+    const uid = session.user.id;
+    const ACTIVE = ["pending", "accepted", "on_the_way", "arrived", "started", "in_progress"];
+
+    const loadActive = async () => {
+      const { data } = await supabase
+        .from("bookings")
+        .select("id, status, total, scheduled_at, services(title_ar), providers!bookings_provider_id_fkey(profiles(full_name, avatar_url))")
+        .eq("user_id", uid)
+        .in("status", ACTIVE)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setActiveBooking({
+          id: data.id,
+          status: data.status,
+          total: data.total,
+          scheduled_at: data.scheduled_at,
+          service_title: (data.services as any)?.title_ar ?? "خدمة تنظيف",
+          provider_name: (data.providers as any)?.profiles?.full_name ?? null,
+          provider_avatar: (data.providers as any)?.profiles?.avatar_url ?? null,
+        });
+      } else {
+        setActiveBooking(null);
+      }
+    };
+
+    loadActive();
+
+    const ch = supabase
+      .channel(`active-booking-home-${uid}`)
+      .on("postgres_changes", {
+        event: "*", schema: "public", table: "bookings",
+        filter: `user_id=eq.${uid}`,
+      }, () => loadActive())
+      .subscribe();
+
+    return () => { supabase.removeChannel(ch); };
+  }, [session?.user?.id]);
 
   // Auto-advance home banner — simple index swap, works on web + native
   useEffect(() => {
@@ -463,6 +509,12 @@ export default function HomeScreen() {
             contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
             showsVerticalScrollIndicator={false}
           >
+
+          {/* ACTIVE BOOKING CARD — Uber-style live trip card */}
+          <ActiveBookingCard booking={activeBooking} />
+
+          {/* PLATFORM STATS STRIP — social proof */}
+          <PlatformStatsStrip />
 
           {/* PROMO BANNERS — single image swapper, works on web + native */}
           <View style={{ marginHorizontal: 16, marginBottom: 18 }}>
