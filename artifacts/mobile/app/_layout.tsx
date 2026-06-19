@@ -264,6 +264,8 @@ function RootLayoutNav() {
       <Stack.Screen name="provider-referrals" options={{ headerShown: false }} />
       <Stack.Screen name="provider-service-area" options={{ headerShown: false }} />
       <Stack.Screen name="statement" options={{ headerShown: false }} />
+      <Stack.Screen name="tip" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="booking-success" options={{ headerShown: false, gestureEnabled: false }} />
     </Stack>
   );
 }

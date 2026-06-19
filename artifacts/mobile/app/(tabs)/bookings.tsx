@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator,
   RefreshControl, Image, Alert, I18nManager,
 } from "react-native";
+import { SkeletonBookingCard } from "@/components/SkeletonLoader";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -96,8 +97,9 @@ export default function BookingsScreen() {
         const b = payload.new;
         if (b.status === "completed" && !ratedIds.has(b.id)) {
           ratedIds.add(b.id);
+          // First show rating, then tip after rating is done
           setTimeout(() => {
-            router.push({ pathname: "/rating", params: { bookingId: b.id } } as any);
+            router.push({ pathname: "/rating", params: { bookingId: b.id, showTipAfter: "1" } } as any);
           }, 1500);
         }
       })
@@ -237,8 +239,8 @@ export default function BookingsScreen() {
         </ScrollView>
 
         {loading ? (
-          <View style={{ padding: 60, alignItems: "center" }}>
-            <ActivityIndicator color={colors.primary} />
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            {[1, 2, 3].map((i) => <SkeletonBookingCard key={i} />)}
           </View>
         ) : filtered.length === 0 ? (
           <View style={{ paddingHorizontal: 16, paddingTop: 40 }}>

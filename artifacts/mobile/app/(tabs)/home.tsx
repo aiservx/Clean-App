@@ -13,6 +13,8 @@ import AppMap from "@/components/AppMap";
 import ActiveBookingCard from "@/components/ActiveBookingCard";
 import PlatformStatsStrip from "@/components/PlatformStatsStrip";
 import NearbyProviderToast, { type ToastProvider } from "@/components/NearbyProviderToast";
+import ProviderQuickView from "@/components/ProviderQuickView";
+import { SkeletonProviderCard } from "@/components/SkeletonLoader";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -125,6 +127,7 @@ export default function HomeScreen() {
   const { unreadCount: notifUnread } = useNotifBadge();
 
   const loadProviders = async () => {
+    setProvidersLoading(true);
     try {
       // Layer 4: only show providers whose heartbeat is fresh (≤ 8 min old).
       // Falls back to basic query if location_updated_at column doesn't exist yet.
@@ -151,7 +154,9 @@ export default function HomeScreen() {
       } else if (data) {
         setProviders(data as any);
       }
-    } catch {}
+    } catch {} finally {
+      setProvidersLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -298,6 +303,8 @@ export default function HomeScreen() {
   }, []);
 
   const [mapAnimTrigger, setMapAnimTrigger] = useState(0);
+  const [quickViewProvider, setQuickViewProvider] = useState<Provider | null>(null);
+  const [providersLoading, setProvidersLoading] = useState(true);
 
   const requestLocation = async () => {
     setLocating(true);
@@ -406,6 +413,7 @@ export default function HomeScreen() {
           onMarkerPress={(id) => {
             const prov = nearbyProviders.find((p) => p.id === id) ?? null;
             setSelectedProvider(prov);
+            setQuickViewProvider(prov);
           }}
         />
         {/* User location dot */}
@@ -545,6 +553,22 @@ export default function HomeScreen() {
         onPress={() => providerScrollRef.current?.scrollTo({ y: 99999, animated: true })}
       />
 
+      {/* Provider Quick View — Bottom Sheet from map marker tap */}
+      <ProviderQuickView
+        provider={quickViewProvider}
+        distKm={
+          quickViewProvider && loc && quickViewProvider.current_lat && quickViewProvider.current_lng
+            ? distanceKm({ lat: loc.lat, lng: loc.lng }, { lat: quickViewProvider.current_lat, lng: quickViewProvider.current_lng })
+            : null
+        }
+        onClose={() => { setQuickViewProvider(null); setSelectedProvider(null); }}
+        onBook={(id) => {
+          setQuickViewProvider(null);
+          setSelectedProvider(null);
+          router.push({ pathname: "/provider/[id]", params: { id } } as any);
+        }}
+      />
+
       {/* SHEET CONTAINER — fixed below the map so the map always stays visible.
           Only the inner ScrollView content scrolls; the sheet itself never slides
           up to cover the map. */}
@@ -630,6 +654,104 @@ export default function HomeScreen() {
               </ScrollView>
             </>
           )}
+
+          {/* TOP RATED PROVIDERS — Uber-style horizontal cards */}
+          <View style={[styles.sectionHeader]}>
+            <Text style={styles.sectionTitle}>🌟 المزودون المميزون</Text>
+            <TouchableOpacity onPress={() => router.push("/services")}>
+              <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}
+            style={{ marginBottom: 18 }}
+          >
+            {providersLoading
+              ? [1, 2, 3].map((i) => <SkeletonProviderCard key={i} />)
+              : nearbyProviders.length === 0
+              ? (
+                <View style={{ width: 200, paddingVertical: 20, alignItems: "center" }}>
+                  <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 13, color: colors.mutedForeground }}>
+                    لا يوجد مزودون متاحون الآن
+                  </Text>
+                </View>
+              )
+              : nearbyProviders
+                  .slice()
+                  .sort((a: any, b: any) => (b.rating ?? 0) - (a.rating ?? 0))
+                  .slice(0, 6)
+                  .map((p, idx) => {
+                    const distM = loc && p.current_lat && p.current_lng
+                      ? distanceKm({ lat: loc.lat, lng: loc.lng }, { lat: p.current_lat, lng: p.current_lng })
+                      : null;
+                    const badges = [
+                      { cond: (p.rating ?? 0) >= 4.8, label: "⭐ الأعلى تقييماً", bg: "#FFFBEB", color: "#F59E0B" },
+                      { cond: (p.experience_years ?? 0) >= 5, label: "🏆 خبير", bg: "#EDE9FE", color: "#7C3AED" },
+                      { cond: idx === 0, label: "⚡ الأسرع", bg: "#DBEAFE", color: "#2563EB" },
+                      { cond: true, label: "✅ موثّق", bg: "#DCFCE7", color: "#16C47F" },
+                    ];
+                    const badge = badges.find(b => b.cond)!;
+                    return (
+                      <TouchableOpacity
+                        key={p.id}
+                        activeOpacity={0.88}
+                        style={[styles.topProvCard, { backgroundColor: colors.card }]}
+                        onPress={() => {
+                          setQuickViewProvider(p);
+                          setSelectedProvider(p);
+                        }}
+                      >
+                        {/* Avatar */}
+                        <View style={styles.topProvAvatarWrap}>
+                          {p.profiles?.avatar_url ? (
+                            <Image source={{ uri: p.profiles.avatar_url }} style={styles.topProvAvatar} />
+                          ) : (
+                            <LinearGradient colors={["#16C47F", "#059669"]} style={styles.topProvAvatarFallback}>
+                              <Text style={styles.topProvInitial}>
+                                {(p.profiles?.full_name || "م").charAt(0)}
+                              </Text>
+                            </LinearGradient>
+                          )}
+                          <View style={[styles.topProvOnline, { backgroundColor: colors.primary }]} />
+                        </View>
+
+                        {/* Badge */}
+                        <View style={[styles.topProvBadge, { backgroundColor: badge.bg }]}>
+                          <Text style={[styles.topProvBadgeText, { color: badge.color }]}>{badge.label}</Text>
+                        </View>
+
+                        {/* Name */}
+                        <Text style={[styles.topProvName, { color: colors.foreground }]} numberOfLines={1}>
+                          {p.profiles?.full_name || "مزود"}
+                        </Text>
+
+                        {/* Rating */}
+                        <View style={styles.topProvRatingRow}>
+                          <MaterialCommunityIcons name="star" size={13} color="#F59E0B" />
+                          <Text style={styles.topProvRating}>{(p.rating ?? 0).toFixed(1)}</Text>
+                          {distM != null && (
+                            <Text style={styles.topProvDist}> · {distM < 1 ? `${Math.round(distM * 1000)}م` : `${distM.toFixed(1)}كم`}</Text>
+                          )}
+                        </View>
+
+                        {/* Price + CTA */}
+                        <Text style={[styles.topProvRate, { color: colors.primary }]}>
+                          {p.hourly_rate ?? 80} ر.س/ساعة
+                        </Text>
+
+                        <TouchableOpacity
+                          style={[styles.topProvBookBtn, { backgroundColor: colors.primaryLight }]}
+                          onPress={() => router.push({ pathname: "/provider/[id]", params: { id: p.id } } as any)}
+                        >
+                          <Text style={[styles.topProvBookText, { color: colors.primary }]}>احجز</Text>
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    );
+                  })
+            }
+          </ScrollView>
 
           {/* PLATFORM STATS STRIP — social proof */}
           <PlatformStatsStrip />
@@ -1048,4 +1170,34 @@ const styles = StyleSheet.create({
   botOrbA: { position: "absolute", width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.10)", top: -40, start: -30 },
   botOrbB: { position: "absolute", width: 80, height: 80, borderRadius: 40, backgroundColor: "rgba(255,255,255,0.06)", bottom: -30, end: 60 },
   offerNotch: { position: "absolute", top: -10, bottom: -10, width: 20, alignSelf: "center", start: "55%", borderRadius: 100 },
+
+  // Top Rated Providers section
+  topProvCard: {
+    width: 148,
+    borderRadius: 22,
+    padding: 14,
+    alignItems: "center",
+    shadowColor: "#64748B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: "#F1F5F9",
+    gap: 6,
+  },
+  topProvAvatarWrap: { position: "relative", marginBottom: 2 },
+  topProvAvatar: { width: 64, height: 64, borderRadius: 20 },
+  topProvAvatarFallback: { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  topProvInitial: { fontFamily: "Tajawal_700Bold", fontSize: 26, color: "#FFF" },
+  topProvOnline: { position: "absolute", bottom: 2, end: 2, width: 14, height: 14, borderRadius: 7, borderWidth: 2.5, borderColor: "#FFF" },
+  topProvBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 100, alignSelf: "center" },
+  topProvBadgeText: { fontFamily: "Tajawal_600SemiBold", fontSize: 9 },
+  topProvName: { fontFamily: "Tajawal_700Bold", fontSize: 13, textAlign: "center" },
+  topProvRatingRow: { flexDirection: "row", alignItems: "center", gap: 3 },
+  topProvRating: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#0F172A" },
+  topProvDist: { fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#94A3B8" },
+  topProvRate: { fontFamily: "Tajawal_700Bold", fontSize: 11 },
+  topProvBookBtn: { paddingHorizontal: 18, paddingVertical: 7, borderRadius: 12, marginTop: 2 },
+  topProvBookText: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
 });

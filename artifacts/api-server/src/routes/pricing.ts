@@ -71,4 +71,25 @@ router.get("/api/pricing/multiplier", async (_req, res) => {
   }
 });
 
+/**
+ * GET /api/pricing/dynamic
+ * Alias used by mobile app — returns per-service pricing array with multipliers.
+ */
+router.get("/api/pricing/dynamic", async (_req, res) => {
+  try {
+    const config = await getPricingConfig();
+    if (!config?.enabled || !config?.grid) {
+      return res.json({ data: [], multiplier: 1, enabled: false });
+    }
+    const now = new Date();
+    const day = now.getDay();
+    const hour = now.getHours();
+    const multiplier = config.grid?.[day]?.[hour] ?? 1;
+    // Return array format expected by mobile app
+    res.json({ data: [{ multiplier }], multiplier, enabled: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;
