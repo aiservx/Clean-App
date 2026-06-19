@@ -2,13 +2,17 @@
 # Start all three services: API server, Admin dashboard, and Mobile app
 set -u
 
-# Kill stale processes on our ports (best-effort)
-for port in 5000 8080 18115; do
+# Kill stale processes on our ports (best-effort, more thorough)
+for port in 5000 8080 18115 18116 23744; do
   fuser -k "$port/tcp" 2>/dev/null || true
 done
-sleep 1
+# Also kill any lingering node/expo processes from previous runs
+pkill -f "artifacts/api-server/dist/index.mjs" 2>/dev/null || true
+pkill -f "expo start" 2>/dev/null || true
+pkill -f "vite.*admin" 2>/dev/null || true
+sleep 2
 
-# Use CI=1 so Expo never prompts (Y/n) about port reuse — it will pick a free port silently
+# Use CI=1 so Expo never prompts (Y/n) about port reuse
 export CI=1
 
 echo "[start-all] Starting API server on port 8080..."
