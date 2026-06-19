@@ -17,6 +17,7 @@ import Support from "@/pages/Support";
 import Settings, { CommissionPage, BrandingPage, PoliciesPage, HomeBuilderPage } from "@/pages/Settings";
 import OTAUpdates from "@/pages/OTAUpdates";
 import Analytics from "@/pages/Analytics";
+import DynamicPricing from "@/pages/DynamicPricing";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ function Routes() {
       <Route path="/commission" component={CommissionPage} />
       <Route path="/ota-updates" component={OTAUpdates} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/dynamic-pricing" component={DynamicPricing} />
       <Route path="/settings" component={Settings} />
       <Route>
         <div className="p-8">

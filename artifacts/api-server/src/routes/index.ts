@@ -7,6 +7,7 @@ import ticketsRouter from "./tickets";
 import refundsRouter from "./refunds";
 import analyticsRouter from "./analytics";
 import dispatchRouter from "./dispatch";
+import pricingRouter from "./pricing";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use("/api", ticketsRouter);
 router.use("/api", refundsRouter);
 router.use(analyticsRouter);
 router.use(dispatchRouter);
+router.use(pricingRouter);
 
 export default router;

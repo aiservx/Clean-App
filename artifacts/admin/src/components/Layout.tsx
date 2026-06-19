@@ -3,25 +3,26 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
-const NAV: { path: string; label: string; icon: string }[] = [
-  { path: "/", label: "الرئيسية", icon: "📊" },
-  { path: "/analytics", label: "التحليلات", icon: "📈" },
-  { path: "/services", label: "الخدمات", icon: "🧹" },
-  { path: "/categories", label: "التصنيفات", icon: "🗂️" },
-  { path: "/providers", label: "مقدمو الخدمة", icon: "👷" },
-  { path: "/customers", label: "العملاء", icon: "👥" },
-  { path: "/bookings", label: "الحجوزات", icon: "📅" },
-  { path: "/refunds", label: "الاستردادات", icon: "💸" },
-  { path: "/withdrawals", label: "السحوبات", icon: "🏦" },
-  { path: "/offers", label: "العروض", icon: "🎁" },
-  { path: "/notifications", label: "الإشعارات", icon: "🔔" },
-  { path: "/support", label: "الدعم الفني", icon: "🎧" },
-  { path: "/policies", label: "السياسات", icon: "📜" },
-  { path: "/branding", label: "الهوية والألوان", icon: "🎨" },
-  { path: "/home-builder", label: "بناء الصفحة الرئيسية", icon: "🧩" },
-  { path: "/commission", label: "العمولة", icon: "💰" },
-  { path: "/ota-updates", label: "التحديثات الفورية", icon: "🔄" },
-  { path: "/settings", label: "الإعدادات", icon: "⚙️" },
+const NAV: { path: string; label: string; icon: string; section?: string }[] = [
+  { path: "/", label: "الرئيسية", icon: "📊", section: "عام" },
+  { path: "/analytics", label: "التحليلات", icon: "📈", section: "عام" },
+  { path: "/dynamic-pricing", label: "التسعير الديناميكي", icon: "⚡", section: "عام" },
+  { path: "/services", label: "الخدمات", icon: "🧹", section: "الكتالوج" },
+  { path: "/categories", label: "التصنيفات", icon: "🗂️", section: "الكتالوج" },
+  { path: "/providers", label: "مقدمو الخدمة", icon: "👷", section: "المستخدمون" },
+  { path: "/customers", label: "العملاء", icon: "👥", section: "المستخدمون" },
+  { path: "/bookings", label: "الحجوزات", icon: "📅", section: "العمليات" },
+  { path: "/refunds", label: "الاستردادات", icon: "💸", section: "العمليات" },
+  { path: "/withdrawals", label: "السحوبات", icon: "🏦", section: "العمليات" },
+  { path: "/offers", label: "العروض", icon: "🎁", section: "التسويق" },
+  { path: "/notifications", label: "الإشعارات", icon: "🔔", section: "التسويق" },
+  { path: "/support", label: "الدعم الفني", icon: "🎧", section: "الدعم" },
+  { path: "/policies", label: "السياسات", icon: "📜", section: "الإعدادات" },
+  { path: "/branding", label: "الهوية والألوان", icon: "🎨", section: "الإعدادات" },
+  { path: "/home-builder", label: "بناء الصفحة الرئيسية", icon: "🧩", section: "الإعدادات" },
+  { path: "/commission", label: "العمولة", icon: "💰", section: "الإعدادات" },
+  { path: "/ota-updates", label: "التحديثات الفورية", icon: "🔄", section: "الإعدادات" },
+  { path: "/settings", label: "الإعدادات العامة", icon: "⚙️", section: "الإعدادات" },
 ];
 
 // ── Status chip — unified with mobile STATUS_COLOR ─────────────────────────
@@ -103,25 +104,36 @@ export function Layout({ children }: { children: ReactNode }) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto scroll-thin p-2">
-          {NAV.map((n) => {
-            const active = loc === n.path || (n.path !== "/" && loc.startsWith(n.path));
-            return (
-              <Link key={n.path} href={n.path}>
-                <a
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all"
-                  style={{
-                    background: active ? "var(--color-primary-light)" : "transparent",
-                    color: active ? "var(--color-primary)" : "#374151",
-                    fontWeight: active ? 700 : 500,
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>{n.icon}</span>
-                  <span style={{ flex: 1, fontFamily: "Tajawal, sans-serif" }}>{n.label}</span>
-                  {n.path === "/bookings" && <PendingBadge />}
-                </a>
-              </Link>
-            );
-          })}
+          {(() => {
+            const sections: string[] = [];
+            NAV.forEach((n) => { if (n.section && !sections.includes(n.section)) sections.push(n.section); });
+            return sections.map((section) => (
+              <div key={section}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: "#CBD5E1", padding: "10px 12px 4px", letterSpacing: "0.08em", fontFamily: "Tajawal, sans-serif", textTransform: "uppercase" }}>
+                  {section}
+                </div>
+                {NAV.filter((n) => n.section === section).map((n) => {
+                  const active = loc === n.path || (n.path !== "/" && loc.startsWith(n.path));
+                  return (
+                    <Link key={n.path} href={n.path}>
+                      <a
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all"
+                        style={{
+                          background: active ? "var(--color-primary-light)" : "transparent",
+                          color: active ? "var(--color-primary)" : "#374151",
+                          fontWeight: active ? 700 : 500,
+                        }}
+                      >
+                        <span style={{ fontSize: 15 }}>{n.icon}</span>
+                        <span style={{ flex: 1, fontFamily: "Tajawal, sans-serif", fontSize: 13 }}>{n.label}</span>
+                        {n.path === "/bookings" && <PendingBadge />}
+                      </a>
+                    </Link>
+                  );
+                })}
+              </div>
+            ));
+          })()}
         </nav>
 
         {/* User footer */}

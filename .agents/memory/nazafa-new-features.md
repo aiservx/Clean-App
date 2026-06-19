@@ -1,41 +1,30 @@
 ---
-name: Nazafa analytics & dispatch features added
-description: New features added to the Nazafa project — analytics dashboard, auto-dispatch API, enhanced dashboard
+name: Nazafa analytics, dispatch & Phase 2 features
+description: All new features added across Phase 1 and Phase 2 sessions
 ---
 
-## Features Added
+## Phase 1 Features
+- Analytics page (recharts) — /analytics
+- Auto-dispatch API — /api/dispatch/suggest + /api/dispatch/auto-assign
+- Analytics API — /api/analytics/*
+- Enhanced Dashboard with sparklines + mini revenue chart
 
-### Admin Dashboard Enhancements
-- **Analytics page** (`artifacts/admin/src/pages/Analytics.tsx`) — full recharts dashboard with:
-  - Daily revenue area chart (configurable 7/30/90 days)
-  - Booking status pie chart
-  - Top services horizontal bar chart
-  - Hourly demand heatmap
-  - Provider leaderboard table
-  - 8 KPI cards with trend indicators
-  - CSV export button
-- **Enhanced Dashboard** (`artifacts/admin/src/pages/Dashboard.tsx`) — added:
-  - Sparkline mini-charts in KPI cards (using recharts AreaChart)
-  - Mini revenue bar chart (last 7 days)
-  - Quick Actions panel
-  - Live status banner for pending bookings
-  - Support tickets count
-  - Link to full analytics page
-- **Nav** — Added "📈 التحليلات" entry in sidebar pointing to `/analytics`
-- **App.tsx** — Added `/analytics` route
+## Phase 2 Features (current session)
 
-### API Server New Endpoints
-- `GET /api/analytics/summary` — overall KPIs
-- `GET /api/analytics/revenue?days=30` — daily revenue breakdown
-- `GET /api/analytics/providers/top` — ranked provider leaderboard
-- `GET /api/analytics/services/top` — top services by bookings/revenue
-- `GET /api/analytics/hourly` — hourly booking distribution
-- `GET /api/dispatch/suggest?lat=&lng=` — smart provider suggestions (scored)
-- `POST /api/dispatch/auto-assign` — auto-assign best provider to a booking
+### Admin Dashboard New Pages
+- **DynamicPricing.tsx** (`/dynamic-pricing`) — 24h × 7d interactive pricing grid, multiplier presets, peak preset auto-fill, save to `app_settings` table
+- **API** `pricing.ts` — GET /api/pricing/config + GET /api/pricing/multiplier (reads current hour's multiplier)
 
-### Auto-Dispatch Algorithm
-Weighted scoring: proximity 40% + rating 30% + acceptance rate 20% + load 10%
-Filters out providers outside their service_radius_km.
+### Admin Dashboard Rewrites
+- **Notifications.tsx** — completely rewritten: 8 quick templates, phone preview, send history tab, target selector buttons, char counter
+- **Providers.tsx** — completely rewritten: rich card grid (avatar, stars, stats bar, location badge, batch select), approve/suspend with push notification, batch actions, pending approval alert banner
+- **Bookings.tsx** — enhanced: 🤖 auto-dispatch button on pending bookings (calls /api/dispatch/suggest, shows modal with provider details), CSV export (UTF-8 BOM for Arabic), date range filter
 
-### Development Plan
-Created `DEVELOPMENT_PLAN.md` at project root with full roadmap.
+### Navigation
+- **Layout.tsx sidebar** — grouped nav with section headers (عام / الكتالوج / المستخدمون / العمليات / التسويق / الدعم / الإعدادات)
+- Added Dynamic Pricing (⚡) to nav under "عام" section
+
+## Architecture Notes
+- DynamicPricing saves to `app_settings` table keyed `dynamic_pricing` — mobile app can read `/api/pricing/multiplier` at booking time to show adjusted price
+- Auto-dispatch modal shows top-1 provider from scoring algo (proximity 40% + rating 30% + acceptance 20% + load 10%)
+- CSV export uses UTF-8 BOM prefix (\uFEFF) for proper Arabic display in Excel

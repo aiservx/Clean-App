@@ -60,20 +60,20 @@ const FLOW_DOTS: Record<string, string> = {
 type Booking = {
   id: string; status: string; total: number; created_at: string;
   scheduled_at: string | null; payment_method: string | null; notes: string | null;
+  user_id: string;
   profiles: { full_name: string; phone: string | null } | null;
   services: { title_ar: string } | null;
   provider_profile: { full_name: string } | null;
-  addresses: { street: string | null; district: string | null; city: string | null } | null;
+  addresses: { street: string | null; district: string | null; city: string | null; lat?: number; lng?: number } | null;
 };
 type LogRow = { id: string; status: string; note: string | null; created_at: string };
 
 const fmtDate = (iso: string | null) => {
   if (!iso) return "موعد مرن";
-  const d = new Date(iso);
-  return d.toLocaleString("ar-SA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleString("ar-SA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 };
 
-// ── Send push + in-app notification via API server (uses service role) ───────
+// ── Push notification ─────────────────────────────────────────────────────────
 async function notifyUser(userId: string, status: BookingStatus, bookingId: string) {
   const NOTIF_MESSAGES: Record<string, { title: string; body: string }> = {
     accepted:    { title: "✅ تم قبول طلبك!", body: "المزود تأكد على طلبك وسيتوجه إليك قريباً" },
@@ -84,57 +84,58 @@ async function notifyUser(userId: string, status: BookingStatus, bookingId: stri
     rejected:    { title: "🚫 تم رفض طلبك", body: "تم رفض هذا الطلب، يمكنك تقديم طلب جديد" },
   };
   const msg = NOTIF_MESSAGES[status] ?? { title: "نظافة — تحديث طلبك", body: STATUS_AR[status] ?? status };
-
-  // Map booking status → specific notification type (matches notifMeta() in mobile app)
   const TYPE_MAP: Record<string, string> = {
-    accepted:    "booking_accepted",
-    on_the_way:  "booking_on_way",
-    in_progress: "booking_in_progress",
-    completed:   "booking_completed",
-    cancelled:   "booking_cancelled",
-    rejected:    "booking_rejected",
+    accepted: "booking_accepted", on_the_way: "booking_on_way",
+    in_progress: "booking_in_progress", completed: "booking_completed",
+    cancelled: "booking_cancelled", rejected: "booking_rejected",
   };
   const notifType = TYPE_MAP[status] ?? "booking_status";
-
   try {
-    // 1. In-app notification (always)
     await supabase.from("notifications").insert({
       user_id: userId, title: msg.title, body: msg.body, type: notifType,
       data: { booking_id: bookingId, status }, read: false,
     });
-
-    // 2. Push via API server (service role bypasses RLS)
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
     if (!token) return;
-
     await fetch(`${API_BASE}/api/push`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
-        userId,
-        title: msg.title,
-        body: msg.body,
+        userId, title: msg.title, body: msg.body,
         data: { bookingId, status, type: notifType },
-        categoryIdentifier: notifType,
-        channelId: "booking_status",
+        categoryIdentifier: notifType, channelId: "booking_status",
       }),
     });
-  } catch (e) {
-    console.error("[admin] notify error", e);
-  }
+  } catch (e) { console.error("[admin] notify error", e); }
 }
 
-// ── Timeline sub-component ────────────────────────────────────────────────────
+// ── CSV Export ────────────────────────────────────────────────────────────────
+function exportCSV(bookings: Booking[], filename = "bookings.csv") {
+  const headers = ["رقم الطلب", "العميل", "الهاتف", "الخدمة", "الموعد", "المبلغ", "الحالة", "تاريخ الطلب"];
+  const rows = bookings.map((b) => [
+    b.id.slice(0, 8).toUpperCase(),
+    b.profiles?.full_name ?? "",
+    b.profiles?.phone ?? "",
+    b.services?.title_ar ?? "",
+    b.scheduled_at ? new Date(b.scheduled_at).toLocaleString("ar-SA") : "مرن",
+    b.total,
+    STATUS_AR[b.status] ?? b.status,
+    new Date(b.created_at).toLocaleString("ar-SA"),
+  ]);
+  const csv = [headers, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
 function BookingTimeline({ logs, currentStatus }: { logs: LogRow[]; currentStatus: string }) {
   const isTerminal = ["cancelled", "rejected"].includes(currentStatus);
   const steps = isTerminal
     ? [...STATUS_FLOW.slice(0, STATUS_FLOW.indexOf(currentStatus as any) + 1).filter(Boolean), currentStatus as any]
     : STATUS_FLOW;
-
   const currentIdx = STATUS_FLOW.indexOf(currentStatus as any);
 
   return (
@@ -146,24 +147,18 @@ function BookingTimeline({ logs, currentStatus }: { logs: LogRow[]; currentStatu
           : i <= currentIdx;
         const active = !isTerminal && i === currentIdx;
         const color = done ? FLOW_DOTS[step] : "#CBD5E1";
-
         return (
           <div key={step} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 4 }}>
-            {/* Dot + line */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 24, flexShrink: 0 }}>
               <div style={{
-                width: active ? 16 : 12, height: active ? 16 : 12,
-                borderRadius: "50%", background: color,
-                border: active ? `3px solid ${color}40` : "none",
-                boxShadow: active ? `0 0 0 4px ${color}20` : "none",
-                transition: "all 0.2s",
-                flexShrink: 0,
+                width: active ? 16 : 12, height: active ? 16 : 12, borderRadius: "50%", background: color,
+                border: active ? `3px solid ${color}40` : "none", boxShadow: active ? `0 0 0 4px ${color}20` : "none",
+                transition: "all 0.2s", flexShrink: 0,
               }} />
               {i < steps.length - 1 && (
                 <div style={{ width: 2, flex: 1, minHeight: 24, background: done ? color : "#E2E8F0", marginTop: 3, marginBottom: 3 }} />
               )}
             </div>
-            {/* Text */}
             <div style={{ paddingBottom: 8 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: done ? "#0F172A" : "#94A3B8", fontFamily: "Tajawal, sans-serif" }}>
                 {FLOW_AR[step] ?? step}
@@ -182,12 +177,66 @@ function BookingTimeline({ logs, currentStatus }: { logs: LogRow[]; currentStatu
   );
 }
 
+// ── Auto-Dispatch Result Modal ────────────────────────────────────────────────
+function AutoDispatchModal({
+  result, onConfirm, onClose,
+}: { result: any; onConfirm: (providerId: string) => void; onClose: () => void }) {
+  const provider = result?.suggestions?.[0];
+  if (!provider) return null;
+  return (
+    <div style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }} onClick={onClose}>
+      <div style={{ background: "#FFF", borderRadius: 20, padding: 24, width: 340, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}
+        onClick={(e) => e.stopPropagation()}>
+        <h3 style={{ fontFamily: "Tajawal, sans-serif", fontWeight: 700, fontSize: 16, marginBottom: 16, color: "#0F172A" }}>
+          🤖 أفضل مزود مقترح
+        </h3>
+        <div style={{ background: "#F8FAFC", borderRadius: 14, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: 15, fontFamily: "Tajawal, sans-serif", color: "#0F172A", marginBottom: 6 }}>
+            {provider.full_name}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              { label: "التقييم", value: `⭐ ${Number(provider.rating).toFixed(1)}` },
+              { label: "المهام المكتملة", value: provider.total_jobs },
+              { label: "المسافة", value: provider.distance_km != null ? `${Number(provider.distance_km).toFixed(1)} كم` : "غير معروف" },
+              { label: "نقاط الملاءمة", value: Math.round((provider.score ?? 0) * 100) + "٪" },
+            ].map((s) => (
+              <div key={s.label} style={{ background: "#FFF", borderRadius: 10, padding: "8px 12px" }}>
+                <div style={{ fontSize: 11, color: "#94A3B8", fontFamily: "Tajawal, sans-serif" }}>{s.label}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#0F172A", fontFamily: "Tajawal, sans-serif" }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => onConfirm(provider.id)}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg,#16C47F,#0FA868)", color: "#FFF", fontFamily: "Tajawal, sans-serif", fontSize: 14, fontWeight: 700 }}
+          >
+            تعيين هذا المزود
+          </button>
+          <button
+            onClick={onClose}
+            style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", cursor: "pointer", background: "#F1F5F9", color: "#374151", fontFamily: "Tajawal, sans-serif", fontSize: 14, fontWeight: 700 }}
+          >
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Booking Row ───────────────────────────────────────────────────────────────
 function BookingRow({
-  booking, onStatusChange,
+  booking, onStatusChange, onAutoDispatch,
 }: {
   booking: Booking;
   onStatusChange: (id: string, status: BookingStatus) => Promise<void>;
+  onAutoDispatch: (booking: Booking) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [logs, setLogs] = useState<LogRow[]>([]);
@@ -214,6 +263,8 @@ function BookingRow({
     setChanging(false);
   }
 
+  const isPending = booking.status === "pending";
+
   return (
     <>
       <tr
@@ -233,20 +284,26 @@ function BookingRow({
         <td className="py-3 px-4" style={{ color: "#374151", fontFamily: "Tajawal, sans-serif" }}>
           {booking.services?.title_ar ?? "—"}
         </td>
-        <td className="py-3 px-4" style={{ color: "#64748B", fontSize: 12 }}>
-          {fmtDate(booking.scheduled_at)}
-        </td>
+        <td className="py-3 px-4" style={{ color: "#64748B", fontSize: 12 }}>{fmtDate(booking.scheduled_at)}</td>
         <td className="py-3 px-4 font-bold" style={{ color: "var(--color-primary)" }}>
           {Number(booking.total ?? 0).toLocaleString("ar-SA")} ر.س
         </td>
-        <td className="py-3 px-4">
-          <StatusChip status={booking.status} />
-        </td>
-        <td className="py-3 px-4" style={{ color: "#94A3B8", fontSize: 11 }}>
-          {fmtDate(booking.created_at)}
-        </td>
-        <td className="py-3 px-4" style={{ color: "#64748B" }}>
-          <span style={{ fontSize: 16, transition: "transform 0.2s", display: "inline-block", transform: expanded ? "rotate(90deg)" : "none" }}>›</span>
+        <td className="py-3 px-4"><StatusChip status={booking.status} /></td>
+        <td className="py-3 px-4" style={{ color: "#94A3B8", fontSize: 11 }}>{fmtDate(booking.created_at)}</td>
+        <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            {isPending && (
+              <button
+                onClick={() => onAutoDispatch(booking)}
+                title="تعيين تلقائي أفضل مزود"
+                style={{ padding: "4px 8px", borderRadius: 7, background: "#EDE9FE", color: "#7C3AED", border: "none", cursor: "pointer", fontSize: 11, fontFamily: "Tajawal, sans-serif", fontWeight: 700, whiteSpace: "nowrap" }}
+              >
+                🤖 تعيين
+              </button>
+            )}
+            <span style={{ fontSize: 16, transition: "transform 0.2s", display: "inline-block", transform: expanded ? "rotate(90deg)" : "none", cursor: "pointer" }}
+              onClick={toggleExpand}>›</span>
+          </div>
         </td>
       </tr>
 
@@ -254,31 +311,28 @@ function BookingRow({
         <tr style={{ background: "#F8FAFC" }}>
           <td colSpan={8} style={{ padding: "0 16px 16px" }}>
             <div style={{ display: "flex", gap: 16, paddingTop: 12, flexWrap: "wrap" }}>
-
               {/* Left: details */}
               <div style={{ flex: 1, minWidth: 220 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", marginBottom: 8, fontFamily: "Tajawal, sans-serif" }}>تفاصيل الحجز</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {booking.provider_profile?.full_name && (
-                    <Row label="المزود" value={booking.provider_profile.full_name} />
+                    <DetailRow label="المزود" value={booking.provider_profile.full_name} />
                   )}
                   {booking.addresses && (
-                    <Row label="العنوان"
+                    <DetailRow label="العنوان"
                       value={[booking.addresses.district, booking.addresses.city, booking.addresses.street].filter(Boolean).join("، ") || "—"} />
                   )}
                   {booking.payment_method && (
-                    <Row label="طريقة الدفع" value={booking.payment_method === "cash" ? "نقداً" : booking.payment_method} />
+                    <DetailRow label="طريقة الدفع" value={booking.payment_method === "cash" ? "نقداً" : booking.payment_method} />
                   )}
-                  {booking.notes && <Row label="ملاحظات" value={booking.notes} />}
+                  {booking.notes && <DetailRow label="ملاحظات" value={booking.notes} />}
                 </div>
               </div>
-
               {/* Middle: timeline */}
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", marginBottom: 4, fontFamily: "Tajawal, sans-serif" }}>مسار الطلب</div>
                 <BookingTimeline logs={logs} currentStatus={booking.status} />
               </div>
-
               {/* Right: status change */}
               <div style={{ minWidth: 200 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", marginBottom: 8, fontFamily: "Tajawal, sans-serif" }}>تغيير الحالة</div>
@@ -302,11 +356,10 @@ function BookingRow({
                   style={{
                     width: "100%", padding: "9px 0", borderRadius: 10, border: "none",
                     background: changing || newStatus === booking.status
-                      ? "#E2E8F0"
-                      : "linear-gradient(135deg, #16C47F, #0FA868)",
+                      ? "#E2E8F0" : "linear-gradient(135deg, #16C47F, #0FA868)",
                     color: changing || newStatus === booking.status ? "#94A3B8" : "#FFF",
-                    fontFamily: "Tajawal, sans-serif", fontWeight: 700, fontSize: 13, cursor: changing ? "wait" : "pointer",
-                    transition: "all 0.15s",
+                    fontFamily: "Tajawal, sans-serif", fontWeight: 700, fontSize: 13,
+                    cursor: changing ? "wait" : "pointer", transition: "all 0.15s",
                   }}
                 >
                   {changing ? "جاري التحديث…" : "تطبيق الحالة + إشعار"}
@@ -323,7 +376,7 @@ function BookingRow({
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
       <span style={{ fontSize: 11, color: "#94A3B8", fontFamily: "Tajawal, sans-serif", minWidth: 70 }}>{label}</span>
@@ -348,7 +401,11 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [dispatchModal, setDispatchModal] = useState<{ result: any; bookingId: string } | null>(null);
+  const [dispatching, setDispatching] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function showToast(msg: string) {
@@ -365,7 +422,7 @@ export default function Bookings() {
         profiles:profiles!bookings_user_id_fkey(full_name, phone),
         services:service_id(title_ar),
         provider_profile:profiles!bookings_provider_id_fkey(full_name),
-        addresses:address_id(street, district, city)
+        addresses:address_id(street, district, city, lat, lng)
       `)
       .order("created_at", { ascending: false })
       .limit(200);
@@ -385,22 +442,57 @@ export default function Bookings() {
   async function handleStatusChange(bookingId: string, newStatus: BookingStatus) {
     const booking = bookings.find((b) => b.id === bookingId);
     if (!booking) return;
-
-    // 1. Update booking status
     const { error } = await supabase.from("bookings").update({ status: newStatus }).eq("id", bookingId);
     if (error) { showToast("خطأ: " + error.message); return; }
-
-    // 2. Insert status log
     await supabase.from("booking_status_log").insert({
       booking_id: bookingId, status: newStatus,
       note: `تم التحديث من لوحة الإدارة إلى: ${STATUS_AR[newStatus] ?? newStatus}`,
     });
-
-    // 3. Notify user (non-blocking)
     const userId = (booking as any).user_id;
     if (userId) notifyUser(userId, newStatus, bookingId);
-
     showToast(`✓ الحالة محدّثة: ${STATUS_AR[newStatus] ?? newStatus}`);
+    load();
+  }
+
+  // ── Auto-Dispatch ─────────────────────────────────────────────────────────
+  async function handleAutoDispatch(booking: Booking) {
+    setDispatching(booking.id);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      const lat = booking.addresses?.lat;
+      const lng = booking.addresses?.lng;
+      const url = new URL(`${API_BASE}/api/dispatch/suggest`);
+      if (lat) url.searchParams.set("lat", String(lat));
+      if (lng) url.searchParams.set("lng", String(lng));
+      const res = await fetch(url.toString(), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const result = await res.json();
+      if (!result?.suggestions?.length) {
+        showToast("⚠️ لا يوجد مزود متاح حالياً في المنطقة");
+      } else {
+        setDispatchModal({ result, bookingId: booking.id });
+      }
+    } catch {
+      showToast("خطأ في الاتصال بخادم التعيين");
+    } finally {
+      setDispatching(null);
+    }
+  }
+
+  async function confirmDispatch(providerId: string) {
+    if (!dispatchModal) return;
+    const { bookingId } = dispatchModal;
+    await supabase.from("bookings").update({ provider_id: providerId, status: "accepted" }).eq("id", bookingId);
+    await supabase.from("booking_status_log").insert({
+      booking_id: bookingId, status: "accepted",
+      note: "تم التعيين التلقائي من لوحة الإدارة",
+    });
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (booking?.user_id) notifyUser(booking.user_id, "accepted", bookingId);
+    setDispatchModal(null);
+    showToast("✅ تم تعيين المزود وإخطار العميل");
     load();
   }
 
@@ -411,7 +503,10 @@ export default function Bookings() {
       || b.id.toLowerCase().includes(q)
       || b.profiles?.full_name?.toLowerCase().includes(q)
       || b.services?.title_ar?.toLowerCase().includes(q);
-    return matchStatus && matchSearch;
+    const created = new Date(b.created_at);
+    const matchFrom = !dateFrom || created >= new Date(dateFrom);
+    const matchTo   = !dateTo   || created <= new Date(dateTo + "T23:59:59");
+    return matchStatus && matchSearch && matchFrom && matchTo;
   });
 
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
@@ -430,9 +525,30 @@ export default function Bookings() {
         </div>
       )}
 
+      {/* Auto-dispatch modal */}
+      {dispatchModal && (
+        <AutoDispatchModal
+          result={dispatchModal.result}
+          onConfirm={confirmDispatch}
+          onClose={() => setDispatchModal(null)}
+        />
+      )}
+
       <PageHeader
-        title="إدارة الحجوزات"
-        subtitle="تحديث حالات الطلبات وإرسال إشعارات فورية للعملاء"
+        title="📅 إدارة الحجوزات"
+        subtitle="تحديث حالات الطلبات وإرسال إشعارات فورية — مع التعيين التلقائي الذكي"
+        action={
+          <button
+            onClick={() => exportCSV(filtered, `bookings-${filter}-${new Date().toISOString().slice(0, 10)}.csv`)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10,
+              background: "#F1F5F9", color: "#374151", border: "none", cursor: "pointer",
+              fontFamily: "Tajawal, sans-serif", fontSize: 13, fontWeight: 700,
+            }}
+          >
+            📥 تصدير CSV ({filtered.length})
+          </button>
+        }
       />
 
       {/* Stats bar */}
@@ -453,7 +569,7 @@ export default function Bookings() {
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginRight: "auto" }}>
             <span className="live-dot" />
             <span style={{ fontSize: 12, color: "#F59E0B", fontWeight: 700, fontFamily: "Tajawal, sans-serif" }}>
-              {pendingCount} طلب ينتظر التعيين
+              {pendingCount} طلب — اضغط 🤖 للتعيين التلقائي
             </span>
           </div>
         )}
@@ -461,17 +577,41 @@ export default function Bookings() {
 
       <Card className="overflow-hidden p-0">
         {/* Filters */}
-        <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث باسم العميل أو الخدمة أو رقم الطلب…"
-            style={{
-              padding: "8px 14px", borderRadius: 10, border: "1px solid #E2E8F0",
-              fontSize: 13, fontFamily: "Tajawal, sans-serif", outline: "none", width: 260,
-            }}
-          />
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+        <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="بحث باسم العميل أو الخدمة أو رقم الطلب…"
+              style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid #E2E8F0", fontSize: 13, fontFamily: "Tajawal, sans-serif", outline: "none", width: 260 }}
+            />
+            {/* Date range */}
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: 12, color: "#94A3B8", fontFamily: "Tajawal, sans-serif" }}>من</span>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                style={{ padding: "7px 10px", borderRadius: 10, border: "1px solid #E2E8F0", fontSize: 12, outline: "none" }}
+              />
+              <span style={{ fontSize: 12, color: "#94A3B8", fontFamily: "Tajawal, sans-serif" }}>إلى</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                style={{ padding: "7px 10px", borderRadius: 10, border: "1px solid #E2E8F0", fontSize: 12, outline: "none" }}
+              />
+              {(dateFrom || dateTo) && (
+                <button
+                  onClick={() => { setDateFrom(""); setDateTo(""); }}
+                  style={{ padding: "6px 10px", borderRadius: 8, background: "#FEE2E2", color: "#EF4444", border: "none", cursor: "pointer", fontSize: 12, fontFamily: "Tajawal, sans-serif" }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.value}
@@ -480,15 +620,14 @@ export default function Bookings() {
                   padding: "6px 14px", borderRadius: 100, border: "none", cursor: "pointer",
                   fontFamily: "Tajawal, sans-serif", fontSize: 12, fontWeight: filter === f.value ? 700 : 500,
                   background: filter === f.value ? "var(--color-primary)" : "#F1F5F9",
-                  color: filter === f.value ? "#FFF" : "#374151",
-                  transition: "all 0.15s",
+                  color: filter === f.value ? "#FFF" : "#374151", transition: "all 0.15s",
                 }}
               >
                 {f.label}
               </button>
             ))}
+            <span style={{ marginRight: "auto", fontSize: 12, color: "#94A3B8" }}>{filtered.length} طلب</span>
           </div>
-          <span style={{ marginRight: "auto", fontSize: 12, color: "#94A3B8" }}>{filtered.length} طلب</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -496,7 +635,7 @@ export default function Bookings() {
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                 {["رقم الطلب", "العميل", "الخدمة", "الموعد", "المبلغ", "الحالة", "تاريخ الطلب", ""].map((h) => (
-                  <th key={h} className="py-3 px-4 font-bold" style={{ color: "#94A3B8", fontSize: 11, fontFamily: "Tajawal, sans-serif", whiteSpace: "nowrap" }}>
+                  <th key={h} className="py-3 px-4 font-bold text-right" style={{ color: "#94A3B8", fontSize: 11, fontFamily: "Tajawal, sans-serif", whiteSpace: "nowrap" }}>
                     {h}
                   </th>
                 ))}
@@ -504,13 +643,18 @@ export default function Bookings() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={8} className="py-12 text-center" style={{ color: "#94A3B8" }}>جاري التحميل…</td></tr>
+                <tr><td colSpan={8} className="py-12 text-center" style={{ color: "#94A3B8", fontFamily: "Tajawal, sans-serif" }}>جاري التحميل…</td></tr>
               )}
               {!loading && filtered.length === 0 && (
-                <tr><td colSpan={8} className="py-12 text-center" style={{ color: "#94A3B8" }}>لا توجد حجوزات</td></tr>
+                <tr><td colSpan={8} className="py-12 text-center" style={{ color: "#94A3B8", fontFamily: "Tajawal, sans-serif" }}>لا توجد حجوزات</td></tr>
               )}
               {filtered.map((b) => (
-                <BookingRow key={b.id} booking={b} onStatusChange={handleStatusChange} />
+                <BookingRow
+                  key={b.id}
+                  booking={b}
+                  onStatusChange={handleStatusChange}
+                  onAutoDispatch={handleAutoDispatch}
+                />
               ))}
             </tbody>
           </table>
