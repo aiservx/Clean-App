@@ -65,10 +65,27 @@ router.post("/admin/db-setup", async (req, res) => {
 
     if (!response.ok) {
       logger.error({ status: response.status, body: responseText }, "db-setup failed");
+
+      // Detect "already configured" — tables already exist / already in publication
+      const alreadyExists =
+        responseText.includes("already exists") ||
+        responseText.includes("already member of publication") ||
+        responseText.includes("42710") ||
+        responseText.includes("42P07");
+
+      if (alreadyExists) {
+        logger.info({ projectRef }, "db-setup: database already configured — treating as success");
+        return res.json({
+          success: true,
+          alreadyConfigured: true,
+          message: "قاعدة البيانات مُهيَّأة مسبقاً ✅ — جميع الجداول موجودة",
+        });
+      }
+
       return res.status(400).json({
         error: "Supabase API error",
         details: responseText,
-        hint: "Make sure the Management API key is correct and has the right permissions",
+        hint: "تأكد من صحة Management API Key وأن له صلاحيات كافية",
       });
     }
 

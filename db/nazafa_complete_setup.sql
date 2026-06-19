@@ -581,13 +581,13 @@ CREATE TRIGGER trg_bookings_updated_at
   BEFORE UPDATE ON public.bookings
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- ── Realtime subscriptions ───────────────────────────────────
-ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.booking_status_log;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.providers;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_rooms;
+-- ── Realtime subscriptions (idempotent — safe to run multiple times) ─────────
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;          EXCEPTION WHEN sqlstate '42710' THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.booking_status_log; EXCEPTION WHEN sqlstate '42710' THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;      EXCEPTION WHEN sqlstate '42710' THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.providers;          EXCEPTION WHEN sqlstate '42710' THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;           EXCEPTION WHEN sqlstate '42710' THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_rooms;         EXCEPTION WHEN sqlstate '42710' THEN NULL; END $$;
 
 -- ── Seed Data ────────────────────────────────────────────────
 
