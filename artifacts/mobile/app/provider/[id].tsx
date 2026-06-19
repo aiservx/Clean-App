@@ -57,6 +57,7 @@ export default function ProviderDetail() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [distance, setDistance] = useState<number | null>(null);
+  const [completedJobs, setCompletedJobs] = useState<number>(0);
   const booking = useBooking();
   const { session } = useAuth();
 
@@ -110,6 +111,14 @@ export default function ProviderDetail() {
             comment: r.comment || "",
           })));
         }
+
+        // Count completed jobs
+        const { count: jobCount } = await supabase
+          .from("bookings")
+          .select("id", { count: "exact", head: true })
+          .eq("provider_id", id)
+          .eq("status", "completed");
+        if (!cancelled && jobCount != null) setCompletedJobs(jobCount);
 
         // Load services from completed bookings
         const { data: svcRows } = await supabase
@@ -249,13 +258,45 @@ export default function ProviderDetail() {
               </View>
               <View style={[s.statSep, { backgroundColor: colors.border }]} />
               <View style={s.statBox}>
-                <Text style={[s.statV, { color: colors.foreground }]}>{reviews.length}+</Text>
-                <Text style={[s.statL, { color: colors.mutedForeground }]}>تقييمات</Text>
+                <Text style={[s.statV, { color: colors.foreground }]}>{completedJobs > 0 ? completedJobs : reviews.length}+</Text>
+                <Text style={[s.statL, { color: colors.mutedForeground }]}>طلب مكتمل</Text>
               </View>
               <View style={[s.statSep, { backgroundColor: colors.border }]} />
               <View style={s.statBox}>
                 <Text style={[s.statV, { color: colors.foreground }]}>{p.experience_years}</Text>
                 <Text style={[s.statL, { color: colors.mutedForeground }]}>سنوات خبرة</Text>
+              </View>
+            </View>
+
+            {/* Smart Badges */}
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12, justifyContent: "center" }}>
+              {p.rating >= 4.8 && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#FEF3C7", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
+                  <Text style={{ fontSize: 13 }}>⭐</Text>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#92400E" }}>الأعلى تقييماً</Text>
+                </View>
+              )}
+              {p.experience_years >= 3 && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#EDE9FE", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
+                  <Text style={{ fontSize: 13 }}>⚡</Text>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#5B21B6" }}>استجابة سريعة</Text>
+                </View>
+              )}
+              {completedJobs > 50 && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#D1FAE5", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
+                  <Text style={{ fontSize: 13 }}>🏆</Text>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#065F46" }}>خبير معتمد</Text>
+                </View>
+              )}
+              {completedJobs === 0 && p.experience_years <= 1 && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#DBEAFE", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
+                  <Text style={{ fontSize: 13 }}>🆕</Text>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#1E40AF" }}>مزود جديد</Text>
+                </View>
+              )}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#DCFCE7", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
+                <MaterialCommunityIcons name="check-decagram" size={13} color="#16A34A" />
+                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#15803D" }}>موثّق</Text>
               </View>
             </View>
           </View>

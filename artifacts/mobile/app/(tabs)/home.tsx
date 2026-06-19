@@ -117,6 +117,8 @@ export default function HomeScreen() {
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeBooking, setActiveBooking] = useState<any>(null);
+  const [surgeMultiplier, setSurgeMultiplier] = useState<number>(1.0);
+  const [recentBookings, setRecentBookings] = useState<{ id: string; service_title: string; total: number }[]>([]);
   const knownNearbyIds = useRef<Set<string>>(new Set());
   const hasInitialLoad = useRef(false);
   const providerScrollRef = useRef<any>(null);
@@ -240,6 +242,51 @@ export default function HomeScreen() {
       .subscribe();
 
     return () => { supabase.removeChannel(ch); };
+  }, [session?.user?.id]);
+
+  // Fetch surge pricing multiplier + recent completed bookings
+  useEffect(() => {
+    // Surge pricing
+    (async () => {
+      try {
+        const EXPO_API = process.env.EXPO_PUBLIC_API_URL ?? "";
+        const res = await fetch(`${EXPO_API}/api/pricing/dynamic`).catch(() => null);
+        if (res?.ok) {
+          const json = await res.json().catch(() => null);
+          const entries: { multiplier: number }[] = json?.data ?? json?.pricing ?? [];
+          if (entries.length > 0) {
+            const max = Math.max(...entries.map((e: any) => Number(e.multiplier ?? 1)));
+            setSurgeMultiplier(max);
+          }
+        }
+      } catch { }
+    })();
+
+    // Recent completed bookings for Quick Rebook
+    if (!session?.user?.id) return;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("bookings")
+          .select("id, total, services(title_ar)")
+          .eq("user_id", session.user.id)
+          .eq("status", "completed")
+          .order("created_at", { ascending: false })
+          .limit(4);
+        if (data && data.length > 0) {
+          const seen = new Set<string>();
+          const unique: { id: string; service_title: string; total: number }[] = [];
+          for (const b of data as any[]) {
+            const title = b.services?.title_ar ?? "خدمة تنظيف";
+            if (!seen.has(title)) {
+              seen.add(title);
+              unique.push({ id: b.id, service_title: title, total: Number(b.total ?? 0) });
+            }
+          }
+          setRecentBookings(unique.slice(0, 3));
+        }
+      } catch { }
+    })();
   }, [session?.user?.id]);
 
   // Auto-advance home banner — simple index swap, works on web + native
@@ -512,6 +559,77 @@ export default function HomeScreen() {
 
           {/* ACTIVE BOOKING CARD — Uber-style live trip card */}
           <ActiveBookingCard booking={activeBooking} />
+
+          {/* SURGE PRICING BANNER — shows when multiplier > 1 */}
+          {surgeMultiplier > 1.05 && (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => router.push("/booking" as any)}
+              style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 14, overflow: "hidden" }}
+            >
+              <LinearGradient
+                colors={["#F59E0B", "#EF4444"]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={{ flexDirection: rowDir, alignItems: "center", padding: 12, gap: 10 }}
+              >
+                <Text style={{ fontSize: 20 }}>⚡</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: "#FFF" }}>
+                    الطلب مرتفع الآن — أسعار أعلى بـ {Math.round((surgeMultiplier - 1) * 100)}%
+                  </Text>
+                  <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 11, color: "rgba(255,255,255,0.85)" }}>
+                    احجز الآن أو انتظر انخفاض الطلب
+                  </Text>
+                </View>
+                <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={16} color="#FFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+
+          {/* QUICK REBOOK — personalized from completed bookings */}
+          {recentBookings.length > 0 && (
+            <>
+              <View style={[styles.sectionHeader]}>
+                <Text style={styles.sectionTitle}>احجز مجدداً</Text>
+                <TouchableOpacity onPress={() => router.push("/(tabs)/bookings" as any)}>
+                  <Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 16, gap: 10, paddingBottom: 4 }}
+                style={{ marginBottom: 14 }}
+              >
+                {recentBookings.map((rb) => (
+                  <TouchableOpacity
+                    key={rb.id}
+                    activeOpacity={0.88}
+                    onPress={() => requireAuth("/booking")}
+                    style={{
+                      backgroundColor: colors.card, borderRadius: 18, padding: 14,
+                      minWidth: 140, maxWidth: 160,
+                      shadowColor: "#000", shadowOffset: { width: 0, height: 3 },
+                      shadowOpacity: 0.07, shadowRadius: 8, elevation: 3,
+                      gap: 8,
+                    }}
+                  >
+                    <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: colors.primaryLight, alignItems: "center", justifyContent: "center" }}>
+                      <MaterialCommunityIcons name="broom" size={20} color={colors.primary} />
+                    </View>
+                    <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 12, color: colors.foreground }} numberOfLines={2}>{rb.service_title}</Text>
+                    {rb.total > 0 && (
+                      <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 11, color: colors.mutedForeground }}>{rb.total} ر.س</Text>
+                    )}
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: colors.primaryLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
+                      <Feather name="refresh-cw" size={10} color={colors.primary} />
+                      <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 10, color: colors.primary }}>احجز مجدداً</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          )}
 
           {/* PLATFORM STATS STRIP — social proof */}
           <PlatformStatsStrip />
