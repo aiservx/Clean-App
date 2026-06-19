@@ -147,6 +147,45 @@ export default function ProfileScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
+        {/* ── Loyalty Points Card ─────────────────────────── */}
+        {(() => {
+          const points = bookingsCount * 10;
+          const levels = [
+            { name: "برونزي", min: 0,  max: 50,  color: "#CD7F32", bg: "#FEF3C7", icon: "🥉" },
+            { name: "فضي",   min: 51,  max: 200, color: "#9CA3AF", bg: "#F3F4F6", icon: "🥈" },
+            { name: "ذهبي",  min: 201, max: 500, color: "#F59E0B", bg: "#FFFBEB", icon: "🥇" },
+            { name: "بلاتيني", min: 501, max: 99999, color: "#8B5CF6", bg: "#EDE9FE", icon: "💎" },
+          ];
+          const lvl = levels.find(l => points >= l.min && points <= l.max) ?? levels[0];
+          const nextLvl = levels[levels.indexOf(lvl) + 1];
+          const progress = nextLvl ? Math.min(1, (points - lvl.min) / (nextLvl.min - lvl.min)) : 1;
+          return (
+            <View style={[s.loyaltyCard, { backgroundColor: lvl.bg }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+                <Text style={{ fontSize: 28, marginLeft: 8 }}>{lvl.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 14, color: lvl.color }}>مستوى {lvl.name}</Text>
+                  <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 10, color: "#6B7280", marginTop: 1 }}>
+                    {points.toLocaleString("ar-SA")} نقطة · {bookingsCount} طلب مكتمل
+                  </Text>
+                </View>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 18, color: lvl.color }}>{points.toLocaleString("ar-SA")}</Text>
+                  <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 9, color: "#9CA3AF" }}>نقطة</Text>
+                </View>
+              </View>
+              <View style={{ height: 6, backgroundColor: "rgba(0,0,0,0.08)", borderRadius: 100, overflow: "hidden" }}>
+                <View style={{ width: `${Math.round(progress * 100)}%` as any, height: 6, backgroundColor: lvl.color, borderRadius: 100 }} />
+              </View>
+              {nextLvl && (
+                <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 9, color: "#9CA3AF", marginTop: 4, textAlign: "right" }}>
+                  {(nextLvl.min - points)} نقطة للوصول إلى {nextLvl.icon} {nextLvl.name}
+                </Text>
+              )}
+            </View>
+          );
+        })()}
+
         {/* Saved Addresses */}
         <View style={s.secHeader}>
           <View style={s.secTitleRow}>
@@ -254,6 +293,7 @@ const s = StyleSheet.create({
   avatar: { width: 90, height: 90, borderRadius: 45 },
   cameraBadge: { position: "absolute", bottom: 0, end: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: "#3B82F6", borderWidth: 3, borderColor: "#FFF", alignItems: "center", justifyContent: "center" },
 
+  loyaltyCard: { marginHorizontal: 16, marginBottom: 16, padding: 16, borderRadius: 20 },
   premiumWrap: { marginHorizontal: 16, marginBottom: 20 },
   premiumCard: { borderRadius: 24, padding: 20, overflow: "hidden" },
   premCircle1: { position: "absolute", width: 160, height: 160, borderRadius: 80, backgroundColor: "rgba(255,255,255,0.06)", top: -40, start: -40 },

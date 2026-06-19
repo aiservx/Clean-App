@@ -39,6 +39,7 @@ export default function ProviderWallet() {
   const [balance, setBalance] = useState({ avail: 0, monthly: 0, pending: 0, total: 0, today: 0 });
   const [tx, setTx] = useState<Tx[]>([]);
   const [stats, setStats] = useState({ todayJobs: 0, accept: 0 });
+  const [weeklyData, setWeeklyData] = useState<{ day: string; amount: number }[]>([]);
 
   const load = useCallback(async () => {
     if (!session?.user) { setLoading(false); return; }
@@ -80,6 +81,19 @@ export default function ProviderWallet() {
       todayJobs,
       accept: allCount > 0 ? Math.round((acceptedCount / allCount) * 100) : 0,
     });
+
+    const DAYS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    const now = new Date();
+    const weekly = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now); d.setDate(now.getDate() - (6 - i)); d.setHours(0, 0, 0, 0);
+      const next = new Date(d); next.setDate(d.getDate() + 1);
+      const amount = completedRows.filter((r: any) => {
+        const dt = new Date(r.created_at);
+        return dt >= d && dt < next;
+      }).reduce((s: number, r: any) => s + Number(r.total || 0) * 0.85, 0);
+      return { day: DAYS[d.getDay()], amount };
+    });
+    setWeeklyData(weekly);
 
     const txList: Tx[] = [
       ...completedRows.slice(0, 20).map((r: any) => ({
@@ -179,6 +193,37 @@ export default function ProviderWallet() {
           ))}
         </View>
 
+        {/* ── Weekly Earnings Chart ──────────────────────────── */}
+        {weeklyData.length > 0 && (() => {
+          const maxVal = Math.max(...weeklyData.map(d => d.amount), 1);
+          const todayIdx = 6;
+          return (
+            <View style={[styles.chartCard, { backgroundColor: colors.card }]}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 13, color: colors.foreground }}>أرباح آخر 7 أيام</Text>
+                <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 11, color: colors.mutedForeground }}>
+                  {weeklyData.reduce((s, d) => s + d.amount, 0).toLocaleString("ar-SA", { maximumFractionDigits: 0 })} ر.س
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 70, gap: 4 }}>
+                {weeklyData.map((d, i) => {
+                  const barH = maxVal > 0 ? Math.max(4, (d.amount / maxVal) * 60) : 4;
+                  const isToday = i === todayIdx;
+                  return (
+                    <View key={i} style={{ flex: 1, alignItems: "center", gap: 4 }}>
+                      <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 8, color: isToday ? colors.primary : colors.mutedForeground }}>
+                        {d.amount > 0 ? d.amount.toFixed(0) : ""}
+                      </Text>
+                      <View style={{ width: "100%", height: barH, borderRadius: 4, backgroundColor: isToday ? colors.primary : colors.primaryLight, opacity: isToday ? 1 : 0.7 }} />
+                      <Text style={{ fontFamily: "Tajawal_500Medium", fontSize: 8, color: isToday ? colors.primary : colors.mutedForeground }}>{d.day.slice(0, 3)}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          );
+        })()}
+
         <View style={styles.sectionH}>
           <Text style={[styles.sectionT, { color: colors.foreground }]}>الحركات الأخيرة</Text>
           <TouchableOpacity onPress={() => router.push("/statement")}><Text style={[styles.seeAll, { color: colors.primary }]}>عرض الكل</Text></TouchableOpacity>
@@ -235,6 +280,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: 10, marginBottom: 14 },
   actBtn: { flex: 1, height: 46, borderRadius: 14, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   actT: { fontFamily: "Tajawal_700Bold", fontSize: 12 },
+  chartCard: { marginHorizontal: 16, padding: 16, borderRadius: 18, marginBottom: 14 },
   miniRow: { flexDirection: "row", paddingHorizontal: 16, gap: 8, marginBottom: 14 },
   miniC: { flex: 1, padding: 12, borderRadius: 14, alignItems: "flex-end" },
   miniV: { fontFamily: "Tajawal_700Bold", fontSize: 16, marginTop: 4 },

@@ -1,220 +1,226 @@
-# نظافة — خطة التطوير الشاملة v3 🚀
-**تاريخ التقرير:** يونيو 2026 | **الحالة:** Phase 2 — ميزات ثورية قيد التنفيذ
+# نظافة — خطة التطوير الشاملة v3
+
+> **آخر تحديث:** يونيو 2026  
+> **الحالة العامة:** مرحلة 1 ✅ | مرحلة 2 ✅ | مرحلة 3 ✅ | مرحلة 4 🔜 | مرحلة 5 🔜
 
 ---
 
 ## 📊 تقرير التقييم الشامل
 
-### ✅ ما تم بناؤه (قوة المشروع الحالية)
+### نقاط القوة الحالية
 
-| المحور | الحالة | التقييم |
-|--------|--------|---------|
-| تطبيق موبايل Expo RTL عربي كامل | ✅ | ⭐⭐⭐⭐⭐ |
-| معالج الحجز 4 خطوات (خدمة/مزود/موعد/تأكيد) | ✅ | ⭐⭐⭐⭐⭐ |
-| تتبع حي على الخريطة للحجوزات | ✅ | ⭐⭐⭐⭐ |
-| مساعد ذكاء اصطناعي (صوت + نص + حجز مباشر) | ✅ | ⭐⭐⭐⭐⭐ |
-| لوحة إدارة شاملة 15+ صفحة | ✅ | ⭐⭐⭐⭐ |
-| نظام الإشعارات (FCM + Expo Push) | ✅ | ⭐⭐⭐⭐ |
-| لوحة تحكم المزود (محفظة + إحصائيات + خريطة) | ✅ | ⭐⭐⭐⭐ |
-| نظام الدردشة اللحظية لكل حجز | ✅ | ⭐⭐⭐⭐ |
-| العروض والكوبونات | ✅ | ⭐⭐⭐⭐ |
-| الإحالات والمكافآت (UI) | ✅ | ⭐⭐⭐ |
-| الثيمات (فاتح/داكن/نظام) | ✅ | ⭐⭐⭐⭐⭐ |
-| دعم RTL كامل + خطوط Tajawal | ✅ | ⭐⭐⭐⭐⭐ |
-| API Server (Express + JWT) | ✅ | ⭐⭐⭐⭐ |
-| Supabase RLS + Auth | ✅ | ⭐⭐⭐⭐ |
+| المنطقة | الوضع |
+|--------|-------|
+| بنية المشروع (Monorepo pnpm) | ✅ ممتازة |
+| التصميم العربي RTL | ✅ شامل ومتسق |
+| قاعدة البيانات Supabase + RLS | ✅ محكمة |
+| نظام الإشعارات (FCM + In-app) | ✅ متكامل |
+| المحادثة الذكية AI Chat + TTS | ✅ متقدم |
+| لوحة الإدارة Admin Dashboard | ✅ كاملة |
+| **التهيئة التلقائية لـ DB** | ✅ **جديد** — نقرة واحدة |
+| الخريطة الحية للمزود | ✅ مدمجة |
+| نظام التقييمات مع Auto-prompt | ✅ مكتمل |
+| مخطط الأرباح الأسبوعي | ✅ **جديد** |
+| بطاقة نقاط الولاء | ✅ **جديد** |
 
-**النقاط الإجمالية الحالية: 82/100 — مشروع ناضج**
+### فجوات مقارنةً بتطبيقات Uber/Amazon للخدمات
 
----
-
-## 🔴 الفجوات الحرجة مقارنة بالتطبيقات العالمية (Uber / Handy / TaskRabbit)
-
-| الميزة المفقودة | الأثر التجاري | الأولوية |
-|----------------|--------------|---------|
-| بطاقة الحجز النشط على الرئيسية (Uber DNA) | +20% تحويل | 🔴 فوري |
-| شارات المزودين الديناميكية (Top Rated, Fast) | +15% اختيار | 🔴 فوري |
-| إعادة الحجز الذكية بضغطة واحدة | +25% LTV | 🔴 فوري |
-| تقييم تلقائي بعد اكتمال الخدمة | +40% reviews | 🔴 فوري |
-| شريط إحصائيات المنصة (Social Proof) | +10% ثقة | 🔴 فوري |
-| مخطط زمني للحجز (Timeline) | +15% رضا | 🟡 أسبوع |
-| نظام نقاط الولاء (Loyalty Points) | +35% retention | 🟡 أسبوع |
-| تسعير موجي (Surge Pricing UI) | +20% إيرادات | 🟡 أسبوع |
-| رسوم بيانية أرباح المزود | +30% رضا مزود | 🟡 أسبوع |
-| مقارنة متعددة المزودين | +18% تحويل | 🟠 شهر |
-| صور قبل/بعد (Photo Evidence) | -40% نزاعات | 🟠 شهر |
-| خطط اشتراك (نظافة Gold) | +50% إيرادات | 🔵 Q3 |
-| حسابات الشركات B2B | +100% العائد | 🔵 Q3 |
-| Gamification (Streaks/Levels) | +25% مشاركة | 🔵 Q4 |
+| الميزة | الأولوية | الحالة |
+|--------|---------|--------|
+| تتبع المزود بالخريطة للعميل (Real-time) | 🔴 عالية | مرحلة 4 |
+| Surge Pricing تلقائي | 🔴 عالية | مرحلة 4 |
+| خطط الاشتراك الشهري | 🟡 متوسطة | مرحلة 4 |
+| فلترة ذكية للمزودين | 🟡 متوسطة | مرحلة 4 |
+| نظام الإحالة والمكافآت | 🟡 متوسطة | مرحلة 5 |
+| Onboarding Carousel | 🟢 منخفضة | مرحلة 5 |
+| مشاركة رابط الطلب + QR | 🟢 منخفضة | مرحلة 5 |
 
 ---
 
-## 🎯 الاقتراحات الثورية (Uber-level Transformation)
+## 🚀 المراحل التنفيذية
 
-### 1. 🚗 Active Booking Live Card ← **تم تنفيذه ✅**
-بطاقة حية على الشاشة الرئيسية مثل "رحلتك الجارية" في Uber:
-- نبضة خضراء متحركة حسب الحالة
-- اسم المزود + الخدمة + السعر
-- زر "تتبع" مباشر
-- تختفي تلقائياً عند الانتهاء
+### ✅ المرحلة 1 — أساسيات UX عالية الجودة
+- [x] `ActiveBookingCard` — بطاقة الطلب الحية Uber-style
+- [x] `PlatformStatsStrip` — شريط إحصائيات الصفحة الرئيسية
+- [x] `ProviderBadge` — شارة المزود الاحترافية
+- [x] Auto-rating prompt بعد اكتمال الخدمة
+- [x] Smart re-book (حجز سريع للخدمة السابقة)
+- [x] TypeScript نظيف بدون أخطاء
 
-### 2. ⭐ Dynamic Provider Badges ← **تم تنفيذه ✅**
-شارات ديناميكية تُحسب من بيانات حقيقية:
-- 🌟 "متميز" — تقييم > 4.8
-- 🏆 "الأكثر طلباً" — 50+ حجز
-- 👑 "خبير" — 5+ سنوات خبرة
-- 🌱 "جديد" — وافد حديث
+### ✅ المرحلة 2 — البنية التحتية والإدارة
+- [x] API Analytics endpoint (`/api/analytics/*`)
+- [x] API Auto-dispatch endpoint (`/api/dispatch/*`)
+- [x] Dynamic Pricing engine (`/api/pricing/*`)
+- [x] Support Tickets & Refunds (API + Admin UI)
+- [x] لوحة إدارة شاملة مع CRUD لجميع الكيانات
 
-### 3. 🔄 Smart Re-booking ← **تم تنفيذه ✅**
-- يحفظ اسم المزود + الخدمة
-- Confirmation dialog "احجز مجدداً مع نفس المزود؟"
-- يمرر رقم المزود تلقائياً للحجز الجديد
+### ✅ المرحلة 3 — تجربة مستخدم متقدمة + تهيئة DB
 
-### 4. ⚡ Auto Rating Prompt ← **تم تنفيذه ✅**
-- Realtime subscription على تغييرات الحجز
-- عند وصول status = "completed": يفتح شاشة التقييم تلقائياً بعد 1.5 ثانية
-- يضمن تدفق reviews ثابت ومستمر
+#### 3.1 ملف SQL الشامل `db/nazafa_complete_setup.sql`
+- [x] Schema كامل: 19 جدول + 17 enum + RLS Policies
+- [x] كل الـ Triggers والـ Functions والـ Realtime subscriptions
+- [x] 19 فئة خدمية + 40+ خدمة + عروض تجريبية
+- [x] Idempotent — آمن للتشغيل المتكرر (IF NOT EXISTS في كل مكان)
+- [x] Migration columns v2+v3 مضمّنة بشكل طبيعي
 
-### 5. 📊 Platform Stats Strip ← **تم تنفيذه ✅**
-"شريط الدليل الاجتماعي" أعلى الرئيسية:
-- `X+ تنظيف اليوم` من قاعدة البيانات الحقيقية
-- `Y فني نشط` عدد المزودين online
-- `⭐ Z.Z تقييم` متوسط حقيقي
+#### 3.2 التهيئة التلقائية من لوحة الإدارة
+- [x] `GET /api/admin/db-setup/sql` — إرجاع SQL الكامل
+- [x] `POST /api/admin/db-setup` — تنفيذ عبر Supabase Management API
+- [x] زر "🚀 تهيئة تلقائية" في صفحة Settings بلوحة الإدارة
+- [x] حقل Management API Key مع رابط للحصول عليه
+- [x] Feedback فوري: جارٍ / نجاح / خطأ
 
-### 6. 🏦 Provider Earnings Charts (القادم)
-رسوم بيانية في محفظة المزود:
-- مخطط خطي أسبوعي/شهري للأرباح
-- مقارنة مع الفترة الماضية
-- "أفضل يوم كسبت فيه X ريال"
+#### 3.3 ميزات المزود المحسّنة (Provider)
+- [x] **مخطط الأرباح الأسبوعي** في `wallet.tsx`
+  - Bar chart نقي بـ React Native (بدون مكتبات خارجية)
+  - آخر 7 أيام مع تمييز اليوم الحالي بلون مختلف
+  - يظهر مجموع الأسبوع في الرأس
 
-### 7. 🎁 Loyalty Points System (القادم)
-- 10 نقاط لكل 100 ريال مدفوع
-- مستويات: برونزي / فضي / ذهبي / بلاتيني
-- خصومات تلقائية عند الوصول للعتبات
-- "نقاطك تكفي لخصم 50 ريال"
-
-### 8. 📸 Before/After Photo Evidence (القادم)
-- المزود يصور قبل وبعد
-- يُرسل للعميل تلقائياً
-- يبني الثقة ويقلل النزاعات بنسبة 40%
-
-### 9. ⚡ Surge Pricing UI (القادم)
-- "الطلب مرتفع في منطقتك 🔥"
-- يُظهر عامل الزيادة بوضوح
-- يحفز الحجز المبكر
-
-### 10. 🔔 WhatsApp-level Smart Notifications (القادم)
-- تذكير 24 ساعة قبل الموعد
-- "المزود على بعد 10 دقائق منك"
-- "انتهت الخدمة — قيّم الآن 🌟"
+#### 3.4 ميزات المستخدم المحسّنة (User)
+- [x] **بطاقة نقاط الولاء** في `profile.tsx`
+  - 4 مستويات: 🥉 برونزي → 🥈 فضي → 🥇 ذهبي → 💎 بلاتيني
+  - شريط تقدم ديناميكي مع نسبة مئوية
+  - عداد "X نقطة للوصول إلى المستوى التالي"
 
 ---
 
-## 📅 خطة التنفيذ التفصيلية
+### 🔜 المرحلة 4 — ميزات عالمية المستوى
 
-### ✅ المرحلة 1 — مكتملة (Phase 1)
-- [x] بنية Monorepo (pnpm workspaces)
-- [x] Expo + Supabase + Express API
-- [x] Authentication (Auth + Profiles)
-- [x] Booking Wizard (4 steps)
-- [x] Real-time Map Tracking
-- [x] Admin Dashboard (15+ pages)
-- [x] Push Notifications (FCM)
-- [x] Chat System
-- [x] AI Assistant (Voice + Text)
-- [x] Provider Dashboard + Wallet
-- [x] Offers & Coupons
-- [x] RTL + Themes + i18n
-
-### ✅ المرحلة 2 — منفّذة الآن (هذه الجلسة)
-- [x] Active Booking Card على الرئيسية (Uber-style)
-- [x] Provider Badges الديناميكية (Top Rated / Expert / New)
-- [x] Quick Re-book الذكية (مع اسم المزود)
-- [x] Auto Rating Prompt (Realtime trigger)
-- [x] Platform Stats Strip (Social Proof حي)
-
-### 🟡 المرحلة 3 — الأسبوع القادم
-- [ ] Provider Earnings Charts (recharts)
-- [ ] Loyalty Points System (DB + UI)
-- [ ] Surge Pricing UI
-- [ ] Booking Timeline المحسّن (vertical steps + timestamps)
-- [ ] Scheduled Booking Reminders (cron via API server)
-- [ ] Multi-provider Side-by-side Comparison Modal
-
-### 🟠 المرحلة 4 — الشهر القادم
-- [ ] Before/After Photo Upload (Supabase Storage)
-- [ ] Corporate Accounts (B2B)
-- [ ] Subscription Plans (نظافة Gold)
-- [ ] Smart Notifications (deep personalization engine)
-- [ ] In-app Referral Shareable Cards
-- [ ] Search with Advanced Filters + Sorting
-
-### 🔵 المرحلة 5 — Q3/Q4 2026
-- [ ] Gamification (Streaks, Levels, Achievements)
-- [ ] Provider Video Profiles (30 ثانية showcase)
-- [ ] AI Scheduling (اقتراح أفضل وقت تلقائياً)
-- [ ] Multi-city Expansion (Dashboard)
-- [ ] White-label Version (للفرنشايز)
-- [ ] Payments via Moyasar (Saudi-first)
-
----
-
-## 💰 تقدير الأثر التجاري الكامل
-
-| الميزة | زيادة الإيرادات | تحسين الاحتفاظ |
-|--------|----------------|----------------|
-| Active Booking Card | +20% rebooking | +15% |
-| Smart Re-booking | +25% LTV | +20% |
-| Auto Rating | +40% reviews → ثقة | +10% |
-| Loyalty Points | — | +35% |
-| Before/After Photos | — | -40% churn |
-| Surge Pricing | +20% peak hours | — |
-| Smart Notifications | +18% conversion | +12% |
-| **المجموع المتوقع** | **+45% ARR** | **+35% retention** |
-
----
-
-## 🏗️ البنية التقنية الموصى بها
-
+#### 4.1 Real-time Provider Tracking للعميل
 ```
-نظافة Stack (Current + Recommended Upgrades)
-├── Mobile: Expo SDK 54 → 55 (Q3 upgrade)
-├── Backend:
-│   ├── Supabase PostgreSQL (current) ✅
-│   ├── Express API Server (current) ✅
-│   └── ADD: Redis cache (provider locations, 30s TTL)
-│   └── ADD: Bull queue (cron jobs for reminders)
-├── Payments:
-│   └── ADD: Moyasar (Saudi-first, mada + VISA + Apple Pay)
-├── Maps:
-│   └── CURRENT: react-native-maps + OpenStreetMap ✅
-│   └── UPGRADE: here.com API (better Arabic geocoding)
-├── Analytics:
-│   └── ADD: Mixpanel (user journey, funnel analysis)
-├── CDN:
-│   └── ADD: Cloudflare Images (provider photos optimization)
-└── Testing:
-    └── ADD: Playwright E2E + Detox native tests
+booking-details.tsx:
+  - خريطة تفاعلية تعرض موقع المزود مباشرةً
+  - تحديث كل 5 ثوانٍ عبر Supabase Realtime
+  - خط مسار (polyline) من المزود إلى العميل
+  - ETA ذكي (Estimated Time of Arrival) بالدقائق
+  
+providers table:
+  - current_lat / current_lng (موجودان)
+  - location_updated_at (موجود)
+```
+
+#### 4.2 Surge Pricing / Dynamic Demand Pricing
+```
+نظام التسعير الديناميكي:
+  - 1.5× في أوقات الذروة (17:00–21:00)
+  - 1.3× في عطل نهاية الأسبوع
+  - 0.8× في أوقات الهدوء (11:00–15:00 أيام الأسبوع)
+  - إشعار شفاف للمستخدم: "الأسعار مرتفعة الآن بسبب الطلب"
+```
+
+#### 4.3 خطط الاشتراك الشهري
+```sql
+CREATE TABLE subscription_plans (...)
+CREATE TABLE user_subscriptions (...)
+-- خطة أساسية: 2 زيارة/شهر بـ 199 ر.س
+-- خطة بريميوم: 4 زيارات/شهر بـ 349 ر.س
+-- خطة VIP: زيارات غير محدودة بـ 599 ر.س
+```
+
+#### 4.4 Smart Provider Filtering
+```
+فلاتر متقدمة في home.tsx:
+  - ترتيب حسب: التقييم / الأقرب / الأسرع استجابة / الأرخص
+  - فلتر حسب: التخصص / اللغة / الجنس / التجربة
+  - "مزود موصى به" badge بناءً على معدل القبول
+```
+
+#### 4.5 إشعارات ذكية متقدمة
+```
+إشعارات جديدة:
+  - "المزود على بُعد X دقائق" (بناءً على المسافة)
+  - "حان موعد خدمتك المجدولة" (قبل ساعة)
+  - "قيّم خدمتك السابقة" (بعد 2 ساعة من الاكتمال)
+  - "عرض خاص: خصم 10% على حجزك التالي"
 ```
 
 ---
 
-## 🎨 اقتراحات UI/UX ثورية
+### 🔜 المرحلة 5 — النمو والتوسع
 
-1. **Micro-animations**: Lottie animations للحالات (قبول، وصول، اكتمال)
-2. **Haptic Feedback**: اهتزاز دقيق عند كل إجراء مهم
-3. **Skeleton Screens**: بدلاً من spinner أثناء التحميل
-4. **Swipe Actions**: سحب لإلغاء / قبول في قوائم الحجز
-5. **Bottom Sheet**: Provider Profile card تنزلق من الأسفل
-6. **Live Typing Indicator**: في الدردشة "يكتب..."
-7. **Success Confetti**: احتفال بصري عند اكتمال أول خدمة
+#### 5.1 نظام الإحالة
+- كود إحالة فريد لكل مستخدم
+- 50 نقطة لكل إحالة ناجحة تؤدي لطلب مكتمل
+- لوحة إحصاء الإحالات في `profile.tsx`
+
+#### 5.2 Onboarding Carousel احترافي
+- 4 شاشات بتصميم gradient وعنيم ساخنة
+- تخطي / التالي / ابدأ الآن
+- حفظ حالة الـ onboarding محلياً (AsyncStorage)
+
+#### 5.3 مشاركة الطلب + QR
+- رابط قصير قابل للمشاركة لمتابعة حالة الطلب
+- QR code للفاتورة قابل للطباعة
+- شاشة عرض عامة لا تحتاج تسجيل دخول
+
+#### 5.4 Super Admin Analytics
+- Analytics dashboard: مخططات الإيراد اليومي/الأسبوعي/الشهري
+- خريطة حرارية للطلبات حسب المنطقة الجغرافية
+- تقارير تلقائية يومية عبر البريد الإلكتروني
+- A/B Testing لعروض الأسعار
+
+#### 5.5 B2B Portal
+- بوابة مخصصة للشركات والفنادق والمجمعات السكنية
+- عقود خدمة مؤجّلة (فوترة شهرية لا فورية)
+- تقارير خاصة لكل عميل مؤسسي
 
 ---
 
-## 📋 ملاحظات تقنية حرجة
+## 💡 اقتراحات ثورية
 
-- **DB Migrations**: يجب تشغيلها بالترتيب في Supabase SQL Editor
-- **Push Notifications**: توجَّه عبر API Server (تجاوز RLS)
-- **APK Build**: `EXPO_PUBLIC_API_URL` يُخبَّز في وقت البناء — اضبطه على URL النشر
-- **Supabase جديد**: المشروع `jotdqrffjjkyjfdhiwht.supabase.co` لا يحتوي على schema بعد
-- **RTL First**: كل مكون جديد يبدأ بـ `I18nManager.isRTL` للتوجيه
+### 1. ذكاء اصطناعي تنبؤي
+- **AI Scheduling:** اقتراح وقت الحجز الأمثل بناءً على تاريخ المستخدم وجدول المزودين
+- **AI Matching:** مطابقة المزود المثالي للعميل عبر 20+ معيار (تقييم، تخصص، قرب، سرعة استجابة)
+- **Predictive Reorder:** "حان وقت تنظيف منزلك مجدداً!" بعد 30 يوم
+
+### 2. نموذج الاقتصاد التشاركي
+- **Provider Marketplace:** المزودون يعرضون أسعارهم التنافسية والعملاء يختارون
+- **Reverse Bidding:** العميل ينشر طلبه والمزودون يتقدمون بعروض خلال 5 دقائق
+- **Bundle Services:** حزم خدمات شهرية بسعر مخفض (منزل + سيارة + حديقة)
+
+### 3. تقنيات ناشئة
+- **Computer Vision:** تحليل صورة المنزل لتقدير وقت التنظيف وسعر أدق
+- **IoT Integration:** تكامل مع أجهزة المنزل الذكي (توقيت دخول/خروج المزود)
+- **Voice Booking:** "احجز تنظيف الغرف يوم الخميس" عبر الأوامر الصوتية
+
+### 4. نمو العمل التجاري
+- **SaaS White Label:** تقديم المنصة لشركات تنظيف أخرى كـ Software-as-a-Service
+- **Franchise Model:** نموذج الامتياز للتوسع في مدن جديدة (جدة، مكة، الدمام)
+- **Corporate Accounts:** حسابات مؤسسية مع فوترة شهرية ولوحة إدارة خاصة
+
+---
+
+## 🏗️ البنية التقنية الحالية
+
+```
+nazafa/ (PNPM Monorepo)
+├── db/
+│   └── nazafa_complete_setup.sql  ← الملف الكامل الوحيد ✅
+├── artifacts/
+│   ├── mobile/ (Expo SDK 54, port 18115)
+│   │   ├── app/(tabs)/           ← المستخدم
+│   │   ├── app/(provider)/       ← المزود
+│   │   └── db/schema.sql         ← نسخة تاريخية (استخدم nazafa_complete_setup.sql)
+│   ├── admin/ (Vite + React + Tailwind, port 5000)
+│   └── api-server/ (Express, port 8080)
+│       └── routes/
+│           ├── setup.ts     ← GET+POST /api/admin/db-setup ✨
+│           ├── analytics.ts
+│           ├── dispatch.ts
+│           └── pricing.ts
+└── scripts/start-all.sh
+```
+
+---
+
+## 📈 مؤشرات النجاح (KPIs)
+
+| المؤشر | الهدف (6 أشهر) |
+|--------|----------------|
+| معدل الاحتفاظ بالمستخدم Day-30 | > 40% |
+| متوسط قيمة الطلب (AOV) | > 180 ر.س |
+| معدل إتمام الطلب | > 85% |
+| متوسط تقييم المزودين | > 4.5 ⭐ |
+| وقت استجابة المزود | < 5 دقائق |
+| معدل إعادة الحجز (Rebooking) | > 60% |
+| وقت تهيئة DB جديد | < 60 ثانية (تلقائي) |

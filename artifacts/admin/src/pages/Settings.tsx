@@ -417,11 +417,24 @@ function AdminCredentials() {
 }
 
 function DatabaseConfig() {
-  const [status, setStatus] = useState<"idle" | "testing" | "ok" | "fail">("idle");
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus]       = useState<"idle"|"testing"|"ok"|"fail">("idle");
+  const [copied, setCopied]       = useState(false);
+  const [sqlPreview, setSqlPreview] = useState<string>("");
+  const [sqlLen, setSqlLen]       = useState(0);
+  const [managementKey, setManagementKey] = useState("");
+  const [setupState, setSetupState] = useState<"idle"|"running"|"done"|"error">("idle");
+  const [setupMsg, setSetupMsg]   = useState("");
 
+  const API_URL  = import.meta.env.VITE_API_URL || "http://localhost:8080";
   const SUPA_URL = import.meta.env.VITE_SUPABASE_URL || "https://jotdqrffjjkyjfdhiwht.supabase.co";
   const PROJECT_ID = SUPA_URL.replace("https://", "").split(".")[0];
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/admin/db-setup/sql`)
+      .then(r => r.json())
+      .then(d => { setSqlPreview((d.sql as string)?.slice(0, 900) ?? ""); setSqlLen(d.length ?? 0); })
+      .catch(() => { setSqlPreview(MIGRATION_SQL.slice(0, 900)); setSqlLen(MIGRATION_SQL.length); });
+  }, []);
 
   async function testConnection() {
     setStatus("testing");
@@ -431,10 +444,44 @@ function DatabaseConfig() {
     } catch { setStatus("fail"); }
   }
 
-  function copySql() {
-    navigator.clipboard.writeText(MIGRATION_SQL);
+  async function copySql() {
+    try {
+      const r = await fetch(`${API_URL}/api/admin/db-setup/sql`);
+      const d = await r.json() as { sql?: string };
+      await navigator.clipboard.writeText(d.sql ?? MIGRATION_SQL);
+    } catch {
+      await navigator.clipboard.writeText(MIGRATION_SQL);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
+  }
+
+  async function runAutoSetup() {
+    if (!managementKey.trim()) {
+      setSetupMsg("أدخل Management API Key أولاً");
+      setSetupState("error");
+      return;
+    }
+    setSetupState("running");
+    setSetupMsg("جاري تهيئة قاعدة البيانات…");
+    try {
+      const r = await fetch(`${API_URL}/api/admin/db-setup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ managementKey: managementKey.trim() }),
+      });
+      const d = await r.json() as { success?: boolean; error?: string; details?: string };
+      if (d.success) {
+        setSetupState("done");
+        setSetupMsg("✅ تمت التهيئة بنجاح! جميع الجداول والبيانات الأولية جاهزة.");
+      } else {
+        setSetupState("error");
+        setSetupMsg(`خطأ: ${d.error ?? "غير معروف"}`);
+      }
+    } catch (e) {
+      setSetupState("error");
+      setSetupMsg("تعذّر الاتصال بالخادم — تأكد من تشغيل API Server");
+    }
   }
 
   return (
@@ -443,11 +490,11 @@ function DatabaseConfig() {
         <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-xl">🗄️</div>
         <div>
           <h3 className="font-bold text-gray-900">إعدادات قاعدة البيانات</h3>
-          <p className="text-xs text-gray-500">Supabase PostgreSQL — اتصال مباشر</p>
+          <p className="text-xs text-gray-500">Supabase PostgreSQL — التهيئة التلقائية</p>
         </div>
         <div className="mr-auto">
-          {status === "ok" && <Badge color="green">✓ متصل</Badge>}
-          {status === "fail" && <Badge color="red">✗ خطأ في الاتصال</Badge>}
+          {status === "ok"      && <Badge color="green">✓ متصل</Badge>}
+          {status === "fail"    && <Badge color="red">✗ خطأ</Badge>}
           {status === "testing" && <Badge color="yellow">⏳ يتحقق…</Badge>}
         </div>
       </div>
@@ -455,31 +502,74 @@ function DatabaseConfig() {
       <div className="grid grid-cols-1 gap-1 mb-4">
         <CopyField label="رابط المشروع (Supabase URL)" value={SUPA_URL} />
         <CopyField label="Project ID" value={PROJECT_ID} />
-        <CopyField label="Anon Key (EXPO_PUBLIC_SUPABASE_ANON_KEY)" value={import.meta.env.VITE_SUPABASE_ANON_KEY || "مضبوط كمتغير بيئة"} secret />
       </div>
 
       <div className="flex gap-3 mb-6">
-        <button onClick={testConnection} disabled={status === "testing"} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-60">
+        <button onClick={testConnection} disabled={status === "testing"}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 disabled:opacity-60">
           🔌 اختبار الاتصال
         </button>
-        <a href={`https://supabase.com/dashboard/project/${PROJECT_ID}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100">
-          🔗 فتح لوحة Supabase
+        <a href={`https://supabase.com/dashboard/project/${PROJECT_ID}/sql/new`} target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100">
+          🔗 فتح SQL Editor
         </a>
       </div>
 
+      {/* ── Auto Setup ─────────────────────────────────────────── */}
+      <div className="border border-emerald-200 bg-emerald-50 rounded-xl p-4 mb-5">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-lg">🚀</span>
+          <h4 className="font-bold text-emerald-800 text-sm">التهيئة التلقائية — نقرة واحدة</h4>
+          <span className="text-xs bg-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">جديد</span>
+        </div>
+        <p className="text-xs text-emerald-600 mb-3">
+          ينشئ جميع الجداول والسياسات والـ Triggers وبيانات التشغيل دفعةً واحدة.
+          احصل على Management API Key من{" "}
+          <a href="https://app.supabase.com/account/tokens" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+            app.supabase.com/account/tokens
+          </a>
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="password"
+            value={managementKey}
+            onChange={e => { setManagementKey(e.target.value); setSetupState("idle"); }}
+            placeholder="sbp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            className="flex-1 px-3 py-2 text-xs rounded-lg border border-emerald-200 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          />
+          <button
+            onClick={runAutoSetup}
+            disabled={setupState === "running"}
+            className="px-4 py-2 rounded-lg text-sm font-bold text-white disabled:opacity-60 transition-all"
+            style={{ background: setupState === "done" ? "#059669" : setupState === "error" ? "#DC2626" : "#16C47F" }}
+          >
+            {setupState === "running" ? "⏳ جارٍ…" : setupState === "done" ? "✓ تمّ!" : "🚀 تهيئة"}
+          </button>
+        </div>
+        {setupMsg && (
+          <p className={`text-xs mt-2 font-medium ${setupState === "done" ? "text-emerald-700" : "text-red-600"}`}>
+            {setupMsg}
+          </p>
+        )}
+      </div>
+
+      {/* ── Manual SQL ──────────────────────────────────────────── */}
       <div className="border-t border-gray-100 pt-5">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h4 className="font-semibold text-gray-700 text-sm">سكريبت إنشاء قاعدة البيانات</h4>
-            <p className="text-xs text-gray-400 mt-0.5">شغّله مرة واحدة في Supabase → SQL Editor لإنشاء جميع الجداول</p>
+            <h4 className="font-semibold text-gray-700 text-sm">السكريبت الكامل (يدوياً)</h4>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {sqlLen > 0 ? `${sqlLen.toLocaleString()} حرف` : ""} — شغّله في Supabase → SQL Editor
+            </p>
           </div>
-          <button onClick={copySql} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${copied ? "bg-emerald-600 text-white" : "bg-gray-900 text-white hover:bg-gray-700"}`}>
+          <button onClick={copySql}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${copied ? "bg-emerald-600 text-white" : "bg-gray-900 text-white hover:bg-gray-700"}`}>
             {copied ? "✓ تم النسخ!" : "📋 نسخ SQL"}
           </button>
         </div>
         <pre className="bg-gray-900 text-emerald-400 text-xs rounded-xl p-4 overflow-auto max-h-64 leading-relaxed font-mono">
-          {MIGRATION_SQL.slice(0, 800)}
-          {"\n"}/* ... {MIGRATION_SQL.length - 800}+ حرف إضافي — انسخ الكل بالزر أعلاه */
+          {sqlPreview || MIGRATION_SQL.slice(0, 900)}
+          {"\n"}/* ... انسخ الكل بالزر أعلاه للحصول على السكريبت الكامل */
         </pre>
       </div>
     </Card>
