@@ -28,6 +28,8 @@ if (!basePath) {
 
 export default defineConfig({
   base: basePath,
+  // Expose both VITE_ and EXPO_PUBLIC_ env vars to the admin client code
+  envPrefix: ["VITE_", "EXPO_PUBLIC_"],
   plugins: [
     react(),
     tailwindcss(),

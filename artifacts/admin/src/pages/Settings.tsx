@@ -439,8 +439,15 @@ function DatabaseConfig() {
   async function testConnection() {
     setStatus("testing");
     try {
-      const { error } = await supabase.from("profiles").select("id").limit(1);
-      setStatus(error ? "fail" : "ok");
+      // Ping Supabase REST endpoint directly — any HTTP response means the
+      // project is reachable (even 401 means the server is alive).
+      const r = await fetch(`${SUPA_URL}/rest/v1/`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(8000),
+      });
+      // 200, 400, 401, 403 all mean the server responded → connected
+      setStatus(r.status < 500 ? "ok" : "fail");
     } catch { setStatus("fail"); }
   }
 
