@@ -9,14 +9,17 @@ export type ServiceItem = {
   color: string;
 };
 
+export type RecurringFrequency = "once" | "weekly" | "biweekly" | "monthly";
+
 export type BookingState = {
   service: ServiceItem | null;
   dateIndex: number;
   timeIndex: number;
-  cleanerId: string;            // selected provider id (uuid) or "" for auto
+  cleanerId: string;
   paymentMethodId: string;
-  scheduledIso: string | null;  // ISO timestamp for scheduled bookings
-  addressId: string | null;     // selected address id (uuid)
+  scheduledIso: string | null;
+  addressId: string | null;
+  recurringFrequency: RecurringFrequency;
   setService: (s: ServiceItem) => void;
   setDateIndex: (i: number) => void;
   setTimeIndex: (i: number) => void;
@@ -24,6 +27,7 @@ export type BookingState = {
   setPaymentMethodId: (id: string) => void;
   setScheduledIso: (iso: string | null) => void;
   setAddressId: (id: string | null) => void;
+  setRecurringFrequency: (f: RecurringFrequency) => void;
   reset: () => void;
 };
 
@@ -46,6 +50,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
   const [paymentMethodId, setPaymentMethodId] = useState<string>("1");
   const [scheduledIso, setScheduledIso] = useState<string | null>(null);
   const [addressId, setAddressId] = useState<string | null>(null);
+  const [recurringFrequency, setRecurringFrequency] = useState<RecurringFrequency>("once");
 
   const value = useMemo<BookingState>(
     () => ({
@@ -56,6 +61,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
       paymentMethodId,
       scheduledIso,
       addressId,
+      recurringFrequency,
       setService,
       setDateIndex,
       setTimeIndex,
@@ -63,6 +69,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
       setPaymentMethodId,
       setScheduledIso,
       setAddressId,
+      setRecurringFrequency,
       reset: () => {
         setService(DEFAULT_SERVICE);
         setDateIndex(0);
@@ -71,9 +78,10 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
         setPaymentMethodId("1");
         setScheduledIso(null);
         setAddressId(null);
+        setRecurringFrequency("once");
       },
     }),
-    [service, dateIndex, timeIndex, cleanerId, paymentMethodId, scheduledIso, addressId],
+    [service, dateIndex, timeIndex, cleanerId, paymentMethodId, scheduledIso, addressId, recurringFrequency],
   );
 
   return <BookingContext.Provider value={value}>{children}</BookingContext.Provider>;

@@ -139,6 +139,53 @@ function QuickActions() {
   );
 }
 
+// ── Smart Alerts ────────────────────────────────────────────────────────────
+function SmartAlerts({ bookings, pendingSupport }: { bookings: any[]; pendingSupport: number }) {
+  const alerts: { type: "error" | "warn" | "info"; icon: string; msg: string; href?: string }[] = [];
+
+  // Bookings pending > 30 min
+  const staleTime = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const stale = bookings.filter((b: any) => b.status === "pending" && b.created_at < staleTime);
+  if (stale.length > 0)
+    alerts.push({ type: "error", icon: "⏰", msg: `${stale.length} ${stale.length === 1 ? "طلب" : "طلبات"} تنتظر التعيين أكثر من 30 دقيقة`, href: "/bookings" });
+
+  // Support tickets
+  if (pendingSupport >= 5)
+    alerts.push({ type: "warn", icon: "🎧", msg: `${pendingSupport} تذكرة دعم مفتوحة تحتاج ردوداً`, href: "/support" });
+
+  // High cancellation rate
+  const cancelled = bookings.filter((b: any) => b.status === "cancelled").length;
+  const cancelRate = bookings.length > 10 ? Math.round(cancelled / bookings.length * 100) : 0;
+  if (cancelRate > 20)
+    alerts.push({ type: "warn", icon: "📉", msg: `معدل الإلغاء مرتفع: ${cancelRate}% — راجع جودة المزودين`, href: "/providers" });
+
+  // No bookings today
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayCount = bookings.filter((b: any) => b.created_at?.slice(0, 10) === todayKey).length;
+  if (bookings.length > 50 && todayCount === 0)
+    alerts.push({ type: "info", icon: "💡", msg: "لا توجد حجوزات اليوم — أرسل إشعاراً ترويجياً", href: "/notifications" });
+
+  if (alerts.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-2 mb-5">
+      {alerts.map((a, i) => {
+        const bg = a.type === "error" ? "#FEE2E2" : a.type === "warn" ? "#FEF3C7" : "#DBEAFE";
+        const color = a.type === "error" ? "#DC2626" : a.type === "warn" ? "#D97706" : "#2563EB";
+        const inner = (
+          <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold cursor-pointer transition-opacity hover:opacity-80"
+            style={{ background: bg, color, fontFamily: "Tajawal, sans-serif" }}>
+            <span className="text-base">{a.icon}</span>
+            <span className="flex-1">{a.msg}</span>
+            {a.href && <span style={{ opacity: 0.6, fontSize: 12 }}>←</span>}
+          </div>
+        );
+        return a.href ? <Link key={i} href={a.href}><a>{inner}</a></Link> : inner;
+      })}
+    </div>
+  );
+}
+
 // ── Live Status Banner ──────────────────────────────────────────────────────
 function LiveBanner({ pending, liveCount }: { pending: number; liveCount: number }) {
   if (!pending && !liveCount) return null;
@@ -260,6 +307,7 @@ export default function Dashboard() {
       />
 
       <LiveBanner pending={stats.pending ?? 0} liveCount={liveCount} />
+      <SmartAlerts bookings={allBookings} pendingSupport={pendingSupport} />
 
       {/* ── KPI Grid ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

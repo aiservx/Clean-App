@@ -65,6 +65,68 @@ const tap = () => {
   if (Platform.OS !== "web") Haptics.selectionAsync();
 };
 
+// ── Recurring Booking Selector ────────────────────────────────────────────────
+type RecurringOption = { key: import("@/store/booking").RecurringFrequency; label: string; icon: string };
+const RECURRING_OPTIONS: RecurringOption[] = [
+  { key: "once",     label: "مرة واحدة", icon: "1️⃣" },
+  { key: "weekly",   label: "أسبوعي",    icon: "📅" },
+  { key: "biweekly", label: "كل أسبوعين", icon: "🔄" },
+  { key: "monthly",  label: "شهري",      icon: "📆" },
+];
+
+function RecurringSelector({ value, onChange, colors }: {
+  value: import("@/store/booking").RecurringFrequency;
+  onChange: (f: import("@/store/booking").RecurringFrequency) => void;
+  colors: any;
+}) {
+  return (
+    <View style={[recurringStyles.container, { backgroundColor: colors.card }]}>
+      <View style={recurringStyles.header}>
+        <Text style={[recurringStyles.title, { color: colors.foreground }]}>تكرار الحجز</Text>
+        {value !== "once" && (
+          <View style={recurringStyles.saveBadge}>
+            <Text style={recurringStyles.saveText}>وفّر 10%</Text>
+          </View>
+        )}
+      </View>
+      <View style={recurringStyles.options}>
+        {RECURRING_OPTIONS.map((opt) => {
+          const selected = value === opt.key;
+          return (
+            <TouchableOpacity
+              key={opt.key}
+              activeOpacity={0.8}
+              onPress={() => { tap(); onChange(opt.key); }}
+              style={[
+                recurringStyles.option,
+                { borderColor: selected ? colors.primary : colors.border,
+                  backgroundColor: selected ? colors.primary + "12" : "transparent" },
+              ]}
+            >
+              <Text style={recurringStyles.optIcon}>{opt.icon}</Text>
+              <Text style={[recurringStyles.optLabel, { color: selected ? colors.primary : colors.foreground }]}>
+                {opt.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const recurringStyles = StyleSheet.create({
+  container: { borderRadius: 16, padding: 16, marginBottom: 12 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
+  saveBadge: { backgroundColor: "#FEF3C7", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 3 },
+  saveText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#D97706" },
+  options: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  option: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, borderWidth: 1.5 },
+  optIcon: { fontSize: 14 },
+  optLabel: { fontFamily: "Tajawal_600SemiBold", fontSize: 13 },
+});
+
 export default function BookingScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
@@ -453,6 +515,15 @@ export default function BookingScreen() {
           </ScrollView>
         )}
 
+        {/* Recurring Booking Option */}
+        {bookingType === "scheduled" && (
+          <RecurringSelector
+            value={booking.recurringFrequency}
+            onChange={booking.setRecurringFrequency}
+            colors={colors}
+          />
+        )}
+
         {/* Order Summary */}
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.summaryHeader, { color: colors.foreground }]}>ملخص الطلب</Text>
@@ -486,6 +557,14 @@ export default function BookingScreen() {
             </Text>
             <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>الفني</Text>
           </View>
+          {bookingType === "scheduled" && booking.recurringFrequency !== "once" && (
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryValue, { color: colors.primary }]}>
+                {RECURRING_OPTIONS.find((o) => o.key === booking.recurringFrequency)?.label ?? ""}
+              </Text>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>التكرار</Text>
+            </View>
+          )}
 
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
 

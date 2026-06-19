@@ -18,6 +18,7 @@ import Settings, { CommissionPage, BrandingPage, PoliciesPage, HomeBuilderPage }
 import OTAUpdates from "@/pages/OTAUpdates";
 import Analytics from "@/pages/Analytics";
 import DynamicPricing from "@/pages/DynamicPricing";
+import LiveMap from "@/pages/LiveMap";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ function Routes() {
       <Route path="/ota-updates" component={OTAUpdates} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/dynamic-pricing" component={DynamicPricing} />
+      <Route path="/live-map" component={LiveMap} />
       <Route path="/settings" component={Settings} />
       <Route>
         <div className="p-8">

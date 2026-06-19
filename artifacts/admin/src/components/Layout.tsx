@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -7,6 +7,7 @@ const NAV: { path: string; label: string; icon: string; section?: string }[] = [
   { path: "/", label: "الرئيسية", icon: "📊", section: "عام" },
   { path: "/analytics", label: "التحليلات", icon: "📈", section: "عام" },
   { path: "/dynamic-pricing", label: "التسعير الديناميكي", icon: "⚡", section: "عام" },
+  { path: "/live-map", label: "خريطة المزودين", icon: "🗺️", section: "عام" },
   { path: "/services", label: "الخدمات", icon: "🧹", section: "الكتالوج" },
   { path: "/categories", label: "التصنيفات", icon: "🗂️", section: "الكتالوج" },
   { path: "/providers", label: "مقدمو الخدمة", icon: "👷", section: "المستخدمون" },
@@ -186,9 +187,9 @@ export function PageHeader({
 }
 
 // ── Card — matching mobile card style ──────────────────────────────────────
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function Card({ children, className = "", style }: { children: ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={`nazafa-card ${className}`}>
+    <div className={`nazafa-card ${className}`} style={style}>
       {children}
     </div>
   );
