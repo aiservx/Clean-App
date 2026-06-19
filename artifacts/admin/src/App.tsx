@@ -24,6 +24,7 @@ import Financial from "@/pages/Financial";
 import Reviews from "@/pages/Reviews";
 import GeoHeatmap from "@/pages/GeoHeatmap";
 import Cohorts from "@/pages/Cohorts";
+import Campaigns from "@/pages/Campaigns";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ function Routes() {
       <Route path="/reviews" component={Reviews} />
       <Route path="/geo-heatmap" component={GeoHeatmap} />
       <Route path="/cohorts" component={Cohorts} />
+      <Route path="/campaigns" component={Campaigns} />
       <Route path="/settings" component={Settings} />
       <Route>
         <div className="p-8">

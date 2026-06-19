@@ -150,6 +150,7 @@ export default function ProviderProfile() {
             { i: "credit-card", l: "المحفظة والأرباح",         p: "/(provider)/wallet",    c: "#F59E0B", bg: "#FEF3C7" },
             { i: "list",        l: "كل طلباتي",                p: "/(provider)/bookings",  c: "#8B5CF6", bg: "#EDE9FE" },
             { i: "users",       l: "دعوة عمال آخرين",          p: "/provider-referrals",   c: "#EC4899", bg: "#FCE7F3" },
+            { i: "bar-chart-2",  l: "تحليلات أدائي",            p: "/(provider)/analytics", c: "#3B82F6", bg: "#DBEAFE" },
             { i: "help-circle", l: "المساعدة والدعم",          p: "/help",                 c: "#FB923C", bg: "#FFEDD5" },
             { i: "settings",    l: "الإعدادات",                p: "/settings",             c: "#6B7280", bg: "#F3F4F6" },
           ].map((m) => (
