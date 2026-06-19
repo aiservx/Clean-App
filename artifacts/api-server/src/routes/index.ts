@@ -15,12 +15,12 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use(authRouter);
 router.use(pushRouter);
-router.use("/api", bookingsRouter);
-router.use("/api", ticketsRouter);
-router.use("/api", refundsRouter);
+router.use(bookingsRouter);
+router.use(ticketsRouter);
+router.use(refundsRouter);
 router.use(analyticsRouter);
 router.use(dispatchRouter);
 router.use(pricingRouter);
-router.use("/api", setupRouter);
+router.use(setupRouter);
 
 export default router;

@@ -24,7 +24,7 @@ async function getPricingConfig(): Promise<any> {
  * Returns the full dynamic pricing configuration for the mobile app.
  * Public endpoint (no auth required).
  */
-router.get("/api/pricing/config", async (_req, res) => {
+router.get("/pricing/config", async (_req, res) => {
   try {
     const config = await getPricingConfig();
     if (!config?.enabled) {
@@ -41,7 +41,7 @@ router.get("/api/pricing/config", async (_req, res) => {
  * Returns the price multiplier for the current moment.
  * Used by mobile app to show adjusted price before booking.
  */
-router.get("/api/pricing/multiplier", async (_req, res) => {
+router.get("/pricing/multiplier", async (_req, res) => {
   try {
     const config = await getPricingConfig();
     if (!config?.enabled || !config?.grid) {
@@ -75,7 +75,7 @@ router.get("/api/pricing/multiplier", async (_req, res) => {
  * GET /api/pricing/dynamic
  * Alias used by mobile app — returns per-service pricing array with multipliers.
  */
-router.get("/api/pricing/dynamic", async (_req, res) => {
+router.get("/pricing/dynamic", async (_req, res) => {
   try {
     const config = await getPricingConfig();
     if (!config?.enabled || !config?.grid) {

@@ -425,7 +425,7 @@ function DatabaseConfig() {
   const [setupState, setSetupState] = useState<"idle"|"running"|"done"|"error">("idle");
   const [setupMsg, setSetupMsg]   = useState("");
 
-  const API_URL  = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const API_URL  = import.meta.env.VITE_API_URL || "";
   const SUPA_URL = import.meta.env.VITE_SUPABASE_URL || "https://jotdqrffjjkyjfdhiwht.supabase.co";
   const PROJECT_ID = SUPA_URL.replace("https://", "").split(".")[0];
 

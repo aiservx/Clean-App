@@ -2,9 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, PageHeader } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
-const API_BASE =
-  import.meta.env.VITE_API_URL ||
-  `https://${window.location.hostname.replace(/^\d+-/, "8080-")}`;
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 type PayoutRow = {
   id: string;

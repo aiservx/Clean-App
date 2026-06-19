@@ -5,8 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, PageHeader } from "@/components/Layout";
 import { supabase } from "@/lib/supabase";
 
-const API_BASE = import.meta.env.VITE_API_URL ||
-  `https://${window.location.hostname.replace(/^\d+-/, "8080-")}`;
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 const TEMPLATES: { icon: string; label: string; title: string; body: string; target: string }[] = [

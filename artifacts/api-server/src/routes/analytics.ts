@@ -30,7 +30,7 @@ async function sbQuery(path: string) {
 }
 
 // ── GET /api/analytics/summary ─────────────────────────────────────────────
-router.get("/api/analytics/summary", requireAdmin, async (_req, res) => {
+router.get("/analytics/summary", requireAdmin, async (_req, res) => {
   try {
     const [bookings, users, providers, reviews] = await Promise.all([
       sbQuery("bookings?select=id,status,total,created_at"),
@@ -68,7 +68,7 @@ router.get("/api/analytics/summary", requireAdmin, async (_req, res) => {
 });
 
 // ── GET /api/analytics/revenue?days=30 ────────────────────────────────────
-router.get("/api/analytics/revenue", requireAdmin, async (req, res) => {
+router.get("/analytics/revenue", requireAdmin, async (req, res) => {
   try {
     const days = Math.min(Number(req.query.days ?? 30), 365);
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
@@ -99,7 +99,7 @@ router.get("/api/analytics/revenue", requireAdmin, async (req, res) => {
 });
 
 // ── GET /api/analytics/providers/top?limit=10 ─────────────────────────────
-router.get("/api/analytics/providers/top", requireAdmin, async (req, res) => {
+router.get("/analytics/providers/top", requireAdmin, async (req, res) => {
   try {
     const limit = Math.min(Number(req.query.limit ?? 10), 50);
 
@@ -135,7 +135,7 @@ router.get("/api/analytics/providers/top", requireAdmin, async (req, res) => {
 });
 
 // ── GET /api/analytics/services/top ───────────────────────────────────────
-router.get("/api/analytics/services/top", requireAdmin, async (_req, res) => {
+router.get("/analytics/services/top", requireAdmin, async (_req, res) => {
   try {
     const bookings = await sbQuery(
       "bookings?select=service_id,status,total,services(title_ar)"
@@ -156,7 +156,7 @@ router.get("/api/analytics/services/top", requireAdmin, async (_req, res) => {
 });
 
 // ── GET /api/analytics/hourly ──────────────────────────────────────────────
-router.get("/api/analytics/hourly", requireAdmin, async (_req, res) => {
+router.get("/analytics/hourly", requireAdmin, async (_req, res) => {
   try {
     const bookings = await sbQuery("bookings?select=created_at") as any[];
     const hourMap: Record<number, number> = {};

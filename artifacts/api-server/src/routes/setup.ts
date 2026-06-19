@@ -11,12 +11,19 @@ function getProjectRef(): string {
 }
 
 function getSetupSql(): string {
-  try {
-    const sqlPath = join(process.cwd(), "db", "nazafa_complete_setup.sql");
-    return readFileSync(sqlPath, "utf-8");
-  } catch {
-    return "";
+  // Try multiple candidate paths — works both in dev (cwd = artifacts/api-server)
+  // and when started from workspace root.
+  const candidates = [
+    join(process.cwd(), "db", "nazafa_complete_setup.sql"),           // root-relative start
+    join(process.cwd(), "..", "..", "db", "nazafa_complete_setup.sql"), // artifacts/api-server → root
+    join(import.meta.dirname, "..", "..", "..", "db", "nazafa_complete_setup.sql"), // relative to src/routes
+  ];
+  for (const p of candidates) {
+    try {
+      return readFileSync(p, "utf-8");
+    } catch { /* try next */ }
   }
+  return "";
 }
 
 router.get("/admin/db-setup/sql", (_req, res) => {

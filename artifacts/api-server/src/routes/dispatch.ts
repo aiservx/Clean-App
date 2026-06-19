@@ -43,7 +43,7 @@ async function sbGet(path: string): Promise<any[]> {
  *
  * Returns ranked list of available providers with scores.
  */
-router.get("/api/dispatch/suggest", async (req, res) => {
+router.get("/dispatch/suggest", async (req, res) => {
   try {
     const userId = await verifyJwt(req.headers.authorization);
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
@@ -150,7 +150,7 @@ router.get("/api/dispatch/suggest", async (req, res) => {
  * Automatically assigns the top-scored provider to a booking.
  * Requires admin JWT.
  */
-router.post("/api/dispatch/auto-assign", async (req, res) => {
+router.post("/dispatch/auto-assign", async (req, res) => {
   try {
     const userId = await verifyJwt(req.headers.authorization);
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
