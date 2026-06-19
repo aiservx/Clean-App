@@ -20,6 +20,7 @@ export type BookingState = {
   scheduledIso: string | null;
   addressId: string | null;
   recurringFrequency: RecurringFrequency;
+  notes: string;
   setService: (s: ServiceItem) => void;
   setDateIndex: (i: number) => void;
   setTimeIndex: (i: number) => void;
@@ -28,6 +29,7 @@ export type BookingState = {
   setScheduledIso: (iso: string | null) => void;
   setAddressId: (id: string | null) => void;
   setRecurringFrequency: (f: RecurringFrequency) => void;
+  setNotes: (n: string) => void;
   reset: () => void;
 };
 
@@ -51,6 +53,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
   const [scheduledIso, setScheduledIso] = useState<string | null>(null);
   const [addressId, setAddressId] = useState<string | null>(null);
   const [recurringFrequency, setRecurringFrequency] = useState<RecurringFrequency>("once");
+  const [notes, setNotes] = useState<string>("");
 
   const value = useMemo<BookingState>(
     () => ({
@@ -62,6 +65,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
       scheduledIso,
       addressId,
       recurringFrequency,
+      notes,
       setService,
       setDateIndex,
       setTimeIndex,
@@ -70,6 +74,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
       setScheduledIso,
       setAddressId,
       setRecurringFrequency,
+      setNotes,
       reset: () => {
         setService(DEFAULT_SERVICE);
         setDateIndex(0);
@@ -79,9 +84,10 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
         setScheduledIso(null);
         setAddressId(null);
         setRecurringFrequency("once");
+        setNotes("");
       },
     }),
-    [service, dateIndex, timeIndex, cleanerId, paymentMethodId, scheduledIso, addressId, recurringFrequency],
+    [service, dateIndex, timeIndex, cleanerId, paymentMethodId, scheduledIso, addressId, recurringFrequency, notes],
   );
 
   return <BookingContext.Provider value={value}>{children}</BookingContext.Provider>;

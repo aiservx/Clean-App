@@ -299,6 +299,7 @@ export default function PaymentScreen() {
                 status: "pending",
                 scheduled_at: booking.scheduledIso || new Date().toISOString(),
                 address_id: resolvedAddressId,
+                ...(booking.notes?.trim() ? { notes: booking.notes.trim() } : {}),
               };
               // For IMMEDIATE bookings only: verify the provider is still available.
               // Scheduled advance bookings skip this check — offline providers can be pre-booked.

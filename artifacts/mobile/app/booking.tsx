@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, ActivityIndicator , I18nManager} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, ActivityIndicator, I18nManager, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -523,6 +523,40 @@ export default function BookingScreen() {
             colors={colors}
           />
         )}
+
+        {/* Special Instructions / Notes */}
+        <View style={[notesStyles.container, { backgroundColor: colors.card }]}>
+          <View style={notesStyles.header}>
+            <MaterialCommunityIcons name="note-text-outline" size={18} color={colors.primary} />
+            <Text style={[notesStyles.title, { color: colors.foreground }]}>تعليمات خاصة</Text>
+            {booking.notes.trim().length > 0 && (
+              <View style={notesStyles.badge}>
+                <Text style={notesStyles.badgeText}>✓</Text>
+              </View>
+            )}
+          </View>
+          <TextInput
+            value={booking.notes}
+            onChangeText={booking.setNotes}
+            placeholder="مثال: الدور الثالث، اتصل قبل الوصول، تجنب الغرفة الجانبية..."
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            numberOfLines={3}
+            maxLength={300}
+            style={[
+              notesStyles.input,
+              {
+                color: colors.foreground,
+                borderColor: booking.notes.trim().length > 0 ? colors.primary + "60" : colors.border,
+                backgroundColor: colors.background,
+                textAlign: I18nManager.isRTL ? "right" : "left",
+              },
+            ]}
+          />
+          <Text style={[notesStyles.counter, { color: colors.mutedForeground }]}>
+            {booking.notes.length}/300
+          </Text>
+        </View>
 
         {/* Order Summary */}
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>

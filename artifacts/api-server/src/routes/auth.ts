@@ -4,12 +4,18 @@ import { registerLimiter } from "../lib/rateLimiter";
 
 const router: IRouter = Router();
 
+// Resolve project URL — prefer SUPABASE_URL, then EXPO_PUBLIC_SUPABASE_URL, then known project
 const SUPABASE_URL =
-  process.env.SUPABASE_URL ?? "https://mffdpjwtwseftaqrslgx.supabase.co";
+  process.env.SUPABASE_URL ??
+  process.env.EXPO_PUBLIC_SUPABASE_URL ??
+  "https://jotdqrffjjkyjfdhiwht.supabase.co";
+
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+
 const SUPABASE_ANON_KEY =
   process.env.SUPABASE_ANON_KEY ??
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mZmRwand0d3NlZnRhcXJzbGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3OTY1MDAsImV4cCI6MjA5MzM3MjUwMH0.nDIPN8836RZ-37eKDTCL7-GrBE0tAus6V58qVyopZd8";
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
+  "";
 
 // Convert any username (Arabic, Latin, etc.) to a deterministic valid email
 function usernameToEmail(username: string): string {
@@ -26,7 +32,8 @@ function usernameToEmail(username: string): string {
 }
 
 // POST /api/auth/register
-// Creates user via Admin API (bypasses broken trigger) and inserts profile manually
+// Primary: creates via Admin API (service role key required).
+// Fallback: uses regular /auth/v1/signup when no service key is available.
 router.post("/auth/register", registerLimiter, async (req: Request, res: Response) => {
   const { username, password, full_name, phone, role, gender } = req.body as {
     username?: string;
@@ -47,39 +54,81 @@ router.post("/auth/register", registerLimiter, async (req: Request, res: Respons
   }
 
   const email = usernameToEmail(username);
-  // "admin" is never allowed via self-registration — only "user" or "provider"
+  // "admin" is never allowed via self-registration
   const safeRole = ["user", "provider"].includes(role ?? "") ? role : "user";
+  const userMeta = {
+    full_name: full_name ?? "",
+    phone: phone ?? "",
+    role: safeRole,
+    username: username.trim(),
+    gender: gender ?? "male",
+  };
 
   try {
-    // Create user via Supabase Admin API — bypasses the trigger failure issue
-    const createRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+    // ── Path A: Admin API (preferred — auto-confirms email) ───────────────
+    if (SUPABASE_SERVICE_KEY) {
+      const createRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_SERVICE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: userMeta,
+        }),
+      });
+
+      const createData = await createRes.json() as any;
+
+      if (!createRes.ok) {
+        const msg: string = createData?.msg ?? createData?.message ?? "";
+        logger.warn({ status: createRes.status, msg }, "Admin create user failed");
+        if (msg.includes("already registered") || msg.includes("already exists") || createRes.status === 422) {
+          res.status(409).json({ error: "اسم المستخدم هذا مستخدم بالفعل، جرّب اسماً آخر" });
+        } else if (msg.includes("password") || msg.includes("Password")) {
+          res.status(400).json({ error: "كلمة المرور ضعيفة، اختر كلمة أقوى" });
+        } else {
+          res.status(500).json({ error: "خطأ في إنشاء الحساب، حاول مرة أخرى" });
+        }
+        return;
+      }
+
+      const uid: string = createData.id;
+      await upsertProfile(SUPABASE_URL, SUPABASE_SERVICE_KEY, uid, email, full_name, phone, safeRole);
+      if (safeRole === "provider") {
+        await insertProvider(SUPABASE_URL, SUPABASE_SERVICE_KEY, uid);
+      }
+      logger.info({ uid, role: safeRole }, "User registered via admin API");
+      res.json({ success: true, uid });
+      return;
+    }
+
+    // ── Path B: Regular signup (no service key — email confirmation may be needed) ──
+    logger.warn("SUPABASE_SERVICE_ROLE_KEY not set — falling back to regular signup");
+    const signupRes = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method: "POST",
       headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        apikey: SUPABASE_ANON_KEY,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: full_name ?? "",
-          phone: phone ?? "",
-          role: safeRole,
-          username: username.trim(),
-          gender: gender ?? "male",
-        },
-      }),
+      body: JSON.stringify({ email, password, data: userMeta }),
     });
 
-    const createData = await createRes.json() as any;
+    const signupData = await signupRes.json() as any;
 
-    if (!createRes.ok) {
-      const msg: string = createData?.msg ?? createData?.message ?? "";
-      logger.warn({ status: createRes.status, msg }, "Admin create user failed");
-
-      if (msg.includes("already registered") || msg.includes("already exists") || createRes.status === 422) {
+    if (!signupRes.ok) {
+      const msg: string =
+        signupData?.msg ?? signupData?.message ?? signupData?.error_description ?? "";
+      logger.warn({ status: signupRes.status, msg }, "Fallback signup failed");
+      if (
+        msg.includes("already registered") ||
+        msg.includes("already exists") ||
+        signupRes.status === 422
+      ) {
         res.status(409).json({ error: "اسم المستخدم هذا مستخدم بالفعل، جرّب اسماً آخر" });
       } else if (msg.includes("password") || msg.includes("Password")) {
         res.status(400).json({ error: "كلمة المرور ضعيفة، اختر كلمة أقوى" });
@@ -89,14 +138,45 @@ router.post("/auth/register", registerLimiter, async (req: Request, res: Respons
       return;
     }
 
-    const uid: string = createData.id;
+    // Supabase signup returns user object (confirmed) or session (if email confirm disabled)
+    const uid: string | undefined =
+      signupData?.user?.id ?? signupData?.id ?? undefined;
 
-    // Upsert profile — always overwrite so full_name/phone/role are correct
-    await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+    if (uid) {
+      // Try to create profile — use access_token if returned, otherwise anon key
+      const tok = signupData?.session?.access_token ?? signupData?.access_token ?? SUPABASE_ANON_KEY;
+      await upsertProfile(SUPABASE_URL, tok, uid, email, full_name, phone, safeRole);
+      if (safeRole === "provider") {
+        await insertProvider(SUPABASE_URL, tok, uid);
+      }
+    }
+    // Profile will also be auto-created by ensureProfile() in lib/auth.tsx on first login
+
+    logger.info({ uid, role: safeRole }, "User registered via fallback signup");
+    res.json({ success: true, uid: uid ?? null });
+  } catch (e) {
+    logger.error({ err: e }, "Register endpoint error");
+    res.status(500).json({ error: "خطأ في الاتصال بالشبكة" });
+  }
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+async function upsertProfile(
+  supabaseUrl: string,
+  token: string,
+  uid: string,
+  email: string,
+  full_name?: string,
+  phone?: string,
+  role?: string,
+): Promise<void> {
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/profiles`, {
       method: "POST",
       headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+        apikey: token,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
         Prefer: "resolution=merge-duplicates",
       },
@@ -105,31 +185,34 @@ router.post("/auth/register", registerLimiter, async (req: Request, res: Respons
         email,
         full_name: full_name || null,
         phone: phone || null,
-        role: safeRole,
+        role: role ?? "user",
         avatar_url: null,
       }),
     });
-
-    // If provider, also insert into providers table
-    if (safeRole === "provider") {
-      await fetch(`${SUPABASE_URL}/rest/v1/providers`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_SERVICE_KEY,
-          Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "resolution=ignore-duplicates",
-        },
-        body: JSON.stringify({ id: uid }),
-      });
-    }
-
-    logger.info({ uid, role: safeRole }, "User registered successfully");
-    res.json({ success: true, uid });
   } catch (e) {
-    logger.error({ err: e }, "Register endpoint error");
-    res.status(500).json({ error: "خطأ في الاتصال بالشبكة" });
+    logger.warn({ err: e }, "upsertProfile failed — will retry on login");
   }
-});
+}
+
+async function insertProvider(
+  supabaseUrl: string,
+  token: string,
+  uid: string,
+): Promise<void> {
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/providers`, {
+      method: "POST",
+      headers: {
+        apikey: token,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=ignore-duplicates",
+      },
+      body: JSON.stringify({ id: uid }),
+    });
+  } catch (e) {
+    logger.warn({ err: e }, "insertProvider failed — provider row may already exist");
+  }
+}
 
 export default router;
