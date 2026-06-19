@@ -10,7 +10,6 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { useColors } from "@/hooks/useColors";
 import { supabase } from "@/lib/supabase";
-import { useBooking } from "@/store/booking";
 import { getCurrentResolved, distanceKm } from "@/lib/location";
 
 const POPULAR_SERVICES = [
@@ -48,7 +47,6 @@ type FilterKey = "all" | "services" | "providers";
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const booking = useBooking();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [loading, setLoading] = useState(false);
@@ -202,7 +200,6 @@ export default function SearchScreen() {
                     key={svc.id}
                     style={[st.resultRow, { backgroundColor: colors.card, borderColor: colors.border }]}
                     onPress={() => {
-                      booking.setServiceId(svc.id);
                       router.push("/booking" as any);
                     }}
                   >

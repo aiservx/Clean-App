@@ -2,3 +2,4 @@
 - [Nazafa project structure](nazafa-project-structure.md) — PNPM monorepo: mobile (Expo/port 18115), admin (Vite/port 5000), api-server (Express/port 8080). Start: bash scripts/start-all.sh
 - [Nazafa Phase 1+2 features](nazafa-new-features.md) — Analytics, auto-dispatch, dynamic pricing, rich providers, smart notifications, bookings enhancements. See DEVELOPMENT_PLAN.md for roadmap.
 - [Nazafa DB auto-setup](nazafa-db-setup.md) — Single SQL file: db/nazafa_complete_setup.sql. Admin auto-run via POST /api/admin/db-setup (Supabase Management API token required). GET /api/admin/db-setup/sql returns full SQL.
+- [Nazafa Phase 4 features](nazafa-phase4.md) — Smart search (real Supabase), Surge Banner (home), Quick Rebook, Subscription Plans screen, Provider Smart Badges, DEVELOPMENT_PLAN.md rewritten.

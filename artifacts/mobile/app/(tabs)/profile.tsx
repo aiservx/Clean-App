@@ -99,6 +99,26 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Subscription Plans Banner */}
+        <TouchableOpacity
+          activeOpacity={0.92}
+          onPress={() => router.push("/subscription-plans" as any)}
+          style={{ marginHorizontal: 16, marginBottom: 12, borderRadius: 16, overflow: "hidden" }}
+        >
+          <LinearGradient colors={["#059669", "#16C47F"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+            style={{ flexDirection: I18nManager.isRTL ? "row" : "row-reverse", alignItems: "center", padding: 14, gap: 12 }}
+          >
+            <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.25)", alignItems: "center", justifyContent: "center" }}>
+              <MaterialCommunityIcons name="shield-star-outline" size={24} color="#FFF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#FFF" }}>باقات الاشتراك الشهري</Text>
+              <Text style={{ fontFamily: "Tajawal_400Regular", fontSize: 11, color: "rgba(255,255,255,0.85)", marginTop: 2 }}>وفّر حتى 30% مع خدمة منتظمة مضمونة</Text>
+            </View>
+            <Feather name={I18nManager.isRTL ? "chevron-left" : "chevron-right"} size={18} color="#FFF" />
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Premium Membership Card */}
         <TouchableOpacity activeOpacity={0.92} onPress={() => router.push("/premium-membership" as any)} style={s.premiumWrap}>
           <LinearGradient colors={["#3B0764", "#6D28D9", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.premiumCard}>
