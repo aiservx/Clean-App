@@ -9,6 +9,7 @@ const NAV: { path: string; label: string; icon: string; section?: string }[] = [
   { path: "/financial", label: "التقارير المالية", icon: "💰", section: "عام" },
   { path: "/dynamic-pricing", label: "التسعير الديناميكي", icon: "⚡", section: "عام" },
   { path: "/live-map", label: "خريطة المزودين", icon: "🗺️", section: "عام" },
+  { path: "/geo-heatmap", label: "الخريطة الحرارية", icon: "🌍", section: "عام" },
   { path: "/services", label: "الخدمات", icon: "🧹", section: "الكتالوج" },
   { path: "/categories", label: "التصنيفات", icon: "🗂️", section: "الكتالوج" },
   { path: "/providers", label: "مقدمو الخدمة", icon: "👷", section: "المستخدمون" },

@@ -22,6 +22,7 @@ import LiveMap from "@/pages/LiveMap";
 import PromoCodes from "@/pages/PromoCodes";
 import Financial from "@/pages/Financial";
 import Reviews from "@/pages/Reviews";
+import GeoHeatmap from "@/pages/GeoHeatmap";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ function Routes() {
       <Route path="/promo-codes" component={PromoCodes} />
       <Route path="/financial" component={Financial} />
       <Route path="/reviews" component={Reviews} />
+      <Route path="/geo-heatmap" component={GeoHeatmap} />
       <Route path="/settings" component={Settings} />
       <Route>
         <div className="p-8">

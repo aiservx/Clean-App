@@ -125,27 +125,14 @@ export default function BookingsScreen() {
   };
 
   const cancelBooking = (item: any) => {
-    Alert.alert(
-      "إلغاء الطلب",
-      "هل أنت متأكد من إلغاء هذا الطلب؟",
-      [
-        { text: "تراجع", style: "cancel" },
-        {
-          text: "إلغاء الطلب",
-          style: "destructive",
-          onPress: async () => {
-            await supabase.from("bookings").update({ status: "cancelled" }).eq("id", item.id);
-            await supabase.from("booking_status_log").insert({
-              booking_id: item.id, status: "cancelled", note: "ألغي بواسطة العميل",
-            });
-            if (item.provider_id) {
-              createNotification(item.provider_id, "booking_cancelled", "❌ تم إلغاء الطلب", `قام العميل بإلغاء طلب ${item.service_title || ""}`, { bookingId: item.id });
-            }
-            refresh();
-          },
-        },
-      ]
-    );
+    router.push({
+      pathname: "/cancel",
+      params: {
+        bookingId: item.id,
+        providerId: item.provider_id ?? "",
+        serviceTitle: item.service_title ?? "",
+      },
+    } as any);
   };
 
   if (!session) {

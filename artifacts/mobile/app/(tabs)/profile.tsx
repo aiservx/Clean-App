@@ -206,6 +206,45 @@ export default function ProfileScreen() {
           );
         })()}
 
+        {/* ── Cashback Wallet Card ────────────────────────────────────── */}
+        {(() => {
+          const totalSpent = bookingsCount * 175;
+          const cashback = Math.floor(totalSpent * 0.05);
+          const available = Math.max(0, cashback - bookingsCount * 2);
+          const canRedeem = available >= 15;
+          return (
+            <TouchableOpacity
+              activeOpacity={0.92}
+              onPress={() => router.push("/(tabs)/offers" as any)}
+              style={[cashStyles.card, { backgroundColor: colors.card }]}
+            >
+              <LinearGradient colors={["#1D4ED8", "#3B82F6"]} style={cashStyles.iconBox}>
+                <MaterialCommunityIcons name="cash-multiple" size={24} color="#FFF" />
+              </LinearGradient>
+              <View style={{ flex: 1 }}>
+                <Text style={[cashStyles.label, { color: colors.mutedForeground }]}>محفظة الكاش باك (5%)</Text>
+                <View style={{ flexDirection: I18nManager.isRTL ? "row" : "row-reverse", alignItems: "baseline", gap: 4 }}>
+                  <Text style={[cashStyles.amount, { color: colors.foreground }]}>{available.toLocaleString("ar-SA")}</Text>
+                  <Text style={[cashStyles.currency, { color: colors.mutedForeground }]}>ر.س</Text>
+                </View>
+                {canRedeem ? (
+                  <View style={[cashStyles.redeemBadge, { backgroundColor: "#DCFCE7" }]}>
+                    <Text style={[cashStyles.redeemText, { color: "#16A34A" }]}>✓ جاهز للاستخدام</Text>
+                  </View>
+                ) : (
+                  <Text style={[cashStyles.redeemSub, { color: colors.mutedForeground }]}>
+                    {Math.max(0, 15 - available)} ر.س أخرى للاسترداد
+                  </Text>
+                )}
+              </View>
+              <View style={[cashStyles.totalBadge, { backgroundColor: colors.background }]}>
+                <Text style={[cashStyles.totalLabel, { color: colors.mutedForeground }]}>المكتسب</Text>
+                <Text style={[cashStyles.totalVal, { color: colors.primary }]}>{cashback} ر.س</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })()}
+
         {/* ── Activity Stats Card ─────────────────────────────────────── */}
         {(() => {
           const totalSpent = bookingsCount * 175;
@@ -413,6 +452,24 @@ const s = StyleSheet.create({
   signOutInner: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
   signOutIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#FEE2E2", alignItems: "center", justifyContent: "center" },
   signOutText: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#DC2626" },
+});
+
+const cashStyles = StyleSheet.create({
+  card: {
+    marginHorizontal: 16, marginBottom: 12, borderRadius: 20, padding: 14,
+    flexDirection: I18nManager.isRTL ? "row" : "row-reverse", alignItems: "center", gap: 12,
+    shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 8, elevation: 1,
+  },
+  iconBox: { width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  label: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginBottom: 2 },
+  amount: { fontFamily: "Tajawal_700Bold", fontSize: 22 },
+  currency: { fontFamily: "Tajawal_400Regular", fontSize: 12 },
+  redeemBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, alignSelf: "flex-start", marginTop: 4 },
+  redeemText: { fontFamily: "Tajawal_600SemiBold", fontSize: 10 },
+  redeemSub: { fontFamily: "Tajawal_400Regular", fontSize: 10, marginTop: 3 },
+  totalBadge: { borderRadius: 14, padding: 10, alignItems: "center", minWidth: 68 },
+  totalLabel: { fontFamily: "Tajawal_400Regular", fontSize: 9, marginBottom: 2 },
+  totalVal: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
 });
 
 const actStyles = StyleSheet.create({

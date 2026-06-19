@@ -47,6 +47,36 @@ const SERVICE_ICONS: Record<string, string> = {
   "تنظيف النوافذ": "window-open",
 };
 
+// ── Achievement Badges ────────────────────────────────────────────────────────
+type BadgeDef = { icon: string; label: string; color: string; bg: string; condition: boolean };
+
+function ProviderBadges({ rating, jobs, experience }: { rating: number; jobs: number; experience: number }) {
+  const defs: BadgeDef[] = [
+    { icon: "💎", label: "بلاتيني",     color: "#7C3AED", bg: "#EDE9FE", condition: jobs >= 100 && rating >= 4.7 },
+    { icon: "🏆", label: "خبير معتمد", color: "#065F46", bg: "#D1FAE5", condition: jobs >= 50 },
+    { icon: "❤️", label: "محبوب",      color: "#BE185D", bg: "#FCE7F3", condition: rating >= 4.8 },
+    { icon: "⭐", label: "الأعلى تقييماً", color: "#92400E", bg: "#FEF3C7", condition: rating >= 4.6 && jobs >= 10 },
+    { icon: "⚡", label: "استجابة سريعة", color: "#5B21B6", bg: "#EDE9FE", condition: experience >= 3 },
+    { icon: "🥇", label: "نجم نظافة",  color: "#B45309", bg: "#FEF3C7", condition: jobs >= 20 },
+    { icon: "🔰", label: "مزود جديد",  color: "#1E40AF", bg: "#DBEAFE", condition: jobs < 5 },
+    { icon: "✅", label: "موثّق",       color: "#15803D", bg: "#DCFCE7", condition: true },
+  ];
+  const earned = defs.filter((d) => d.condition);
+  return (
+    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12, justifyContent: "center" }}>
+      {earned.map((b) => (
+        <View
+          key={b.label}
+          style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: b.bg, paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}
+        >
+          <Text style={{ fontSize: 13 }}>{b.icon}</Text>
+          <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: b.color }}>{b.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export default function ProviderDetail() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
@@ -268,37 +298,8 @@ export default function ProviderDetail() {
               </View>
             </View>
 
-            {/* Smart Badges */}
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12, justifyContent: "center" }}>
-              {p.rating >= 4.8 && (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#FEF3C7", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
-                  <Text style={{ fontSize: 13 }}>⭐</Text>
-                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#92400E" }}>الأعلى تقييماً</Text>
-                </View>
-              )}
-              {p.experience_years >= 3 && (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#EDE9FE", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
-                  <Text style={{ fontSize: 13 }}>⚡</Text>
-                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#5B21B6" }}>استجابة سريعة</Text>
-                </View>
-              )}
-              {completedJobs > 50 && (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#D1FAE5", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
-                  <Text style={{ fontSize: 13 }}>🏆</Text>
-                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#065F46" }}>خبير معتمد</Text>
-                </View>
-              )}
-              {completedJobs === 0 && p.experience_years <= 1 && (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#DBEAFE", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
-                  <Text style={{ fontSize: 13 }}>🆕</Text>
-                  <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#1E40AF" }}>مزود جديد</Text>
-                </View>
-              )}
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#DCFCE7", paddingHorizontal: 11, paddingVertical: 5, borderRadius: 100 }}>
-                <MaterialCommunityIcons name="check-decagram" size={13} color="#16A34A" />
-                <Text style={{ fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#15803D" }}>موثّق</Text>
-              </View>
-            </View>
+            {/* Achievement Badges */}
+            <ProviderBadges rating={p.rating} jobs={completedJobs} experience={p.experience_years} />
           </View>
         </LinearGradient>
 
