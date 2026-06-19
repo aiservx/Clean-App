@@ -74,6 +74,103 @@ const RECURRING_OPTIONS: RecurringOption[] = [
   { key: "monthly",  label: "شهري",      icon: "📆" },
 ];
 
+// ── Service Add-ons ───────────────────────────────────────────────────────────
+type Addon = { id: string; label: string; icon: string; price: number; desc: string };
+const SERVICE_ADDONS: Addon[] = [
+  { id: "oven",    label: "تنظيف الفرن",    icon: "🔥", price: 30, desc: "تنظيف عميق للفرن بالداخل" },
+  { id: "fridge",  label: "تنظيف الثلاجة",  icon: "❄️", price: 25, desc: "تنظيف وتعقيم الثلاجة" },
+  { id: "windows", label: "تلميع النوافذ",  icon: "🪟", price: 35, desc: "تلميع الزجاج من الداخل" },
+  { id: "floors",  label: "تلميع الأرضيات", icon: "✨", price: 40, desc: "تلميع وتلميع الأرضيات" },
+  { id: "laundry", label: "غسيل الملابس",   icon: "👕", price: 45, desc: "غسيل وتجفيف دورة كاملة" },
+  { id: "balcony", label: "تنظيف البلكونة",  icon: "🌿", price: 20, desc: "كنس ومسح البلكونة" },
+];
+
+function AddonsSelector({ selected, onToggle, colors }: {
+  selected: string[];
+  onToggle: (id: string) => void;
+  colors: any;
+}) {
+  return (
+    <View style={[addonStyles.container, { backgroundColor: colors.card }]}>
+      <View style={addonStyles.header}>
+        <MaterialCommunityIcons name="plus-circle-outline" size={18} color={colors.primary} />
+        <Text style={[addonStyles.title, { color: colors.foreground }]}>إضافات الخدمة</Text>
+        {selected.length > 0 && (
+          <View style={[addonStyles.badge, { backgroundColor: colors.primary }]}>
+            <Text style={addonStyles.badgeText}>+{selected.length}</Text>
+          </View>
+        )}
+      </View>
+      <Text style={[addonStyles.subtitle, { color: colors.mutedForeground }]}>
+        أضف خدمات إضافية لتنظيف أكثر شمولاً
+      </Text>
+      <View style={addonStyles.grid}>
+        {SERVICE_ADDONS.map((addon) => {
+          const sel = selected.includes(addon.id);
+          return (
+            <TouchableOpacity
+              key={addon.id}
+              onPress={() => { tap(); onToggle(addon.id); }}
+              activeOpacity={0.8}
+              style={[
+                addonStyles.card,
+                {
+                  backgroundColor: sel ? colors.primary + "12" : colors.background,
+                  borderColor: sel ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <Text style={addonStyles.icon}>{addon.icon}</Text>
+              <Text style={[addonStyles.label, { color: colors.foreground }]}>{addon.label}</Text>
+              <Text style={[addonStyles.price, { color: sel ? colors.primary : colors.mutedForeground }]}>
+                +{addon.price} ر.س
+              </Text>
+              {sel && (
+                <View style={[addonStyles.checkBadge, { backgroundColor: colors.primary }]}>
+                  <Feather name="check" size={10} color="#FFF" />
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const addonStyles = StyleSheet.create({
+  container: { borderRadius: 20, padding: 16, marginBottom: 12 },
+  header: { flexDirection: I18nManager.isRTL ? "row" : "row-reverse", alignItems: "center", gap: 8, marginBottom: 4 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 15, flex: 1 },
+  badge: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
+  badgeText: { fontFamily: "Tajawal_700Bold", fontSize: 11, color: "#FFF" },
+  subtitle: { fontFamily: "Tajawal_400Regular", fontSize: 12, marginBottom: 12 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  card: {
+    width: "31%",
+    borderRadius: 14,
+    borderWidth: 1.5,
+    padding: 10,
+    alignItems: "center",
+    position: "relative",
+  },
+  icon: { fontSize: 22, marginBottom: 4 },
+  label: { fontFamily: "Tajawal_600SemiBold", fontSize: 11, textAlign: "center", marginBottom: 3 },
+  price: { fontFamily: "Tajawal_700Bold", fontSize: 11, textAlign: "center" },
+  checkBadge: {
+    position: "absolute",
+    top: -6,
+    end: -6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#FFF",
+  },
+});
+
 function RecurringSelector({ value, onChange, colors }: {
   value: import("@/store/booking").RecurringFrequency;
   onChange: (f: import("@/store/booking").RecurringFrequency) => void;
@@ -138,6 +235,13 @@ export default function BookingScreen() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loadingProvs, setLoadingProvs] = useState(true);
   const [bookingType, setBookingType] = useState<"instant" | "scheduled">("instant");
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+
+  const toggleAddon = (id: string) => {
+    setSelectedAddons((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+    );
+  };
 
   // Load providers from DB — instant mode: fresh-heartbeat only; scheduled: ALL + conflict check
   useEffect(() => {
@@ -261,15 +365,19 @@ export default function BookingScreen() {
     selectedProvider !== null &&
     (bookingType === "instant" || selectedProvider.providerStatus !== "booked");
 
-  // Pricing derived from selected service
+  // Pricing derived from selected service + add-ons
   const totals = useMemo(() => {
     const base = service.price;
     const fee = 10;
-    const subtotal = base + fee;
+    const addonsCost = selectedAddons.reduce((sum, id) => {
+      const addon = SERVICE_ADDONS.find((a) => a.id === id);
+      return sum + (addon?.price ?? 0);
+    }, 0);
+    const subtotal = base + fee + addonsCost;
     const vat = Math.round(subtotal * 0.15 * 100) / 100;
     const total = Math.round((subtotal + vat) * 100) / 100;
-    return { base, fee, subtotal, vat, total };
-  }, [service.price]);
+    return { base, fee, addonsCost, subtotal, vat, total };
+  }, [service.price, selectedAddons]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -558,6 +666,9 @@ export default function BookingScreen() {
           </Text>
         </View>
 
+        {/* Add-ons */}
+        <AddonsSelector selected={selectedAddons} onToggle={toggleAddon} colors={colors} />
+
         {/* Order Summary */}
         <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.summaryHeader, { color: colors.foreground }]}>ملخص الطلب</Text>
@@ -610,6 +721,14 @@ export default function BookingScreen() {
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>رسوم الخدمة</Text>
             <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.fee} ر.س</Text>
           </View>
+          {totals.addonsCost > 0 && (
+            <View style={styles.priceRow}>
+              <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>
+                إضافات ({selectedAddons.length})
+              </Text>
+              <Text style={[styles.priceValue, { color: colors.primary }]}>+{totals.addonsCost} ر.س</Text>
+            </View>
+          )}
           <View style={styles.priceRow}>
             <Text style={[styles.priceLabel, { color: colors.mutedForeground }]}>ضريبة القيمة المضافة (15%)</Text>
             <Text style={[styles.priceValue, { color: colors.foreground }]}>{totals.vat} ر.س</Text>

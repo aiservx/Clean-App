@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 const NAV: { path: string; label: string; icon: string; section?: string }[] = [
   { path: "/", label: "الرئيسية", icon: "📊", section: "عام" },
   { path: "/analytics", label: "التحليلات", icon: "📈", section: "عام" },
+  { path: "/financial", label: "التقارير المالية", icon: "💰", section: "عام" },
   { path: "/dynamic-pricing", label: "التسعير الديناميكي", icon: "⚡", section: "عام" },
   { path: "/live-map", label: "خريطة المزودين", icon: "🗺️", section: "عام" },
   { path: "/services", label: "الخدمات", icon: "🧹", section: "الكتالوج" },
@@ -18,6 +19,7 @@ const NAV: { path: string; label: string; icon: string; section?: string }[] = [
   { path: "/offers", label: "العروض", icon: "🎁", section: "التسويق" },
   { path: "/promo-codes", label: "أكواد الخصم", icon: "🏷️", section: "التسويق" },
   { path: "/notifications", label: "الإشعارات", icon: "🔔", section: "التسويق" },
+  { path: "/reviews", label: "التقييمات", icon: "⭐", section: "الدعم" },
   { path: "/support", label: "الدعم الفني", icon: "🎧", section: "الدعم" },
   { path: "/policies", label: "السياسات", icon: "📜", section: "الإعدادات" },
   { path: "/branding", label: "الهوية والألوان", icon: "🎨", section: "الإعدادات" },

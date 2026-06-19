@@ -20,6 +20,8 @@ import Analytics from "@/pages/Analytics";
 import DynamicPricing from "@/pages/DynamicPricing";
 import LiveMap from "@/pages/LiveMap";
 import PromoCodes from "@/pages/PromoCodes";
+import Financial from "@/pages/Financial";
+import Reviews from "@/pages/Reviews";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ function Routes() {
       <Route path="/dynamic-pricing" component={DynamicPricing} />
       <Route path="/live-map" component={LiveMap} />
       <Route path="/promo-codes" component={PromoCodes} />
+      <Route path="/financial" component={Financial} />
+      <Route path="/reviews" component={Reviews} />
       <Route path="/settings" component={Settings} />
       <Route>
         <div className="p-8">
