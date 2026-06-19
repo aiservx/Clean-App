@@ -104,6 +104,7 @@ SUPABASE_URL = "https://vbcblxhwnlzbreznfyau.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiY2JseGh3bmx6YnJlem5meWF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NDU1MTQsImV4cCI6MjA5NDQyMTUxNH0.ie1PHeQajLzAE-zPFFF8eggO7GgOdBadTaGdTAAHcaY"
 PORT = "5000"
 NODE_ENV = "development"
+EXPO_PUBLIC_TUTORIAL_VIDEO_URL = "https://c2acae83-5053-4586-a962-500e80027854-00-2yxbwa5l5z3xw.kirk.replit.dev:8081/__mockup/preview/TutorialVideo"
 
 [nix]
 channel = "stable-25_05"

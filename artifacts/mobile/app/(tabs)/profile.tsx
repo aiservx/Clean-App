@@ -13,6 +13,7 @@ import { useI18n } from "@/lib/i18n";
 const MENU_KEYS = [
   { id: "orders", titleKey: "my_orders", subKey: "my_orders_sub", icon: "calendar", color: "#3B82F6", bg: "#DBEAFE", path: "/(tabs)/bookings" },
   { id: "offers", titleKey: "offers_disc", subKey: "offers_disc_sub", icon: "tag", color: "#EC4899", bg: "#FCE7F3", path: "/(tabs)/offers" },
+  { id: "tutorial", titleKey: "tutorial_video", subKey: "tutorial_video_sub", icon: "play-circle", color: "#16C47F", bg: "#DCFCE7", path: "/tutorial-video" },
   { id: "settings", titleKey: "settings", subKey: "settings_sub", icon: "settings", color: "#6B7280", bg: "#F3F4F6", path: "/settings" },
   { id: "help", titleKey: "help_support", subKey: "help_support_sub", icon: "headphones", color: "#F97316", bg: "#FFF7ED", path: "/help" },
 ];
