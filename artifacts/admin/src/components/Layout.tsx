@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 
 const NAV: { path: string; label: string; icon: string }[] = [
   { path: "/", label: "الرئيسية", icon: "📊" },
+  { path: "/analytics", label: "التحليلات", icon: "📈" },
   { path: "/services", label: "الخدمات", icon: "🧹" },
   { path: "/categories", label: "التصنيفات", icon: "🗂️" },
   { path: "/providers", label: "مقدمو الخدمة", icon: "👷" },

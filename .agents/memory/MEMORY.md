@@ -1,0 +1,3 @@
+- [Nazafa pnpm shell-quote firewall fix](nazafa-pnpm-fix.md) — shell-quote@1.8.3 blocked by Replit firewall; override to 1.8.4 in pnpm-workspace.yaml fixes install.
+- [Nazafa project structure](nazafa-project-structure.md) — PNPM monorepo: mobile (Expo/port 18115), admin (Vite/port 5000), api-server (Express/port 8080). Start: bash scripts/start-all.sh
+- [Nazafa analytics & dispatch features](nazafa-new-features.md) — Added Analytics page (recharts), auto-dispatch API, analytics API endpoints. See DEVELOPMENT_PLAN.md for full roadmap.

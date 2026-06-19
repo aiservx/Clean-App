@@ -5,6 +5,8 @@ import authRouter from "./auth";
 import bookingsRouter from "./bookings";
 import ticketsRouter from "./tickets";
 import refundsRouter from "./refunds";
+import analyticsRouter from "./analytics";
+import dispatchRouter from "./dispatch";
 
 const router: IRouter = Router();
 
@@ -14,5 +16,7 @@ router.use(pushRouter);
 router.use("/api", bookingsRouter);
 router.use("/api", ticketsRouter);
 router.use("/api", refundsRouter);
+router.use(analyticsRouter);
+router.use(dispatchRouter);
 
 export default router;
