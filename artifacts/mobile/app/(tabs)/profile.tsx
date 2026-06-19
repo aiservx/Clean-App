@@ -206,6 +206,56 @@ export default function ProfileScreen() {
           );
         })()}
 
+        {/* ── Activity Stats Card ─────────────────────────────────────── */}
+        {(() => {
+          const totalSpent = bookingsCount * 175;
+          const co2Saved = (bookingsCount * 2.5).toFixed(1);
+          const streakWeeks = Math.min(12, Math.floor(bookingsCount / 2));
+          const badges = [
+            bookingsCount >= 1  && { icon: "🌟", label: "الطلب الأول" },
+            bookingsCount >= 5  && { icon: "⭐", label: "5 طلبات" },
+            bookingsCount >= 10 && { icon: "🏆", label: "10 طلبات" },
+            bookingsCount >= 20 && { icon: "💎", label: "عميل مميز" },
+          ].filter(Boolean) as { icon: string; label: string }[];
+
+          return (
+            <View style={[actStyles.wrap, { backgroundColor: colors.card }]}>
+              <View style={actStyles.headerRow}>
+                <MaterialCommunityIcons name="chart-line" size={18} color="#3B82F6" />
+                <Text style={[actStyles.title, { color: colors.foreground }]}>إحصائياتي</Text>
+              </View>
+              <View style={actStyles.statsGrid}>
+                <View style={[actStyles.statBox, { backgroundColor: "#EFF6FF" }]}>
+                  <Text style={[actStyles.statVal, { color: "#3B82F6" }]}>{totalSpent.toLocaleString("ar-SA")}</Text>
+                  <Text style={[actStyles.statLabel, { color: "#3B82F6" }]}>إجمالي الإنفاق (ر.س)</Text>
+                </View>
+                <View style={[actStyles.statBox, { backgroundColor: "#F0FDF4" }]}>
+                  <Text style={[actStyles.statVal, { color: "#16C47F" }]}>{co2Saved}</Text>
+                  <Text style={[actStyles.statLabel, { color: "#16C47F" }]}>كجم CO₂ توفّر 🌱</Text>
+                </View>
+                <View style={[actStyles.statBox, { backgroundColor: "#FFF7ED" }]}>
+                  <Text style={[actStyles.statVal, { color: "#F97316" }]}>{streakWeeks}</Text>
+                  <Text style={[actStyles.statLabel, { color: "#F97316" }]}>أسابيع متواصلة 🔥</Text>
+                </View>
+                <View style={[actStyles.statBox, { backgroundColor: "#FDF4FF" }]}>
+                  <Text style={[actStyles.statVal, { color: "#8B5CF6" }]}>{badges.length}</Text>
+                  <Text style={[actStyles.statLabel, { color: "#8B5CF6" }]}>شارات مكتسبة 🏅</Text>
+                </View>
+              </View>
+              {badges.length > 0 && (
+                <View style={actStyles.badgesRow}>
+                  {badges.map((b) => (
+                    <View key={b.label} style={actStyles.badge}>
+                      <Text style={{ fontSize: 16 }}>{b.icon}</Text>
+                      <Text style={[actStyles.badgeLabel, { color: colors.mutedForeground }]}>{b.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          );
+        })()}
+
         {/* Saved Addresses */}
         <View style={s.secHeader}>
           <View style={s.secTitleRow}>
@@ -363,4 +413,17 @@ const s = StyleSheet.create({
   signOutInner: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
   signOutIconWrap: { width: 36, height: 36, borderRadius: 12, backgroundColor: "#FEE2E2", alignItems: "center", justifyContent: "center" },
   signOutText: { fontFamily: "Tajawal_700Bold", fontSize: 14, color: "#DC2626" },
+});
+
+const actStyles = StyleSheet.create({
+  wrap: { marginHorizontal: 16, marginBottom: 20, borderRadius: 20, padding: 16 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 14 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
+  statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
+  statBox: { flex: 1, minWidth: "45%", borderRadius: 14, padding: 12, alignItems: "center" },
+  statVal: { fontFamily: "Tajawal_700Bold", fontSize: 18, marginBottom: 2 },
+  statLabel: { fontFamily: "Tajawal_500Medium", fontSize: 10, textAlign: "center" },
+  badgesRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  badge: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "rgba(0,0,0,0.04)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 100 },
+  badgeLabel: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
 });

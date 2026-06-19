@@ -3,3 +3,4 @@
 - [Nazafa Phase 1+2 features](nazafa-new-features.md) — Analytics, auto-dispatch, dynamic pricing, rich providers, smart notifications, bookings enhancements. See DEVELOPMENT_PLAN.md for roadmap.
 - [Nazafa DB auto-setup](nazafa-db-setup.md) — Single SQL file: db/nazafa_complete_setup.sql. Admin auto-run via POST /api/admin/db-setup (Supabase Management API token required). GET /api/admin/db-setup/sql returns full SQL.
 - [Nazafa Phase 4 features](nazafa-phase4.md) — Smart search (real Supabase), Surge Banner (home), Quick Rebook, Subscription Plans screen, Provider Smart Badges, DEVELOPMENT_PLAN.md rewritten.
+- [Nazafa Phase 6 features](nazafa-phase6.md) — SOS button (tracking.tsx), Earnings Goal Widget (provider/dashboard.tsx), Activity Stats (profile.tsx), PromoCodes admin page. DEVELOPMENT_PLAN.md now v6.0.

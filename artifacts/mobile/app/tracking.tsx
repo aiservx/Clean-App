@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Platform, ActivityIndicator, Animated, Alert, Linking, I18nManager,
+  Platform, ActivityIndicator, Animated, Alert, Linking, I18nManager, Vibration,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -584,6 +584,53 @@ export default function TrackingScreen() {
           </View>
         </View>
 
+        {/* ── SOS Safety Button — customers only, active orders ─────────── */}
+        {!isProvider && !isTerminal && !isPending && (
+          <TouchableOpacity
+            style={sosStyles.sosWrap}
+            onPress={() => {
+              Vibration.vibrate([0, 80, 40, 80]);
+              Alert.alert(
+                "🆘 زر الطوارئ",
+                "اختر الإجراء المناسب:",
+                [
+                  {
+                    text: "📞 اتصال بالطوارئ 911",
+                    style: "destructive",
+                    onPress: () => Linking.openURL("tel:911"),
+                  },
+                  {
+                    text: "⚠️ الإبلاغ عن مشكلة",
+                    onPress: () => router.push({ pathname: "/help", params: { bookingId: booking.id } } as any),
+                  },
+                  {
+                    text: "❌ إلغاء الطلب",
+                    onPress: () =>
+                      Alert.alert("إلغاء الطلب", "هل أنت متأكد؟", [
+                        { text: "تراجع", style: "cancel" },
+                        {
+                          text: "إلغاء",
+                          style: "destructive",
+                          onPress: async () => {
+                            await supabase.from("bookings").update({ status: "cancelled" }).eq("id", booking.id);
+                            router.replace("/(tabs)/bookings" as any);
+                          },
+                        },
+                      ]),
+                  },
+                  { text: "إغلاق", style: "cancel" },
+                ]
+              );
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={sosStyles.sosInner}>
+              <MaterialCommunityIcons name="shield-alert" size={20} color="#FFF" />
+              <Text style={sosStyles.sosText}>طوارئ / SOS</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
         {/* Unified Vertical Timeline */}
         <View style={[styles.timelineCard, { backgroundColor: colors.card }]}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
@@ -711,4 +758,19 @@ const styles = StyleSheet.create({
   vtTime: { fontFamily: "Tajawal_500Medium", fontSize: 11, marginTop: 2 },
   actionBtn: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   actionT: { color: "#FFF", fontFamily: "Tajawal_700Bold", fontSize: 14 },
+});
+
+const sosStyles = StyleSheet.create({
+  sosWrap: {
+    marginHorizontal: 14, marginBottom: 12, borderRadius: 18,
+    overflow: "hidden",
+  },
+  sosInner: {
+    backgroundColor: "#DC2626",
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    paddingVertical: 14, gap: 8,
+    borderRadius: 18,
+    shadowColor: "#DC2626", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 10, elevation: 6,
+  },
+  sosText: { fontFamily: "Tajawal_700Bold", fontSize: 15, color: "#FFF", letterSpacing: 0.5 },
 });

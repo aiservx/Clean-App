@@ -625,6 +625,42 @@ export default function ProviderHome() {
           ))}
         </View>
 
+        {/* ── Earnings Goal Widget ─────────────────────────────────────── */}
+        {(() => {
+          const DAILY_GOAL = 500;
+          const pct = Math.min(1, stats.earnings / DAILY_GOAL);
+          const pctInt = Math.round(pct * 100);
+          const barColor = pct < 0.4 ? "#EF4444" : pct < 0.75 ? "#F59E0B" : "#16C47F";
+          const msg = pct >= 1
+            ? "رائع! تجاوزت هدف اليوم 🎉"
+            : pct >= 0.75
+            ? `اقتربت! تبقى ${Math.round((DAILY_GOAL - stats.earnings))} ر.س`
+            : pct >= 0.4
+            ? `استمر! أنت في المنتصف`
+            : `ابدأ يومك بقوة!`;
+          return (
+            <View style={[goalStyles.wrap, { backgroundColor: colors.card }]}>
+              <View style={goalStyles.topRow}>
+                <View style={goalStyles.titleRow}>
+                  <MaterialCommunityIcons name="flag-checkered" size={18} color={barColor} />
+                  <Text style={[goalStyles.title, { color: colors.foreground }]}>هدف اليوم</Text>
+                </View>
+                <View style={[goalStyles.pctBadge, { backgroundColor: barColor + "22" }]}>
+                  <Text style={[goalStyles.pctText, { color: barColor }]}>{pctInt}%</Text>
+                </View>
+              </View>
+              <View style={[goalStyles.barBg, { backgroundColor: colors.muted }]}>
+                <View style={[goalStyles.barFill, { width: `${pctInt}%` as any, backgroundColor: barColor }]} />
+              </View>
+              <View style={goalStyles.bottomRow}>
+                <Text style={[goalStyles.current, { color: barColor }]}>{stats.earnings.toLocaleString("ar-SA")} ر.س</Text>
+                <Text style={[goalStyles.msg, { color: colors.mutedForeground }]}>{msg}</Text>
+                <Text style={[goalStyles.goal, { color: colors.mutedForeground }]}>/ {DAILY_GOAL.toLocaleString("ar-SA")}</Text>
+              </View>
+            </View>
+          );
+        })()}
+
         <View style={styles.mapWrap}>
           <AppMap
             style={StyleSheet.absoluteFill}
@@ -852,4 +888,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   locText: { fontFamily: "Tajawal_500Medium", fontSize: 12, flex: 1 },
+});
+
+const goalStyles = StyleSheet.create({
+  wrap: { marginHorizontal: 16, borderRadius: 18, padding: 16, marginBottom: 14 },
+  topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  title: { fontFamily: "Tajawal_700Bold", fontSize: 14 },
+  pctBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 100 },
+  pctText: { fontFamily: "Tajawal_700Bold", fontSize: 13 },
+  barBg: { height: 10, borderRadius: 100, overflow: "hidden", marginBottom: 8 },
+  barFill: { height: 10, borderRadius: 100 },
+  bottomRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  current: { fontFamily: "Tajawal_700Bold", fontSize: 15 },
+  msg: { fontFamily: "Tajawal_500Medium", fontSize: 11, flex: 1 },
+  goal: { fontFamily: "Tajawal_500Medium", fontSize: 11 },
 });

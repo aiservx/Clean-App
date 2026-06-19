@@ -16,6 +16,7 @@ const NAV: { path: string; label: string; icon: string; section?: string }[] = [
   { path: "/refunds", label: "الاستردادات", icon: "💸", section: "العمليات" },
   { path: "/withdrawals", label: "السحوبات", icon: "🏦", section: "العمليات" },
   { path: "/offers", label: "العروض", icon: "🎁", section: "التسويق" },
+  { path: "/promo-codes", label: "أكواد الخصم", icon: "🏷️", section: "التسويق" },
   { path: "/notifications", label: "الإشعارات", icon: "🔔", section: "التسويق" },
   { path: "/support", label: "الدعم الفني", icon: "🎧", section: "الدعم" },
   { path: "/policies", label: "السياسات", icon: "📜", section: "الإعدادات" },
